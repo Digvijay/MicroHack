@@ -15,9 +15,10 @@ Work through each item. Mark ✅ PASS or ❌ FAIL with a brief reason.
 
 ### 1. Directory Structure
 - [ ] `labautomation/` directory exists (no dashes — exactly `labautomation`).
+- [ ] `labautomation/` contains **only** `deploy-lab.ps1`, `lab-defaults.json`, and `README.md` — no stray files (facilitator notes, runbooks, secrets, etc.). One-time setup / prerequisite docs belong in `walkthrough/` or a separate top-level folder, not here.
 - [ ] `labautomation/lab-defaults.json` exists.
 - [ ] `labautomation/README.md` exists.
-- [ ] `Readme.md` (or `README.md`) exists at the repo root.
+- [ ] A root readme exists **and its casing matches every link that targets it**. GitHub is case-sensitive: if files in `challenges/` or `walkthrough/` link to `../Readme.md`, the root file MUST be `Readme.md` (not `README.md`), and vice-versa. Flag any mismatch as **blocking** — the "Home" navigation links 404 on GitHub even though they resolve on Windows.
 - [ ] `challenges/` directory exists.
 - [ ] `walkthrough/` directory exists.
 
@@ -30,6 +31,7 @@ Work through each item. Mark ✅ PASS or ❌ FAIL with a brief reason.
 - [ ] Script does **NOT** call `Connect-AzAccount` (platform pre-sets Az context).
 - [ ] For `resourcegroup` deployment type: script does **NOT** call `New-AzResourceGroup` (platform pre-creates it).
 - [ ] For `subscription` deployment type: script uses `Get-MhhStableHash` to generate a deterministic RG name.
+- [ ] Any `Get-MhhStableHash` call passes `-Length` within the valid **12–64** range. Values below 12 throw at runtime and silently fail the whole deployment — flag as **blocking**.
 
 ### 4. deploy-lab.ps1 — Credential Return
 - [ ] Script emits at least one `@{ HackboxCredential = @{ name = ...; value = ...; note = ... } }` to the output stream.
@@ -57,4 +59,4 @@ Work through each item. Mark ✅ PASS or ❌ FAIL with a brief reason.
    - Blocking issues (❌ on categories 1–5 are blocking)
    - Recommendations (non-blocking improvements)
 
-Be strict. A missing `$schema` in lab-defaults.json or a wrong parameter name in deploy-lab.ps1 causes the platform to skip the script silently — flag these as blocking.
+Be strict. A missing `$schema` in lab-defaults.json or a wrong parameter name in deploy-lab.ps1 causes the platform to skip the script silently — flag these as blocking. A root-readme casing mismatch and an out-of-range `Get-MhhStableHash -Length` are also blocking (broken GitHub links / runtime failure respectively).
