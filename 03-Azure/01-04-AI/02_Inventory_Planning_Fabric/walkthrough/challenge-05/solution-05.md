@@ -48,6 +48,19 @@ run (challenge 4 workflow)
 | Approval gate is skipped | Enable **Allow multi-turn conversation** on the `replenishment-action-agent` node, and keep the Challenge 4 instructions that require explicit `YES`. |
 | No **Workflows** tab / designer | Preview rollout — use the Part D evaluation alternative instead. |
 
+### Optional publishing and metadata checks
+
+For the Teams showcase, confirm `Microsoft.BotService` is **Registered** before
+publishing a **prompt agent**, not the workflow. The subscription preparation hook
+performs registration; publishing permissions and tenant app policy remain separate.
+
+For [Part F](../../challenges/challenge-05.md#part-f--optional-metadata-and-ontology-discussion),
+compare the query regression set before and after preview schema descriptions.
+Keep source/catalog metadata authoritative: an agent-level description override
+does not update the source and stops inheriting that object's future description
+updates. Ontology requires explicit tenant enablement and current capacity checks;
+it is not required to correct a `retail` filter or to complete the core lab.
+
 ### Discussion points
 
 - **Deterministic workflow vs. three human-driven agents:** the workflow is faster and hands-free, but the human loses the natural checkpoints between steps. The approval gate becomes the *only* control point — so it matters even more.

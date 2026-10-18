@@ -135,6 +135,56 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
 
    ![The Agent instructions page containing the Zava retail inventory grounding instructions](../images/challenge-00-agent-add-instructions.png)
 
+   **f2. Configure query generation at the data source.**
+
+   Agent instructions guide the overall response; **data-source instructions**
+   guide SQL generation. In **Setup**, select `InventoryLakehouse` and open its
+   **Data source instructions**. Add the following (the notebook applies this
+   automatically):
+
+   ```text
+   Use exact stored values in case-sensitive filters. Stores.type is 'retail' or 'warehouse'; map Retail/retail stores to 'retail' and warehouses/distribution centres to 'warehouse'.
+   Products.category values are garden_and_lawn, outdoor_power_tools, paint_and_supplies, smart_home. Map plain-English category names to these exact values.
+   ExternalSignals.affectedCategories is a comma-separated list: match a whole category token, not equality against the entire list.
+   Stores.region uses exact values including 'Pacific Northwest', 'Northeast', 'Midwest', 'South'.
+   Inventory has one row per productId/storeId; join Products on productId and Stores on storeId.
+   DemandHistory has one row per productId/storeId/weekStart and its sales column is units, not unitsSold. Aggregate demand before joining to Inventory to avoid multiplying stock by the number of weeks.
+   Use the latest available weekStart as the reference for recent sales; the seed is historical, not live.
+   Suppliers joins Products on supplierId. ReplenishmentOrders has one row per orderId and itemsJson holds line items.
+   CRITICAL means onHand < safetyStock, not <=. Return productId, storeId and exact stock numbers when relevant.
+   For specific products prefer productId (e.g. P004). A valid empty result means no matching rows: never remove requested filters or invent inventory. Inspect the generated query and exact values before retrying.
+   ```
+
+   Under the same data source, add these **example question / SQL query** pairs.
+   They teach exact filters without changing the source data's casing or collation.
+
+   **How many retail stores do we have?**
+   ```sql
+   SELECT COUNT(*) AS retailStoreCount FROM dbo.Stores WHERE [type] = 'retail'
+   ```
+
+   **Show Leaf Blower X2 stock and safety stock at retail stores in the Pacific Northwest.**
+   ```sql
+   SELECT i.productId, s.storeId, s.city, i.onHand, i.safetyStock,
+          CASE WHEN i.onHand < i.safetyStock THEN 'CRITICAL' ELSE 'adequate' END AS stockStatus
+   FROM dbo.Inventory i JOIN dbo.Stores s ON i.storeId = s.storeId
+   WHERE i.productId = 'P004' AND s.[type] = 'retail' AND s.region = 'Pacific Northwest'
+   ORDER BY s.storeId
+   ```
+
+   **What is the total outdoor power tools stock at retail stores?**
+   ```sql
+   SELECT SUM(i.onHand) AS totalOnHand FROM dbo.Inventory i
+   JOIN dbo.Products p ON i.productId = p.productId
+   JOIN dbo.Stores s ON i.storeId = s.storeId
+   WHERE p.category = 'outdoor_power_tools' AND s.[type] = 'retail'
+   ```
+
+   **Show inventory for product P999.**
+   ```sql
+   SELECT productId, storeId, onHand FROM dbo.Inventory WHERE productId = 'P999'
+   ```
+
    **g. Test the Data Agent (before publishing).**
    Open the **Test data agent** pane and ask:
 
@@ -143,6 +193,10 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    ```
 
    You should get exact numbers with **CRITICAL** flags — proof your tables are selected and the agent reasons correctly. Testing the draft here confirms it works *before* you publish.
+
+   Also ask **"How many Retail locations do we have?"** (expected: **4**) and
+   **"Show inventory for product P999."** (expected: **no matching rows**).
+   A grammatically convincing response is not proof: check the numbers and filters.
 
    ![The published data agent answering the Leaf Blower X2 test question with exact CRITICAL stock levels for Portland and Seattle](../images/challenge-00-agent-test.png)
 
@@ -205,7 +259,10 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    > - the notebook raise **`No tables were selected (schema may still be syncing)`**, or
    > - an **`Error updating data agent data source selection(s)`** toast if you tick tables in the portal too early.
    >
-   > This is expected first-run timing, **not** a failure — your 7 tables always write successfully; only the *agent's selection* waits on the sync. To finish it:
+   > If the table-write cells succeeded, this can be first-run schema-sync timing.
+   > The notebook waits up to approximately five minutes and refuses to publish
+   > unless **all seven named tables** are selected. Check the missing-table list
+   > rather than assuming the load succeeded. To finish it:
    > 1. Open **`InventoryLakehouse`** → switch the view (top-right) from **Lakehouse** to **SQL analytics endpoint** → expand **`dbo → Tables`** and confirm all **7 tables** are listed. If they aren't yet, wait ~1–2 min and **Refresh** (opening the endpoint also nudges the sync).
    > 2. Then **either** re-run the notebook's publish cell (it's idempotent), **or** open the **`inventory-hack-agent`** data agent → tick **all 7 tables** in the **Explorer** (left pane) → **Publish**.
 
@@ -222,6 +279,10 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    ```
 
    You should get exact numbers with **CRITICAL** flags — proof that your tables are selected and the agent is published.
+
+   Expected values: **Portland/ST03 = 8**, **Seattle/ST04 = 6**, safety stock
+   **30 at each store**. Both are CRITICAL. Also ask "How many Retail locations do
+   we have?" (4) and "Show inventory for product P999." (no matching rows).
 
    ![The published data agent answering the Leaf Blower X2 test question with exact CRITICAL stock levels for Portland and Seattle](../images/challenge-00-agent-test.png)
 
@@ -271,6 +332,8 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
 | The agent replies *"I'm unable to access the data source"* (or *"No tables selected yet"*) | Its tables aren't selected. The setup notebook selects all seven automatically, but if it didn't: open the data agent → **Data** tab → tick **all** tables under `InventoryLakehouse → dbo` → **Publish**, then re-test. |
 | Loading a `.parquet` file fails with a *load already in progress* error | Load the files **one at a time**. Open **Monitor** (left rail), **cancel** the still-running load activity, then retry that file into a new table. |
 | The agent returns nothing when you name a category (e.g. *"Outdoor Power Tools"*) | Category values are lowercase snake_case (`outdoor_power_tools`). Ask by the exact value or by **SKU/productId** (e.g. `P004`), and confirm the agent instructions include the category-mapping line from step 4(a)f / the setup notebook. |
+| The generated query uses `Stores.type = 'Retail'` and returns zero rows | Stored values are lowercase `retail` / `warehouse`. Apply the **data-source instructions and example queries** in step f2, publish again, and re-test. Do not change the seed data or remove requested filters. |
+| Portal labels do not match the English screenshots | Switch the portal display language to English in Settings and refresh. Resource names remain exactly as written; restore your preferred language afterward. |
 | The publish cell raises **`No tables were selected (schema may still be syncing)`** | Expected on a **cold capacity** — the 7 tables wrote fine, but the Lakehouse **SQL analytics endpoint** hasn't exposed them yet. Open `InventoryLakehouse` → **SQL analytics endpoint** → confirm all 7 tables under `dbo`, then **re-run the publish cell** (idempotent) or tick the tables in the data agent's **Explorer** and **Publish**. |
 | Ticking tables in the data agent shows **`Error updating data agent data source selection(s)`** | Same root cause — the SQL endpoint schema isn't fully synced. Wait until all 7 tables show under the Lakehouse's **SQL analytics endpoint**, **refresh** the data agent page (F5), then re-tick and **Publish**. If it persists, remove and re-add the `InventoryLakehouse` data source (**+ Add data source → OneLake catalog**), tick the 7 tables, and **Publish**. |
 | The agent answers in the **Test data agent** pane but a Foundry agent later errors **`Stage configuration not found`** | The test pane runs the **draft/Preview** runtime; Foundry consumes the **published** version. On a cold capacity the notebook's publish can leave the agent in draft. Open `inventory-hack-agent` → confirm all 7 tables → click **Publish**, then retry. |

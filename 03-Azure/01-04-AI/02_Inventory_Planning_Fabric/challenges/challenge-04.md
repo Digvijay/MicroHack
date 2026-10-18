@@ -23,7 +23,7 @@ This human-in-the-loop pattern is critical for **agentic AI in enterprise settin
 
 1. In the Foundry portal, navigate to **Agents** and click **+ New agent**.
 2. Name it `replenishment-action-agent`.
-3. Select the `gpt-5.4-mini` model deployment.
+3. Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`).
 4. Paste the following **system instructions**:
 
    ```

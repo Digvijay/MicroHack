@@ -15,7 +15,7 @@ Understand the inventory scenario, provision your own Fabric workspace + Data Ag
 | Table | Key columns | Used by |
 |-------|-------------|---------|
 | `Inventory` | productId, storeId, onHand, reorderPoint, safetyStock | Challenges 2, 3 |
-| `DemandHistory` | productId, storeId, weekStart, unitsSold | Challenge 2 |
+| `DemandHistory` | productId, storeId, weekStart, units | Challenge 2 |
 | `ExternalSignals` | signalType, region, headline, score, affectedCategories | Challenge 2 |
 | `Products` | productId, name, category, unitCost, leadTimeDays, supplierId | Challenges 3, 4 |
 | `Stores` | storeId, name, type, region, city | Challenges 2, 3 |
@@ -37,6 +37,17 @@ Understand the inventory scenario, provision your own Fabric workspace + Data Ag
 3. **Import + attach.** Download **`Setup-InventoryDataAgent.ipynb`** from the repo's **`setup/`** folder (or your facilitator's link), then **Import → Notebook → From this computer → Upload** in the workspace toolbar. Open it and, in the **Explorer**, **Add data items → From OneLake catalog → `InventoryLakehouse`** as the **default** — if names collide, pick the one whose **Location** is your `inventory-hack-…` workspace (the write cells fail without a default Lakehouse).
 4. **Run all** (~5–10 min). The kernel restarts once after the `%pip` cell — expected. It writes 7 tables and publishes `inventory-hack-agent`.
 5. Copy the **Workspace ID** and **Agent ID** the final cell prints — you'll use them in Challenge 2.
+
+The notebook also sets **Lakehouse data-source instructions and four SQL examples**.
+For manual setup, apply [Challenge 1 step f2](../../challenges/challenge-01.md)
+before publishing. `Stores.type` is exactly `retail` / `warehouse`; category
+filters use lowercase snake_case. This belongs in query-generation context, not
+only the top-level agent prompt. No preview runtime or ontology is required.
+
+Verify Portland/ST03 has **8** P004 units, Seattle/ST04 has **6**, and both have
+safety stock **30**. "How many Retail locations do we have?" must return **4**;
+P999 must return no matching rows. The notebook blocks publication when even one
+of the seven expected tables is missing, and surfaces smoke-test failures.
 
 **Common stumbles:** capacity not in the dropdown (paused, or wrong signed-in user) · table-write cells fail (Lakehouse not attached as default) · Data Agent tool missing later in Foundry (capacity paused, or the notebook didn't finish publishing).
 

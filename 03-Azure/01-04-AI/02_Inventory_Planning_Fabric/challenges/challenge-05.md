@@ -92,6 +92,13 @@ Everything so far lives in the Foundry portal — great for builders, but the **
 
 1. Open your **`demand-sensing-agent`** (a prompt agent) and select **Publish → Publish to Teams and Microsoft 365 Copilot**. Foundry provisions an **Azure Bot Service** resource behind the scenes.
 
+   **Facilitator prerequisite:** the subscription's `Microsoft.BotService`
+   provider must be **Registered** before publishing. The lab's
+   [shared preparation hook](../labautomation/shared-deploy-lab.ps1) handles this.
+   If registration is missing, ask the facilitator to rerun preparation with
+   subscription-level registration permission. Registration alone does not grant
+   Teams/M365 publishing permissions or bypass tenant app policies.
+
    ![A prompt agent with the Publish menu open, showing the Teams & Microsoft 365 Copilot publish target](../images/challenge-04-teams.png)
 2. Fill in the metadata: **Name** (e.g. *Inventory Planning Assistant*), **Publish version** `1.0.0`, **Short description** (e.g. *"Senses demand signals and checks inventory exposure over governed data."*), a longer **Description** (e.g. *"Chats over governed Zava inventory data to sense demand and report whether stock is adequate, at risk, or critically exposed."*), and your **Developer** name (your name or team).
    > Don't put secrets/keys in any field — this metadata is user-visible.
@@ -106,6 +113,34 @@ Everything so far lives in the Foundry portal — great for builders, but the **
 
 **Discuss:** what governance would you add before letting hundreds of planners trigger real purchase orders from Teams? (Think: the approval gate, a spend cap, `BotServiceRbac` vs `BotServiceTenant` calling scope, and audit via the trace.)
 
+## Part F — Optional metadata and ontology discussion
+
+The core lab deliberately works **without ontology or preview schema descriptions**.
+Complete and verify Challenges 1–4 before trying this extension.
+
+1. Discuss where business metadata should be owned. In an enterprise, prefer
+   governed source/catalog metadata as the authority. Data-source instructions
+   express join/filter rules; SQL examples demonstrate verified query patterns.
+   Neither should become a disconnected enterprise glossary.
+2. If your facilitator has approved the **preview runtime**, try
+   **Setup → data source → Schema object descriptions**. Describe `Stores.type`
+   as a location classification with exact values `retail` and `warehouse`,
+   and `Products.category` with its exact snake_case values.
+3. Re-run the [query regression set](../labautomation/README.md#query-regression-set)
+   before and after the change. Descriptions supplement the existing instructions
+   and examples; do not remove the working baseline or change data casing.
+4. **Ontology is a separate optional exploration**, not the fix for a case-sensitive
+   SQL filter. Proceed only if the tenant administrator has enabled the required
+   preview and confirmed current capacity, region and permissions requirements.
+   If unavailable, use a facilitator demonstration or discuss a conceptual
+   Product–Location–Inventory model; no core success criterion depends on it.
+
+Schema descriptions can inherit source metadata. An override in the data agent
+does **not** update the source, and that object's inherited description stops
+receiving source updates. Record ownership and avoid unnecessary overrides.
+Return to the original runtime/configuration if the comparison regresses.
+See [schema-object descriptions and inheritance](https://learn.microsoft.com/fabric/data-science/data-agent-schema-object-descriptions).
+
 ## 🛠️ Troubleshooting
 
 | Symptom | Fix |
@@ -114,6 +149,8 @@ Everything so far lives in the Foundry portal — great for builders, but the **
 | The replenishment node never stops looping | The **Loop condition** `Find` is **case-sensitive** — keep the Challenge 4 confirmation wording (`submitted to ERP`, `Order cancelled`) exactly. |
 | A node doesn't receive the previous agent's output | Set **Save agent output message as** on the upstream node and reference that variable in the next node's **Input message**. |
 | The visual designer isn't available | Do the **Part D** evaluation bonus instead, or export the workflow **YAML** and run it as a hosted agent (see Learning resources). |
+| Publishing says `Microsoft.BotService` is not registered | Ask the facilitator to rerun the subscription preparation hook and wait for Registered. An attendee's resource-group permissions may not allow registration. |
+| Schema descriptions or ontology are unavailable | They are optional and have separate preview/tenant prerequisites. Keep the core instructions/examples and complete the lab without them. |
 
 ## 🚀 Go further
 

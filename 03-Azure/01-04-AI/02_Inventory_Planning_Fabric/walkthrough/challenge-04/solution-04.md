@@ -12,6 +12,9 @@ Build the Replenishment Action Agent, implement the human approval loop, and tra
 
 ### Tools — one tool, and remove the default Web Search
 
+Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`), including when
+the facilitator has configured a fallback. Re-test the approval gate after switching.
+
 This agent needs **only the Fabric Data Agent tool** (to look up unit costs from the `Products` table). New prompt agents ship with **Web Search attached by default** — **remove it**, or `gpt-5.4-mini` will reach for the web instead of the governed cost data. After configuring, confirm the Fabric Data Agent is the only tool listed.
 
 ### Simulated submission (no function tool)

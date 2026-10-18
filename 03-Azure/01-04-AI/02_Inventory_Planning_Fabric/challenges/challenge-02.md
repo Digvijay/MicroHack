@@ -20,7 +20,7 @@ Your agent must sense this signal from the web, query the governed inventory dat
 
 1. In the Foundry portal, navigate to **Agents** and click **+ New agent**.
 2. Name it `demand-sensing-agent`.
-3. Select the `gpt-5.4-mini` model deployment.
+3. Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`).
 4. Paste the following **system instructions** into the Instructions field:
    ```
    You are a Demand Sensing Agent for a retail inventory planning team.
@@ -43,8 +43,9 @@ Your agent must sense this signal from the web, query the governed inventory dat
    e.g. outdoor_power_tools) or by productId/SKU (e.g. P004).
 
    When given a scenario or event, do these steps in order:
-   1. Use Web Search to find relevant market signals, news, and trend data about the affected
-      product categories. Cite your sources.
+   1. If Web Search is enabled, use it for relevant market signals, news, and trend data about
+      the affected product categories. Cite your sources. Otherwise use the Fabric
+      ExternalSignals table and label it as historical sample signals, not live web evidence.
    2. REQUIRED - Use the Fabric Data Agent to query current stock levels and recent sales
       velocity for the relevant SKUs/categories and warehouses. Do not skip this step.
    3. Synthesise both sources into a demand assessment: state whether current stock is
@@ -130,7 +131,9 @@ This is the first agent where you attach the Fabric Data Agent, so you'll **crea
 | The agent gives a demand assessment from web signals only (says it *"couldn't verify inventory"*) | It skipped the Fabric call. Reply *"Call the Fabric Data Agent now for current stock + sales velocity of the affected SKUs before assessing,"* or set **tool choice = required** in the agent's tool settings. `gpt-5.4-mini` (a reasoning model) sometimes skips available tools. |
 | The agent has `fx` functions like `query_inventory` / `list_low_stock` instead of the Fabric Data Agent | The portal **auto-generated stub functions** from your instructions — they're empty and never reach your Lakehouse. Remove them (each tool row → **⋮ → Remove**) and add the **Fabric Data Agent** connector (Part C). |
 | You didn't copy the **Workspace ID / Agent ID** in Challenge 1 | Reopen `inventory-hack-agent` in Fabric → **Settings → Model Context Protocol → MCP server URL** (both IDs are in the URL), or re-run the setup notebook's last cell. |
-| *"Your requests to gpt-5.4-mini … exceeded rate limit"* | You hit the model's tokens-per-minute (TPM) limit. Wait ~30–60s and retry, and avoid firing many runs back-to-back. Facilitators can raise the deployment TPM or give each attendee their own subscription (see [`labautomation/README.md`](../labautomation/README.md)). |
+| A run reports **429 / rate limit exceeded** | Wait the error's retry delay before retrying. Use the trace to identify whether the failing call is the Foundry model or nested Fabric tool. TPM, RPM, request estimates and temporary service-capacity limits need different remedies; see the [facilitator runbook](../labautomation/README.md#diagnose-throttling-before-adding-deployments). |
+| The facilitator supplies a different model deployment | Select dashboard **ModelDeploymentName**, save the agent and start a fresh conversation. The facilitator must verify the same governed-answer and tool-call checks on the fallback. |
+| A Fabric query returns no rows for retail stores | Inspect `Stores.type`: it must filter `'retail'`, not `'Retail'`. Confirm Challenge 1 data-source instructions/examples were applied and published; don't drop filters to manufacture a result. |
 | The run fails with **`Stage configuration not found`** (or *configuration not found*) | Your Fabric Data Agent works in Fabric's **Test data agent** pane but isn't **published** — the Foundry tool consumes the *published* stage, not the draft/Preview runtime. In Fabric, open `inventory-hack-agent` → confirm the 7 tables → click **Publish**, then retry. |
 | The connection dialog asks for IDs you don't have | Copy the **Workspace ID** and **Agent ID** your setup notebook printed in its last cell (Challenge 1). |
 

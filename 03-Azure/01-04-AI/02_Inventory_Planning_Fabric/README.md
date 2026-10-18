@@ -75,6 +75,14 @@ Complete the following before the hack session:
 - Access to the **Microsoft Foundry portal** at [ai.azure.com](https://ai.azure.com) — your facilitator will share credentials on the day.
 - No local software installation required — all participant work is browser-based.
 
+> [!TIP]
+> **Portal language:** the steps and screenshots use English. Before starting, set
+> the Fabric portal display language to **English** under **Settings → General →
+> Language**, then refresh (labels can vary by portal version). Do the same in
+> Foundry if needed. Translated item names can be surprising: a *Lakehouse* is a
+> Fabric data item, not a different service. Keep resource names such as
+> `InventoryLakehouse` unchanged. You can restore your preferred language afterward.
+
 > [!NOTE]
 > Your Foundry project, gpt-5.4-mini model deployment, and your **own Fabric capacity** are provisioned for you by the lab automation. In **Challenge 1** you stand up your own Fabric workspace and publish your **Fabric Data Agent** by running one notebook (Run All). You'll be handed a project endpoint and your capacity name at the start of the hack. Web Search is optional and may need project-level enablement.
 
@@ -87,8 +95,9 @@ Complete the following before the hack session:
 > [!NOTE]
 > **Facilitator guidance (from run feedback):**
 > - **Audience & expectations:** pitch this at a **no-code / low-code** audience (e.g. technical decision-makers, level 150–200) and set that expectation in the invite — it is *not* a hardcore-developer hack.
-> - **Token throughput:** the model deploys at **200K TPM** and the lab packs **5 attendees per subscription**. If attendees hit rate limits, prefer **one subscription per attendee** (or raise the deployment's TPM). See [`labautomation/README.md`](labautomation/README.md).
-> - **Fabric capacity:** the per-attendee **F4** default covers this hack comfortably, including capacity-heavy steps (parquet-load contention, intermittent Data Agent calls). To cut cost, drop to **F2** (`-FabricSkuName F2`, or **resize live** — F SKUs support on-demand resize, no redeploy) if attendees aren't hitting throttling, and lower `estimatedDailyCostsUsd` to match (each SKU step roughly doubles the Fabric cost). For the **ontology** feature, size up further (F8+) for that path.
+> - **Token throughput:** the default model deployment requests capacity **200** and the platform packs **5 attendees per subscription**. These are starting values, not a throughput guarantee. Diagnose TPM/RPM and service-capacity throttling separately; adding subscriptions does not increase an unchanged deployment's limit. See the [quota and rehearsal runbook](labautomation/README.md#workshop-readiness-and-rehearsal).
+> - **Fabric capacity:** **F4 remains the default**, but must be rehearsed. An event reported successful loading after resizing participants to **F8**; use F8 as a workshop validation candidate, not a universal requirement. F2 is a lower-cost experiment only after measurement. If changing the default, update daily costs and subscription capacity calculations together.
+> - **Optional previews:** schema-object descriptions require the preview runtime; ontology also depends on tenant enablement and current capacity requirements. Neither is necessary for the core lab. See [optional enrichment](challenges/challenge-05.md#part-f--optional-metadata-and-ontology-discussion).
 
 ### Challenge overview
 
