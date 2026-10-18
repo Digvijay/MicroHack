@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 from types import SimpleNamespace
 import unittest
+from unittest.mock import Mock, patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,11 +37,13 @@ class DataSource:
 
     def get_elements(self, root_id=None, **kwargs):
         if root_id is None:
-            return [{"id": "dbo", "type": "schema", "hasSubElements": True}]
-        return [
-            {"id": name, "name": name, "type": "table", "hasSubElements": False}
+            return {"value": [{"id": "schemas", "type": "Schemas", "hasSubElements": True}]}
+        if root_id == "schemas":
+            return {"value": [{"id": "dbo", "type": "Schema", "hasSubElements": True}]}
+        return {"value": [
+            {"id": name, "displayName": name, "type": "Table", "hasSubElements": False}
             for name in self.tables
-        ]
+        ]}
 
     def update_element(self, element_id, is_selected):
         if not is_selected:
@@ -87,12 +90,30 @@ class Agent:
         self.published = True
 
 
-def configure(agent):
+def response(body, status=200, headers=None):
+    return SimpleNamespace(
+        json=lambda: body, status_code=status, headers=headers or {},
+        raise_for_status=lambda: None, text=json.dumps(body),
+    )
+
+
+def metadata_namespace():
     namespace = setup_namespace()
     namespace.update(
-        agent=agent, lakehouse_id="lakehouse", workspace_id="workspace",
         time=SimpleNamespace(sleep=lambda seconds: None),
+        notebookutils=SimpleNamespace(credentials=SimpleNamespace(getToken=lambda audience: "test-token")),
     )
+    tables = [{"tableName": name, "status": "Success"} for name in namespace["EXPECTED_TABLES"]]
+    namespace["requests"] = Mock(
+        get=Mock(return_value=response({"properties": {"sqlEndpointProperties": {"id": "endpoint"}}})),
+        post=Mock(return_value=response({"value": tables})),
+    )
+    return namespace
+
+
+def configure(agent, namespace=None):
+    namespace = namespace if namespace is not None else metadata_namespace()
+    namespace.update(agent=agent, lakehouse_id="lakehouse", workspace_id="workspace")
     start = next(
         index for index, node in enumerate(SETUP.body)
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
@@ -102,6 +123,74 @@ def configure(agent):
 
 
 class NotebookTests(unittest.TestCase):
+    def test_installer_uses_current_python_and_propagates_failures(self):
+        import subprocess
+        import sys
+        with patch("subprocess.run") as install:
+            exec(CELLS["1b595b90"], {})
+        command = install.call_args.args[0]
+        self.assertEqual(command[:4], [sys.executable, "-m", "pip", "install"])
+        self.assertIn("fabric-data-agent-sdk==0.1.33a0", command)
+        self.assertEqual(install.call_args.kwargs, {"check": True, "timeout": 300})
+        with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, command)):
+            with self.assertRaises(subprocess.CalledProcessError):
+                exec(CELLS["1b595b90"], {})
+
+    def test_metadata_refresh_is_non_destructive_and_precedes_datasource_creation(self):
+        namespace = metadata_namespace()
+        agent = Agent([DataSource(sorted(namespace["EXPECTED_TABLES"]))])
+        agent.add_staging_datasource = Mock(
+            side_effect=lambda **kwargs: self.assertTrue(namespace["requests"].post.called)
+        )
+        configure(agent, namespace)
+        call = namespace["requests"].post.call_args
+        self.assertTrue(call.args[0].endswith("/sqlEndpoints/endpoint/refreshMetadata"))
+        self.assertEqual(call.kwargs["json"], {"recreateTables": False})
+        self.assertTrue(agent.published)
+
+    def test_failed_or_missing_sql_table_prevents_publication(self):
+        for tables in ([], [{"tableName": "products", "status": "Failure"}]):
+            namespace = metadata_namespace()
+            namespace["requests"].post.return_value = response({"value": tables})
+            agent = Agent([DataSource(sorted(namespace["EXPECTED_TABLES"]))])
+            with self.assertRaisesRegex(RuntimeError, "SQL metadata is incomplete"):
+                configure(agent, namespace)
+            self.assertFalse(agent.published)
+            self.assertFalse(hasattr(agent, "datasource_settings"))
+
+    def test_metadata_refresh_accepts_previously_synced_and_schema_qualified_tables(self):
+        for prefix in ("", "dbo."):
+            namespace = metadata_namespace()
+            namespace["requests"].post.return_value = response({"value": [
+                {"tableName": prefix + name, "status": "NotRun", "lastSuccessfulSyncDateTime": "2026-10-18T01:21:25Z"}
+                for name in namespace["EXPECTED_TABLES"]
+            ]})
+            namespace["refresh_sql_metadata"]("workspace", "lakehouse")
+
+    def test_metadata_refresh_long_running_operation(self):
+        namespace = metadata_namespace()
+        completed = namespace["requests"].post.return_value
+        namespace["requests"].post.return_value = response(
+            {}, 202, {"Location": "https://api.fabric.microsoft.com/v1/operations/operation"}
+        )
+        namespace["requests"].get.side_effect = [
+            namespace["requests"].get.return_value,
+            response({"status": "Running"}), response({"status": "Succeeded"}), completed,
+        ]
+        namespace["refresh_sql_metadata"]("workspace", "lakehouse")
+        self.assertTrue(namespace["requests"].get.call_args.args[0].endswith("/operation/result"))
+
+    def test_metadata_refresh_surfaces_operation_failure_and_timeout(self):
+        for status, message in (("Failed", "refresh failed"), ("Running", "five minutes")):
+            namespace = metadata_namespace()
+            namespace["requests"].post.return_value = response({}, 202, {"Location": "operation"})
+            namespace["requests"].get.side_effect = [
+                namespace["requests"].get.return_value,
+                *[response({"status": status}) for _ in range(60)],
+            ]
+            with self.assertRaisesRegex(RuntimeError, message):
+                namespace["refresh_sql_metadata"]("workspace", "lakehouse")
+
     def test_code_cells_compile(self):
         for cell in NOTEBOOK["cells"]:
             if cell["cell_type"] == "code":

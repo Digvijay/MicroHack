@@ -168,3 +168,17 @@ These tests execute the notebook's seed and configuration logic with fake SDK
 objects, exercise case-sensitive reference SQL, reject partial-table publication,
 and mock deployment failures/provider registration. They do **not** certify SDK
 compatibility, live natural-language query quality, F4/F8 performance or Teams.
+
+## Live notebook acceptance
+
+The setup notebook pins `fabric-data-agent-sdk==0.1.33a0` and installs it with
+the notebook's Python interpreter before importing the SDK. It refreshes SQL
+analytics endpoint metadata without recreating tables before adding the Lakehouse
+source, including support for schema-enabled Lakehouses (`dbo.table` names).
+
+For setup changes, require a successful **Run all** / `RunNotebook` execution of
+the actual deliverable notebook before committing or pushing. Confirm that all
+seven tables are selected, the agent is published, and the published MCP endpoint
+returns the expected answers in the [query regression set](#query-regression-set).
+Record the job ID, timestamps, tested source revision/hash and answers. A passing
+dependency-only or instrumented diagnostic notebook is not end-to-end acceptance.

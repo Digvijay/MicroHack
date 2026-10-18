@@ -250,7 +250,7 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    ![OneLake catalog dialog selecting InventoryLakehouse in the inventory-hack workspace as the notebook's lakehouse](../images/challenge-00-attach-lakehouse.png)
 
    **c. Run all.**
-   Click **Run all**. The notebook installs the preview SDKs (the kernel restarts once — that's expected), loads its embedded seed data, writes **7 tables**, and **publishes** your `inventory-hack-agent` Data Agent (~5–10 min).
+   Click **Run all**. The notebook installs its tested preview SDK version using the notebook's Python interpreter, loads its embedded seed data, writes **7 tables**, refreshes the SQL analytics endpoint metadata, and **publishes** your `inventory-hack-agent` Data Agent (~5–10 min). No kernel restart is required.
 
    ![The notebook with InventoryLakehouse attached as the default Lakehouse and the Run all button highlighted](../images/challenge-00-run-all.png)
 
@@ -328,7 +328,7 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
 |---------|-----|
 | `gpt-5.4-mini` is missing from your **model deployments** | Flag your facilitator before starting — the model deployment is part of your provisioned lab. |
 | Your **`FabricCapacityName`** isn't selectable when creating the workspace | The capacity must be **running** — resume it (Azure portal → your Fabric capacity → **Resume**). |
-| The setup notebook errors on `%pip install` or the publish cell | Preview SDK drift — re-run the failed cell; if a method name differs, check the [SDK reference](https://learn.microsoft.com/fabric/data-science/fabric-data-agent-sdk). Make sure your Fabric capacity is **running**. |
+| The setup notebook errors on package installation or the publish cell | Read the installation/API error before retrying; the notebook pins its tested Data Agent SDK version and stops if installation fails. Make sure your Fabric capacity is **running**. If SQL metadata refresh fails, open the Lakehouse SQL analytics endpoint, refresh its schema, and confirm all seven tables appear before rerunning setup. |
 | The agent replies *"I'm unable to access the data source"* (or *"No tables selected yet"*) | Its tables aren't selected. The setup notebook selects all seven automatically, but if it didn't: open the data agent → **Data** tab → tick **all** tables under `InventoryLakehouse → dbo` → **Publish**, then re-test. |
 | Loading a `.parquet` file fails with a *load already in progress* error | Load the files **one at a time**. Open **Monitor** (left rail), **cancel** the still-running load activity, then retry that file into a new table. |
 | The agent returns nothing when you name a category (e.g. *"Outdoor Power Tools"*) | Category values are lowercase snake_case (`outdoor_power_tools`). Ask by the exact value or by **SKU/productId** (e.g. `P004`), and confirm the agent instructions include the category-mapping line from step 4(a)f / the setup notebook. |
