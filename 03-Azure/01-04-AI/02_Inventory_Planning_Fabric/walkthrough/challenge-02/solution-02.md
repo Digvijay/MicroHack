@@ -6,7 +6,7 @@
 
 ## Goal
 
-Build a Foundry prompt agent with Web Search + Fabric Data Agent tools to sense a real-world demand change.
+Build a Foundry prompt agent with Web Search + Fabric IQ connected to the published Fabric Data Agent to sense a real-world demand change.
 
 ## Solution walkthrough
 
@@ -14,13 +14,27 @@ Build a Foundry prompt agent with Web Search + Fabric Data Agent tools to sense 
 
 Navigate to **Agents → + New agent**. If the portal shows a wizard, select **Prompt agent** (not Hosted agent).
 
+Use dashboard **ModelDeploymentName** (default `gpt-5.4-mini`). On a fallback,
+save the new model selection and use a fresh conversation. Confirm a Fabric tool
+call, correct stock values and a grounded assessment; a model playground greeting
+does not verify tool compatibility.
+
 ### Common issues
+
+Use **Tools → Browse all tools → Fabric IQ (OneLake Catalog)**, filter by
+**Data agent**, and select the team's `inventory-hack-agent`. Complete supported
+OAuth consent and verify that identity's source-data access. The earlier
+`fabric_dataagent_preview` connector retires on **6 November 2026**. Save the
+new specialist version for Challenge 5; do not rebuild the Data Agent or create
+an ontology solely for this migration.
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | Fabric tool call returns "unauthorized" | The Fabric Data Agent isn't published, or your Fabric capacity is paused | You own this agent — confirm the setup notebook finished **publishing** it (Challenge 1) and that your Fabric capacity is **running** (Azure portal → your Fabric capacity → **Resume**) |
 | Web Search returns no results | Web Search tool not enabled in the project | Go to **Project settings** and verify Web Search is listed under enabled tools |
-| Agent ignores the Fabric tool (trace shows only Web Search, or it replies "I can't access your data") | `gpt-5.4-mini` is a GPT-5 reasoning model and may skip a tool it treats as optional; the portal may also flag the Fabric tool as "not supported" (cosmetic — it still runs via the Responses API) | Keep the **IMPORTANT - tool use** block in the instructions **and set tool choice = required** in the run settings so the Fabric Data Agent tool is always invoked. |
+| Agent ignores Fabric (trace shows only Web Search) | The model may treat data retrieval as optional, or the tool may be incompatible/misconfigured | Keep the mandatory tool instructions, name `inventory-hack-agent`, inspect the Fabric IQ tool trace and test supported run settings. `tool choice = required` forces a tool call, not necessarily the Fabric call when Web Search is also available. Do not dismiss tool-compatibility errors as cosmetic. |
+| 429 / rate limiting | Could be TPM, RPM, request-budget estimates, service capacity, or the nested Fabric tool | Inspect the failing trace span, respect the retry delay and follow the [quota diagnostic runbook](../../labautomation/README.md#diagnose-throttling-before-adding-deployments). |
+| A retail filter returns no rows | SQL used `Retail` rather than stored `retail` | Apply and publish the Challenge 1 data-source instructions/examples. Preserve requested filters; an empty P999 result is correct. |
 
 ### Expected agent response
 

@@ -4,7 +4,7 @@
 
 ## 🎯 Objective
 
-Build your first Foundry prompt agent. Configure it with two tools — **Web Search** and the **Fabric Data Agent** — and use it to sense a real-world demand change and reconcile it against the current inventory position. No code required; everything is done in the Foundry portal.
+Build your first Foundry prompt agent. Configure it with two tools — **Web Search** and **Fabric IQ** (connected to your published Fabric Data Agent) — and use it to sense a real-world demand change and reconcile it against the current inventory position. No code required; everything is done in the Foundry portal.
 
 ## 🧭 Context
 
@@ -20,7 +20,7 @@ Your agent must sense this signal from the web, query the governed inventory dat
 
 1. In the Foundry portal, navigate to **Agents** and click **+ New agent**.
 2. Name it `demand-sensing-agent`.
-3. Select the `gpt-5.4-mini` model deployment.
+3. Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`).
 4. Paste the following **system instructions** into the Instructions field:
    ```
    You are a Demand Sensing Agent for a retail inventory planning team.
@@ -28,7 +28,7 @@ Your agent must sense this signal from the web, query the governed inventory dat
    Your role is to detect real-world signals that could affect product demand and reconcile
    them against the company's current inventory position.
 
-   IMPORTANT - tool use (non-negotiable): You have a Fabric Data Agent tool connected to the
+   IMPORTANT - tool use (non-negotiable): Fabric IQ connects inventory-hack-agent to the
    governed Zava inventory data (Inventory, Products, Stores, DemandHistory, ExternalSignals,
    Suppliers, ReplenishmentOrders). EVERY response that gives a demand assessment MUST include
    at least one Fabric Data Agent call - this is mandatory and NOT conditional on Web Search.
@@ -43,8 +43,9 @@ Your agent must sense this signal from the web, query the governed inventory dat
    e.g. outdoor_power_tools) or by productId/SKU (e.g. P004).
 
    When given a scenario or event, do these steps in order:
-   1. Use Web Search to find relevant market signals, news, and trend data about the affected
-      product categories. Cite your sources.
+   1. If Web Search is enabled, use it for relevant market signals, news, and trend data about
+      the affected product categories. Cite your sources. Otherwise use the Fabric
+      ExternalSignals table and label it as historical sample signals, not live web evidence.
    2. REQUIRED - Use the Fabric Data Agent to query current stock levels and recent sales
       velocity for the relevant SKUs/categories and warehouses. Do not skip this step.
    3. Synthesise both sources into a demand assessment: state whether current stock is
@@ -63,24 +64,40 @@ Your agent must sense this signal from the web, query the governed inventory dat
 
 **Web Search** is added to prompt agents by default and needs no configuration — it grounds the demand signal in live external context (news, market trends). Confirm it's listed under **Tools** in the agent editor. If it isn't there, add it via **+ Add tool → Web Search** (no API key required), then **Save**.
 
-![Tool catalogue in the agent editor showing Web Search and Fabric Data Agent available to add](../images/challenge-01-add-tool.png)
+> The screenshot below is historical and includes the retiring connector. Follow
+> Part C's Fabric IQ catalog steps for the current connection.
 
-### Part C — Add the Fabric Data Agent tool (10 min)
+![Historical tool catalogue showing Web Search and the earlier Fabric Data Agent connector](../images/challenge-01-add-tool.png)
 
-This is the first agent where you attach the Fabric Data Agent, so you'll **create** the `inventory-hack-agent` connection here using the two IDs from Challenge 1. Every later challenge just selects it.
+### Part C — Connect the Data Agent through Fabric IQ (10 min)
+
+The published **Fabric Data Agent** is still your governed query backend. The
+Foundry connector is now **Fabric IQ (OneLake Catalog)**: the earlier Foundry
+Fabric Data Agent tool retires on **6 November 2026**. No ontology is required
+when connecting to the published Data Agent created in Challenge 1.
 
 1. In the agent editor, expand **Tools** and select **Add**.
-2. Choose **Fabric Data Agent** from the tool catalogue.
-3. Create the connection with the two IDs your **setup notebook printed in Challenge 1**:
-   - **Workspace ID** → your Fabric workspace ID
-   - **Artifact / Data Agent ID** → your `inventory-hack-agent` Agent ID
-   - **Connection name** → `inventory-hack-agent`
-4. Select **Add tool**, then **Save**.
+2. Choose **Browse all tools → Fabric IQ (OneLake Catalog) → Add tool**.
+3. In the **OneLake Catalog**, filter by **Data agent**, then select your published
+   **`inventory-hack-agent`** in your workspace. Do not select another team's item.
+4. If the portal asks you to sign in or consent for Fabric, do so with your **lab
+   account** in the same browser, so the tool runs with your own Fabric
+   permissions. Then **Add** and **Save**. Your account needs read access to both
+   the Data Agent and its source data.
+5. In your instructions, identify `inventory-hack-agent` as the source for Zava
+   stock, demand, external sample signals and product costs. References to the
+   "Fabric Data Agent" below mean that item accessed through Fabric IQ.
+6. If migrating an existing agent, remove the earlier **Fabric Data Agent** tool
+   after adding Fabric IQ. Retest and note the new agent version.
 
-![The Add tool → Fabric Data Agent connection dialog with the Workspace ID and Artifact ID fields, named inventory-hack-agent](../images/challenge-01-new-connection.png)
+The old ID-entry screenshots show the earlier connector; use the OneLake Catalog
+steps above instead. Workspace/Agent IDs printed by the notebook remain useful
+for diagnostics and SDK configuration.
 
 > [!TIP]
-> **No "Fabric Data Agent" in the catalogue?** Your Fabric capacity must be running (Azure portal → your Fabric capacity → **Resume**) and the setup notebook must have published the agent.
+> **Data Agent missing from the catalog?** Resume your Fabric capacity, confirm the
+> notebook published the agent, and check the signed-in user's workspace/data
+> permissions. For 2027 use **Fabric IQ**, not the retiring connector.
 
 > [!NOTE]
 > **Why two tools?** Web Search gives the agent access to what is happening *outside* the business. The Fabric Data Agent gives access to what is happening *inside* — including the `ExternalSignals` table of pre-loaded market signals. Combining live web context with governed internal data is the core pattern of this hack.
@@ -110,12 +127,15 @@ This is the first agent where you attach the Fabric Data Agent, so you'll **crea
 5. Ask:
 
    ```text
-   What external signals in the last 30 days could affect demand for outdoor power tools in the Pacific Northwest?
+   What external signals could affect demand for outdoor power tools in the Pacific Northwest?
    ```
+
+   > The sample `ExternalSignals` table is a fixed snapshot with no dates, so this question
+   > is answered from live web results when Web Search is on, and from that table otherwise.
 
 ## 🏁 Success criteria
 
-- [ ] The `demand-sensing-agent` prompt agent exists in your Foundry project with the Fabric Data Agent tool attached (and Web Search too, if it is enabled).
+- [ ] The `demand-sensing-agent` prompt agent exists in your Foundry project with Fabric IQ connected to `inventory-hack-agent` (and Web Search too, if enabled).
 - [ ] A test run produces a response backed by at least one governed data point from the Fabric Data Agent (and an external web source, if Web Search is enabled).
 - [ ] The agent produces a clear demand assessment (adequate / at risk / critically exposed) with reasoning.
 - [ ] You can explain in your own words what each tool contributed to the response.
@@ -125,14 +145,16 @@ This is the first agent where you attach the Fabric Data Agent, so you'll **crea
 | Symptom | Fix |
 |---------|-----|
 | **Web Search** isn't listed on the agent | Add it via **+ Add tool → Web Search** — it needs no extra configuration. |
-| **Fabric Data Agent** isn't in the catalogue | The integration needs **your** Fabric capacity to be running — resume it (Azure portal → your Fabric capacity → **Resume**) and confirm the setup notebook published the agent. |
+| **Data Agent** isn't in the OneLake Catalog | Select **Fabric IQ**, filter by **Data agent**, confirm publication and permissions, and resume **your** Fabric capacity. Do not look for the retiring Foundry Fabric Data Agent connector. |
 | The agent answers inventory questions from memory | Strengthen the *IMPORTANT – tool use* line in the instructions; it must call the Fabric Data Agent for any stock number. |
 | The agent gives a demand assessment from web signals only (says it *"couldn't verify inventory"*) | It skipped the Fabric call. Reply *"Call the Fabric Data Agent now for current stock + sales velocity of the affected SKUs before assessing,"* or set **tool choice = required** in the agent's tool settings. `gpt-5.4-mini` (a reasoning model) sometimes skips available tools. |
-| The agent has `fx` functions like `query_inventory` / `list_low_stock` instead of the Fabric Data Agent | The portal **auto-generated stub functions** from your instructions — they're empty and never reach your Lakehouse. Remove them (each tool row → **⋮ → Remove**) and add the **Fabric Data Agent** connector (Part C). |
+| The agent has `fx` functions like `query_inventory` / `list_low_stock` instead of a real data tool | These are generated stubs and do not query your Lakehouse. Remove them and add **Fabric IQ (OneLake Catalog)** connected to `inventory-hack-agent` (Part C). |
 | You didn't copy the **Workspace ID / Agent ID** in Challenge 1 | Reopen `inventory-hack-agent` in Fabric → **Settings → Model Context Protocol → MCP server URL** (both IDs are in the URL), or re-run the setup notebook's last cell. |
-| *"Your requests to gpt-5.4-mini … exceeded rate limit"* | You hit the model's tokens-per-minute (TPM) limit. Wait ~30–60s and retry, and avoid firing many runs back-to-back. Facilitators can raise the deployment TPM or give each attendee their own subscription (see [`labautomation/README.md`](../labautomation/README.md)). |
+| A run reports **429 / rate limit exceeded** | Wait the error's retry delay before retrying. Use the trace to identify whether the failing call is the Foundry model or nested Fabric tool. TPM, RPM, request estimates and temporary service-capacity limits need different remedies; see the [facilitator runbook](../labautomation/README.md#diagnose-throttling-before-adding-deployments). |
+| The facilitator supplies a different model deployment | Select dashboard **ModelDeploymentName**, save the agent and start a fresh conversation. The facilitator must verify the same governed-answer and tool-call checks on the fallback. |
+| A Fabric query returns no rows for retail stores | Inspect `Stores.type`: it must filter `'retail'`, not `'Retail'`. Confirm Challenge 1 data-source instructions/examples were applied and published; don't drop filters to manufacture a result. |
 | The run fails with **`Stage configuration not found`** (or *configuration not found*) | Your Fabric Data Agent works in Fabric's **Test data agent** pane but isn't **published** — the Foundry tool consumes the *published* stage, not the draft/Preview runtime. In Fabric, open `inventory-hack-agent` → confirm the 7 tables → click **Publish**, then retry. |
-| The connection dialog asks for IDs you don't have | Copy the **Workspace ID** and **Agent ID** your setup notebook printed in its last cell (Challenge 1). |
+| You're asked to type a **Workspace ID** / **Agent ID** | You're in the retired Fabric Data Agent connector. Cancel and use **Add → Browse all tools → Fabric IQ (OneLake Catalog)** instead (Part C); you select the agent by name there. |
 
 ## 🚀 Go further
 

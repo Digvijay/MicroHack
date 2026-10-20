@@ -12,7 +12,10 @@ Build the Replenishment Action Agent, implement the human approval loop, and tra
 
 ### Tools — one tool, and remove the default Web Search
 
-This agent needs **only the Fabric Data Agent tool** (to look up unit costs from the `Products` table). New prompt agents ship with **Web Search attached by default** — **remove it**, or `gpt-5.4-mini` will reach for the web instead of the governed cost data. After configuring, confirm the Fabric Data Agent is the only tool listed.
+Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`), including when
+the facilitator has configured a fallback. Re-test the approval gate after switching.
+
+This agent needs **only Fabric IQ**, connected through the OneLake Catalog to the published `inventory-hack-agent` for `Products` unit costs. Remove any default Web Search tool and the retiring Fabric Data Agent connector. Record the saved version for Challenge 5, where the hosted application enforces approval rather than trusting a generated confirmation sentence.
 
 ### Simulated submission (no function tool)
 
@@ -32,7 +35,7 @@ If the agent skips the re-presentation, add to the instructions: *"After any MOD
 ### Trace — what the full cycle looks like
 
 ```
-run (challenge 3 approval)
+run (challenge 4 approval)
 ├── model_call (format PO proposal from recommendation)
 │   └── tool_call: Fabric Data Agent (unit-cost lookup from Products)
 ├── model_call (present proposal + ask for approval)

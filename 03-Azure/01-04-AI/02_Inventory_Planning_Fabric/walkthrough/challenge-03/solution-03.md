@@ -12,7 +12,10 @@ Build the Inventory Optimisation Agent and use agent tracing to inspect its reas
 
 ### Agent — key configuration point
 
-This agent should have **only the Fabric Data Agent tool** — no Web Search. New prompt agents ship with **Web Search attached by default**, so the key step is to **remove it**; otherwise `gpt-5.4-mini` tends to reach for the web instead of the governed data. The instructions say "governed data only" for a reason: optimisation decisions should be traceable to authoritative internal data, not unverified web content.
+Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`), including when
+the facilitator has configured a fallback.
+
+This agent should have **only Fabric IQ**, connected to the published `inventory-hack-agent` — no Web Search. Remove any default Web Search tool. Select the Data Agent through the OneLake Catalog as in Challenge 2, complete OAuth consent, and save the specialist version for Challenge 5. Do not use the retiring Fabric Data Agent connector. Optimisation decisions should be traceable to authoritative internal data, not unverified web content.
 
 ### Reading the trace — what to look for
 

@@ -23,7 +23,7 @@ This human-in-the-loop pattern is critical for **agentic AI in enterprise settin
 
 1. In the Foundry portal, navigate to **Agents** and click **+ New agent**.
 2. Name it `replenishment-action-agent`.
-3. Select the `gpt-5.4-mini` model deployment.
+3. Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`).
 4. Paste the following **system instructions**:
 
    ```
@@ -69,17 +69,17 @@ This human-in-the-loop pattern is critical for **agentic AI in enterprise settin
    (from today's date) after a YES; never fabricate a real ERP order ID.
    ```
 
-5. Click **Save** — you'll attach the Fabric Data Agent tool next.
+5. Click **Save** — you'll attach Fabric IQ next.
 
-### Part B — Add the Fabric Data Agent tool (10 min)
+### Part B — Add Fabric IQ for governed costs (10 min)
 
 The "act" step — submitting the purchase order — is **simulated by the agent itself**. In the current **New Foundry** portal, prompt agents don't expose a no-code custom-function tool: the tool catalogue's **Custom** tab offers only **OpenAPI**, **MCP**, and **Agent2Agent (A2A)** connectors, which all require a hosted endpoint. Because the Fabric Data Agent is **read-only**, the agent closes the loop by *generating* a submission confirmation on approval — which delivers the exact human-in-the-loop teaching point with zero infrastructure.
 
-You need exactly **one** tool here — the Fabric Data Agent — so you must also remove the Web Search tool that new prompt agents ship with by default:
+You need exactly **one** tool here — Fabric IQ connected to your Data Agent — so remove any default Web Search tool:
 
 1. In the agent editor, expand **Tools**. New prompt agents ship with **Web Search** attached by default — **delete it**, or `gpt-5.4-mini` will reach for the web instead of the governed cost data.
-2. Select **Add**, and on the **Configured** tab choose **Fabric Data Agent** and connect the existing **`inventory-hack-agent`** connection — the agent needs it to look up unit costs from the `Products` table when building the PO.
-3. Select **Add tool**, then **Save**. Confirm the **only** tool left is the Fabric Data Agent.
+2. Select **Add → Browse all tools → Fabric IQ (OneLake Catalog)** and select your published **`inventory-hack-agent`**, as in Challenge 2. The agent needs it to look up unit costs from the `Products` table. Do not add the retiring Fabric Data Agent connector.
+3. Select **Add tool**, then **Save**. Confirm **Fabric IQ** is the only tool. Name `inventory-hack-agent` in the instructions as the Zava product-cost source and record the saved version for Challenge 5.
 
 > [!NOTE]
 > **Want a *real* submit action?** In production you'd add an **OpenAPI tool** (New Foundry) or a custom function that writes to the `ReplenishmentOrders` table / your ERP. That needs a hosted endpoint, so it's out of scope for this no-code lab — see **Part E — Stretch** at the end of this challenge.
@@ -135,7 +135,7 @@ Either path turns the simulated confirmation into a genuine side effect while ke
 
 ## 🏁 Success criteria
 
-- [ ] The `replenishment-action-agent` prompt agent exists on `gpt-5.4-mini` with the Fabric Data Agent tool attached (and the default Web Search tool removed).
+- [ ] The `replenishment-action-agent` prompt agent exists on `gpt-5.4-mini` with Fabric IQ connected to `inventory-hack-agent` (and the default Web Search tool removed).
 - [ ] A test run successfully presents a formatted purchase order proposal (per-line cost table with a total).
 - [ ] The MODIFY flow works correctly — the agent updates the specified line, recalculates the total, and re-presents.
 - [ ] A YES reply produces the simulated submission confirmation (`✅ Purchase order PO-... submitted`).

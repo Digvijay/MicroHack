@@ -22,7 +22,7 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
 
 1. In the Foundry portal, navigate to **Agents** and click **+ New agent**.
 2. Name it `inventory-optimisation-agent`.
-3. Select the `gpt-5.4-mini` model deployment.
+3. Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`).
 4. Paste the following **system instructions**:
 
    ```
@@ -32,7 +32,7 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
    description of the affected product categories or SKUs. Your job is to produce a
    concrete reorder recommendation.
 
-   IMPORTANT - tool use: You have a Fabric Data Agent tool connected to the governed Zava
+   IMPORTANT - tool use: Fabric IQ connects inventory-hack-agent to the governed Zava
    inventory data (Inventory, Products, Stores, DemandHistory, Suppliers, ReplenishmentOrders).
    For ANY inventory number - stock level, reorder point, safety stock, average daily sales -
    you MUST call the Fabric Data Agent and answer from its result. Never answer from memory
@@ -59,8 +59,11 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
    If you cannot find a SKU in the data, say so clearly - do not invent numbers.
    ```
 
-5. Add the **Fabric Data Agent** tool and select the existing **`inventory-hack-agent`** connection (created in Challenge 2).
-6. **Remove the Web Search tool.** New prompt agents ship with **Web Search** attached by default, and `gpt-5.4-mini` will happily reach for it instead of the governed data. Under **Tools**, delete **Web Search** so the **only** tool is the Fabric Data Agent — this agent works from internal data only.
+   > [!NOTE]
+   > **Two meanings of CRITICAL.** In Challenge 1 the Data Agent flags an item CRITICAL when `onHand` is below `safetyStock`. This agent's rule (step 5) flags CRITICAL when stock is below the `reorderPoint`, which is a higher bar, so it can flag more items than the Data Agent did.
+
+5. Add **Fabric IQ (OneLake Catalog)** and select the published **`inventory-hack-agent`** in your workspace, as in Challenge 2. Name that Data Agent in the instructions as the source for Zava inventory and demand. Do not add the retiring Fabric Data Agent connector.
+6. **Remove the Web Search tool.** New prompt agents may ship with it attached. Under **Tools**, delete **Web Search** so **Fabric IQ** is the only tool — this agent works from internal data only. Record the saved version for the hosted assistant in Challenge 5.
 7. Click **Save**.
 
 ### Part B — Run the agent (15 min)
@@ -69,7 +72,7 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
 2. Paste the demand assessment you received in Challenge 2 as your first message. Copy it directly from your Challenge 2 playground chat, for example:
 
    ```text
-   Outdoor power tools are critically exposed. For SKU P004 at Portland and P006 at Seattle, query current stock, reorder point, and average weekly units sold, then return the reorder recommendation table (SKU, Location, Current Stock, Suggested Reorder Qty, Priority). Flag any SKU below its reorder point as CRITICAL.
+   Outdoor power tools are critically exposed. For SKU P004 at Portland and Seattle and P006 at Portland, query current stock, reorder point, and average weekly units sold, then return the reorder recommendation table (SKU, Location, Current Stock, Suggested Reorder Qty, Priority). Flag any SKU below its reorder point as CRITICAL.
    ```
 
    > [!TIP]
@@ -113,7 +116,7 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
 
 ## 🏁 Success criteria
 
-- [ ] The `inventory-optimisation-agent` prompt agent exists with only the Fabric Data Agent tool (no Web Search).
+- [ ] The `inventory-optimisation-agent` prompt agent exists with only Fabric IQ connected to `inventory-hack-agent` (no Web Search).
 - [ ] A test run returns a recommendation table with at least one CRITICAL flagged item.
 - [ ] You have opened the trace for your run and can identify the model call, tool call, tool response, and final generation steps.
 - [ ] You can explain, by pointing to the trace, why the agent made the recommendation it did.
