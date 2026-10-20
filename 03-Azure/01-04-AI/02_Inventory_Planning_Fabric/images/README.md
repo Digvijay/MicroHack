@@ -59,5 +59,5 @@ This folder holds the screenshots embedded throughout the challenge guides and w
 | `challenge-05-publish-dialog.png` | 5 | The **Publish to Teams and Microsoft 365** dialog with the fields filled in. |
 | `challenge-05-publish-options.png` | 5 | **Publish options**: **Just you** selected, **People in your organization** needing admin approval. |
 | `challenge-05-publish-success.png` | 5 | The **Publish successful** message pointing to the Microsoft 365 Copilot agent store and Teams. |
-| `challenge-04-orchestrator.png` | 5 *(archived)* | **Historical.** The retiring `inventory-planning-workflow` canvas: Start → demand-sensing → inventory-optimisation → replenishment-action. Used only in `challenge-05-legacy.md`; do not re-shoot. |
-| `challenge-04-teams.png` | 5 *(archived)* | **Historical.** A prompt agent's **Publish** menu open on **Teams & Microsoft 365 Copilot**. Used only in `challenge-05-legacy.md`; do not re-shoot. |
+| `challenge-04-orchestrator.png` | 5 *(archived)* | **Historical.** The retiring `inventory-planning-workflow` canvas: Start → demand-sensing → inventory-optimisation → replenishment-action. Used only in `archive/visual-workflow-exercise.md`; do not re-shoot. |
+| `challenge-04-teams.png` | 5 *(archived)* | **Historical.** A prompt agent's **Publish** menu open on **Teams & Microsoft 365 Copilot**. Used only in `archive/visual-workflow-exercise.md`; do not re-shoot. |

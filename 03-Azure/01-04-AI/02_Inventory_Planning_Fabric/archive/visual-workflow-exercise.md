@@ -1,13 +1,13 @@
-# Challenge 5 — Orchestrate the Loop (Stretch)
+# Archived exercise: orchestrate the loop with a visual workflow (stretch)
 
 > [!WARNING]
 > **Archived pre-December-2026 instructions.** The Foundry visual workflow designer
 > and in-portal workflow execution retire on **1 December 2026**. Do not use this
-> path for a 2027 workshop. Use the [hosted assistant challenge](challenge-05.md).
+> path for a 2027 workshop. Use the [hosted assistant challenge](../challenges/challenge-05.md).
 > The earlier Fabric Data Agent connector also retires on **6 November 2026**;
 > use Fabric IQ for new connections. **The two workflow screenshots below are historical: they show the retiring visual workflow designer, kept only so you can see what it looked like. The current Challenge 5 builds a hosted agent instead, which you will deploy and run yourself.**
 
-**[← Previous](challenge-04.md)** - [Home](../README.md)
+**[← Previous](../challenges/challenge-04.md)** - [Home](../README.md)
 
 > [!NOTE]
 > This is an **optional stretch challenge** for teams that finish early. It builds directly on the three agents you created in Challenges 2–4. Skip it without penalty — Challenges 1–4 are the core of the hack.
@@ -56,7 +56,7 @@ You'll chain the three specialist agents you built in Challenges 2–4. **You do
 
    ![Workflow canvas showing Start then demand-sensing-agent then inventory-optimisation-agent then replenishment-action-agent wired in sequence](../images/challenge-04-orchestrator.png)
 
-   **Historical screenshot: the workflow canvas retires on 1 December 2026. A hosted agent replaces it in the [current Challenge 5](challenge-05.md).**
+   **Historical screenshot: the workflow canvas retires on 1 December 2026. A hosted agent replaces it in the [current Challenge 5](../challenges/challenge-05.md).**
 
 > [!TIP]
 > Foundry also ships a **Human in the loop** template and a **Group chat** template. The **Sequential** pattern used here matches this hack's deterministic sense → plan → approve → act chain; **Group chat** is for dynamic hand-off scenarios.
@@ -110,7 +110,7 @@ Everything so far lives in the Foundry portal — great for builders, but the **
 
    ![A prompt agent with the Publish menu open, showing the Teams & Microsoft 365 Copilot publish target](../images/challenge-04-teams.png)
 
-   **Historical screenshot: it was taken before the 2027 changes. The [current Challenge 5](challenge-05.md) publishes the hosted agent to Teams and Microsoft 365 Copilot instead.**
+   **Historical screenshot: it was taken before the 2027 changes. The [current Challenge 5](../challenges/challenge-05.md) publishes the hosted agent to Teams and Microsoft 365 Copilot instead.**
 2. Fill in the metadata: **Name** (e.g. *Inventory Planning Assistant*), **Publish version** `1.0.0`, **Short description** (e.g. *"Senses demand signals and checks inventory exposure over governed data."*), a longer **Description** (e.g. *"Chats over governed Zava inventory data to sense demand and report whether stock is adequate, at risk, or critically exposed."*), and your **Developer** name (your name or team).
    > Don't put secrets/keys in any field — this metadata is user-visible.
 3. Select **Next: Publish options → Direct publish**, choose **Just you** under *Choose who can use this agent*, then **Publish**. (Org-wide = *People in your organization* → M365 admin approval → appears under **Built by your org** in the agent store.)

@@ -55,7 +55,9 @@ The architecture uses two key Foundry tools:
 > [!NOTE]
 > You connect your published Fabric Data Agent to your agents through **Fabric IQ (OneLake Catalog)**.
 > The Foundry visual workflow designer retires on **1 December 2026**, so Challenge 5
-> uses a small [hosted assistant](orchestrator/README.md) instead.
+> uses a small [hosted assistant](orchestrator/README.md) instead. The earlier
+> visual-workflow exercise is kept for reference in the repository:
+> [archived workflow exercise](archive/visual-workflow-exercise.md).
 
 ## Objectives
 

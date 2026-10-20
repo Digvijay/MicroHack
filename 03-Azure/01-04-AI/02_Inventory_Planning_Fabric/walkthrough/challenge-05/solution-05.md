@@ -28,7 +28,7 @@ The hosted assistant's own runtime identity needs no extra role assignment: the 
 helper bundles the pinned specialists at deploy time.
 Do not recreate the retired workflow kind.
 
-The [archived canvas exercise](../../challenges/challenge-05-legacy.md) is historical
+The [archived canvas exercise](../../archive/visual-workflow-exercise.md) is historical
 only. The workflow designer retires on 1 December 2026, and the old Foundry Fabric
 Data Agent connector retires earlier, on 6 November 2026. The replacement connector
 still uses the existing published Lakehouse Data Agent.

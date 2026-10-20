@@ -7,7 +7,7 @@
 Run the whole loop — demand sensing, inventory optimisation and a replenishment proposal — from **one prompt**, using a hosted assistant that you deploy from your browser. Approve the order with exact commands, inspect the trace, then (optionally) publish the assistant to Teams and Microsoft 365 Copilot. The final action stays a simulation: no real ERP is called.
 
 > [!NOTE]
-> **Stretch challenge.** The Foundry visual workflow designer retires on **1 December 2026**, so this challenge uses a small hosted assistant instead. It chains the three agents you built in Challenges 2–4. The [old canvas instructions](challenge-05-legacy.md) are archived.
+> **Stretch challenge.** The Foundry visual workflow designer retires on **1 December 2026**, so this challenge uses a small hosted assistant instead. It chains the three agents you built in Challenges 2–4. The earlier visual-workflow instructions are archived in the repository's `archive` folder on GitHub.
 
 ## 🧭 Context
 
