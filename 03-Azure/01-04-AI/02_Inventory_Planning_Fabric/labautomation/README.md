@@ -25,7 +25,7 @@ The script grants the **Foundry User** role to each attendee and to the Foundry 
 
 The default script above does not deploy application code. After participants
 save their three Fabric IQ specialists, they use the
-[Cloud Shell participant bootstrap](../orchestrator/README.md#participant-self-deployment-from-github-in-cloud-shell)
+[Cloud Shell participant bootstrap](../orchestrator/README.md)
 to fetch the event-tested workshop source from GitHub, pin their specialist
 versions and deploy `inventory-planning-assistant` into their existing project.
 They sign in with their lab username/TAP in the browser; Cloud Shell's Azure CLI
@@ -53,7 +53,7 @@ The hosted helper can reuse **one existing Fabric IQ connection** across the
 three specialists and run hosted multi-turn checks with
 `-FabricIQConnectionName '<name>' -Deploy -VerifyHosted`. It does not automate
 another user's OAuth consent or silently publish tenant-wide. See the
-[automation boundaries](../orchestrator/README.md#reduce-repeat-setup).
+[automation boundaries](../orchestrator/FACILITATOR.md#reduce-repeat-setup).
 
 Participants test **Teams for web** and **Microsoft 365 Copilot for web** in
 standalone Edge InPrivate/Chrome Incognito windows, not embedded browsers or
@@ -67,19 +67,33 @@ by itself evidence of Microsoft 365 Copilot entitlement.
 
 Challenge 5 publishing is optional. If you offer it, check these before admitting participants:
 
-- **Source:** give participants the repository URL and an **event-tested** branch or tag for
-  the Cloud Shell step. Never use an unverified ref for an event.
+- **Source:** the guide clones the default branch of `https://github.com/microsoft/MicroHack`
+  (only this lab's folder). Give participants a release tag only if the event needs a frozen
+  version, and check that the source contains this lab's `orchestrator` folder.
 - **Provider:** `Microsoft.BotService` is registered, using the lab's
   [subscription preparation hook](shared-deploy-lab.ps1).
 - **Permissions:** participants hold Foundry publishing permissions and Azure Bot Service
   resource/channel write permissions. Provider registration alone grants neither.
 - **Tenant:** app policies allow personal ("Just you") agents; Fabric licenses and Data
   Agent access are in place; each lab account's Microsoft 365 Copilot license is provisioned.
+- **Licences (check each lab account):** Microsoft Teams and Microsoft 365 Copilot are both
+  licensed and provisioned. A Fabric/Power BI-only account cannot open Teams, and the portal's
+  **Publish successful** message does not prove the account can use the app. Rehearse with
+  one real lab account: sign in to Teams for the web, open **Apps → Manage your apps**, and
+  confirm Copilot shows as licensed, not **Copilot Chat (Basic)**.
 - **Browsers:** rehearse in the exact private-window browser the event will use, including
   the Fabric consent prompt and any cookie or pop-up settings your tenant needs.
 - **Isolation:** test two separate users and a user without Fabric access before release.
 - **Scope:** organization-wide publishing is a separate Microsoft 365 admin step; "Just you"
   is not a substitute for it.
+
+> [!NOTE]
+> **Status of this check (20 Oct 2026):** the Foundry side of publishing was verified. The
+> Bot Service `inventory-planning-assista57069` (S1) was created, **Just you** needs no
+> approval and the portal reported **Publish successful**. Using the published assistant in
+> Teams and Microsoft 365 Copilot was **not verified**, because the test account only held a
+> Power BI licence and Teams would not open. Treat Part E as untested until you rehearse it
+> with a licensed lab account.
 
 Coach procedure for the browser checks: [Challenge 5 solution](../walkthrough/challenge-05/solution-05.md#publishing-checks-coach).
 
@@ -183,10 +197,11 @@ instructions and verified examples rather than changing data casing/collation.
    All to seven tables visible in the SQL endpoint and a published agent answer.
    Record Spark startup, table writes, schema sync and query latency separately.
 2. Reproduce the reported stall: loads that hang on F4 while capacity use is about
-   1%. The reported cause is the concurrent Spark core limit, with finished
+   1%. It reproduced on a fresh F4 after four sequential loads. The reported cause is the
+   concurrent Spark core limit, with finished
    **TableLoad** jobs left **In progress** and holding cores. Confirm that cancelling
    the job in the Monitor hub (**Job runs -> Last run details -> Cancel**) lets the next
-   load run. If it does, F8 is not needed for loading. Otherwise repeat on a fresh
+   load run. It did on that run. If it does, F8 is not needed for loading. Otherwise repeat on a fresh
    workspace on F8. Target **15 minutes to a verified answer** for the workshop profile.
 3. Run the Challenge 2 heatwave prompt, its two follow-ups, then the full approval
    loop at the expected number of **concurrent attendees per subscription**. Run

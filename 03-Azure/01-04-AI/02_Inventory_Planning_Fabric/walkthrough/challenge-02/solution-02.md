@@ -12,7 +12,7 @@ Build a Foundry prompt agent with Web Search + Fabric IQ connected to the publis
 
 ### Agent creation
 
-Navigate to **Agents → + New agent**. If the portal shows a wizard, select **Prompt agent** (not Hosted agent).
+Navigate to **Agents → New agent**. If the portal shows a wizard, select **Prompt agent** (not Hosted agent).
 
 Use dashboard **ModelDeploymentName** (default `gpt-5.4-mini`). On a fallback,
 save the new model selection and use a fresh conversation. Confirm a Fabric tool
@@ -21,7 +21,7 @@ does not verify tool compatibility.
 
 ### Common issues
 
-Use **Tools → Browse all tools → Fabric IQ (OneLake Catalog)**, filter by
+Use **Tools → Add → Add tools → Fabric IQ (OneLake Catalog)**, filter by
 **Data agent**, and select the team's `inventory-hack-agent`. Complete supported
 OAuth consent and verify that identity's source-data access. The earlier
 `fabric_dataagent_preview` connector retires on **6 November 2026**. Save the
@@ -43,6 +43,19 @@ A well-formed response includes three sections:
 1. **External signals** — 2–3 web search results with URLs, describing the demand trend or event.
 2. **Inventory position** — current stock levels for the relevant SKUs, sourced from Fabric.
 3. **Assessment** — a clear verdict: adequate / at risk / critically exposed, with reasons.
+
+In the playground the text before and after the tool calls can stream into one answer, so
+a reply may read as two conclusions. Check the numbers, not the wording. The seed data gives:
+
+| Question | Expected result |
+|----------|-----------------|
+| Leaf Blower X2 (P004) at Portland / Seattle | 8 and 6 on hand, reorder point 60 each |
+| Lowest `outdoor_power_tools` stock relative to reorder point (all three products, per store) | **Portland (ST03): 25 on hand vs 135, gap -110**. Seattle (ST04) is next with 41 vs 135 |
+| Single worst product and store | Leaf Blower X2 at Seattle: 6 on hand vs 60 |
+
+An answer that names Seattle for the leaf blower and Portland for the whole category is
+consistent. One that mixes the two without saying which level it uses is the usual
+confusion; ask the agent to compare at category level.
 
 ### Sample test prompts
 

@@ -18,7 +18,10 @@ from configure_specialists import (
 )
 from main import HostedInventoryAssistant, InventoryAssistant, MAX_TOOL_ROUNDS
 from planning import ProposalRejected
-from verify_hosted import exercise, proposal_token, stop_test_session
+from verify_hosted import (
+    ENDPOINT_ATTEMPTS, HostedEndpointUnavailable, TOTAL_TURNS, create_conversation,
+    exercise, proposal_token, stop_test_session,
+)
 
 
 PROJECT = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.CognitiveServices/accounts/acct/projects/proj"
@@ -188,7 +191,7 @@ class HostedAutomationTests(unittest.TestCase):
         client = self.client()
         records = []
         exercise(client, "inventory-planning-assistant", "7", records)
-        self.assertEqual(len(records), 12)
+        self.assertEqual(len(records), TOTAL_TURNS)
         self.assertIn("Status: CANCELLED", records[-1]["output"])
         self.assertEqual(client.conversations.delete.call_count, 2)
         for call in client.responses.create.call_args_list:
@@ -238,6 +241,28 @@ class HostedAutomationTests(unittest.TestCase):
         for text in ("Order submitted", "Proposal: abc | Revision: 1 | Status: APPROVED"):
             with self.assertRaisesRegex(AssertionError, "No pending proposal"):
                 proposal_token(text)
+
+    def test_hosted_endpoint_gets_a_short_retry_then_a_plain_message(self):
+        class ApiError(Exception):
+            status_code = 404
+
+        not_ready = ApiError("Error code: 404 - {'error': {'message': 'Project not found'}}")
+        client, sleep = MagicMock(), MagicMock()
+        client.conversations.create.side_effect = [not_ready, not_ready, SimpleNamespace(id="ready")]
+        self.assertEqual(create_conversation(client, sleep).id, "ready")
+        self.assertEqual(sleep.call_count, 2)
+
+        client, sleep = MagicMock(), MagicMock()
+        client.conversations.create.side_effect = not_ready
+        with self.assertRaisesRegex(HostedEndpointUnavailable, "Project not found.*facilitator"):
+            create_conversation(client, sleep)
+        self.assertEqual(client.conversations.create.call_count, ENDPOINT_ATTEMPTS)
+
+        client, sleep = MagicMock(), MagicMock()
+        client.conversations.create.side_effect = ApiError("Agent 'x' not found")
+        with self.assertRaises(ApiError):
+            create_conversation(client, sleep)
+        sleep.assert_not_called()
 
 
 class HostedEndpointTests(unittest.IsolatedAsyncioTestCase):

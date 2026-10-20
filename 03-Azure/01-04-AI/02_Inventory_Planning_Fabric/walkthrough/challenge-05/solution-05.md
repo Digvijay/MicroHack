@@ -4,11 +4,15 @@
 
 ## Participant deployment
 
-Follow the [Cloud Shell self-deployment procedure](../../orchestrator/README.md#participant-self-deployment-from-github-in-cloud-shell)
-in a standalone private browser. Sign in using the lab username/TAP, fetch the
-event-tested workshop GitHub ref, and run `Start-ParticipantDeployment.ps1`
-with the assigned subscription, RG, project endpoint, existing Fabric IQ
-connection name and `-VerifyHosted`.
+Participants follow the [deployment guide](../../orchestrator/README.md): sign in to
+Cloud Shell in a standalone private browser using the lab username/TAP, download only
+this lab's folder from `microsoft/MicroHack` (a sparse checkout, about 8 MB, no branch
+needed unless you give them a release tag), and run
+`./Start-ParticipantDeployment.ps1 -ResourceGroupName '<ResourceGroupName>' -VerifyHosted`.
+The script finds the subscription, Foundry project and Fabric IQ connection itself;
+`-SubscriptionId`, `-ProjectEndpoint` and `-FabricIQConnectionName` are only needed to
+override that. Coach details and troubleshooting are in the
+[facilitator guide](../../orchestrator/FACILITATOR.md#troubleshooting-for-coaches).
 
 The participant does not install anything on their computer. Cloud Shell uses
 its existing Python for SDK tooling, bootstraps azd/extensions if needed, and
@@ -34,9 +38,12 @@ still uses the existing published Lakehouse Data Agent.
 Each stage runs the participant's saved specialist **instructions and model**
 and queries the published Data Agent through the toolbox. For the seed data a
 correct first proposal covers P004, P005 and P006 at Portland and Seattle with
-unit costs **$95 / $140 / $85**; quantities vary a little between runs. The
-trace shows `invoke_agent` → `workflow.run` → `executor.process` for each of the
-three stages → a chat call and `tools/call ...DataAgent...` spans.
+unit costs **$95 / $140 / $85**; quantities and the number of lines vary between runs
+(one run proposed only P004 at Seattle, which is also valid). The trace shows
+`invoke_agent` → `workflow.run` → `executor.process` for each of the three stages, with
+`POST .../openai/v1/responses` calls underneath for the model and Fabric lookups. In the
+portal's span tree the Fabric call is not labelled `tools/call ...DataAgent...`; that name
+appears in Application Insights.
 
 The actual Agent Framework graph is fixed:
 

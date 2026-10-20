@@ -43,15 +43,15 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    > [!IMPORTANT]
    > **Shared tenant — make sure you open *your* project.** Every attendee's projects are listed together at [ai.azure.com](https://ai.azure.com) and the names look alike. To find yours, match the **`FoundryProjectEndpoint`** on your lab dashboard (the **Credentials** tab of the MicroHack portal) to the project's **Parent resource** shown in Foundry. Work only in that project.
 
-   - Locate your **model deployments** — confirm `gpt-5.4-mini` is deployed.
+   - Locate your **model deployments**: select **Models** in the left menu, then the **Deployments** tab. Confirm `gpt-5.4-mini` is listed with status **Succeeded**.
    - Open a **deployed model → Playground** and send this test message (in the current Foundry portal you open the Playground from a model or an agent — there is no top-level *Agents → Playground* menu):
 
      ```text
      What can you do?
      ```
-   - You will inspect agent decisions in Challenges 3 and 4 via **Traces → Response view** on an agent (not a top-level *Tracing* menu).
+   - You will inspect agent decisions in Challenges 3 and 4 in the agent's **Traces** tab (not a top-level *Tracing* menu).
 
-   ![Models and endpoints view in the Foundry portal showing gpt-5.4-mini deployed with status Succeeded](../images/challenge-00-model-deployments.png)
+   ![The Models page in the Foundry portal, Deployments tab, showing gpt-5.4-mini with status Succeeded](../images/challenge-00-model-deployments.png)
 
    ![Agents playground with the test message "What can you do?" and the agent's response](../images/challenge-00-playground-what-can-you-do.png)
 
@@ -67,17 +67,19 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
 
    ![Fabric left navigation with Workspaces open and the New workspace button highlighted](../images/challenge-00-new-workspace-button.png)
 
-   Name it **`inventory-hack-<your-lab-user>`** (e.g. `inventory-hack-labuser-0001`) — Fabric workspace names must be **unique across the whole tenant**, so a plain `inventory-hack` is rejected once another attendee has taken it. Expand **Advanced**, and under **Workspace type** select **Fabric**. A **Details** dropdown appears — select your **`FabricCapacityName`** (the `invcap…` value from your dashboard). Click **Apply**.
+   Name it **`inventory-hack-<your-lab-user>`** (e.g. `inventory-hack-labuser-0001`) — Fabric workspace names must be **unique across the whole tenant**, so a plain `inventory-hack` is rejected once another attendee has taken it. Expand **Advanced**, and under **Workspace type** select **Fabric**. A **Details** dropdown appears — select your **`FabricCapacityName`** (the `invcap…` value from your dashboard). Leave the other settings, such as **Contact list** and **Semantic model storage format**, at their defaults. Click **Apply**.
 
    > [!NOTE]
    > Wherever the rest of this hack refers to the **`inventory-hack`** workspace, it means **your** uniquely-named workspace. The Lakehouse (`InventoryLakehouse`) and Data Agent (`inventory-hack-agent`) names live *inside* your workspace, so keep those exactly as written.
 
-   ![Create a workspace dialog with Workspace type set to Fabric and the attendee's Fabric capacity selected under Details](../images/challenge-00-create-workspace.png)
+   ![The top of the Create a workspace dialog with the workspace name entered and Advanced expanded](../images/challenge-00-create-workspace.png)
+
+   ![The lower part of the dialog with Workspace type set to Fabric, your capacity selected under Details, and the Apply button](../images/challenge-00-create-workspace-capacity.png)
 
    > If your capacity isn't in the dropdown: it must be **running** (Azure portal → your Fabric capacity → **Resume**), and you must be signed in as the lab user it was assigned to. Ask your facilitator if it still doesn't appear.
 
    **b. Create the Lakehouse.**
-   Inside the workspace, click **+ New item**, choose **Lakehouse** (type `lake` in the search box to find it fast), and name it exactly **`InventoryLakehouse`** — the notebook writes its tables here.
+   Inside the workspace, click **+ New item**, choose **Lakehouse** (type `lake` in the search box to find it fast), and name it exactly **`InventoryLakehouse`** — the notebook writes its tables here. Leave **Lakehouse schemas** ticked (the default); the tables are created under the `dbo` schema.
 
    ![The New item panel filtered to "lake" with the Lakehouse tile selected in the inventory-hack workspace](../images/challenge-00-new-lakehouse.png)
 
@@ -89,24 +91,26 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    > Follow either this section or section 4(b) if you'd like to load the data and create the data agent using code.
 
    **a. Upload the seed data.**
-   The seven `.parquet` files are in the hack repo's [`data/`](../data/) folder. Open **`InventoryLakehouse`**, select **Upload files**, use the folder button to select all seven files, click **Upload**, and wait until every file shows a green completion check.
+   The seven `.parquet` files are in the hack repo's [`data/`](../data/) folder. Open **`InventoryLakehouse`**. In the **Explorer**, select the **...** next to **Files**, then **Upload → Upload files** (the **Upload files** tile on the home page also works). Use the folder button to select all seven files, click **Upload**, and wait until every file shows a green completion check.
 
-   ![The InventoryLakehouse home page with Upload files selected](../images/challenge-00-lakehouse-upload-files.png)
+   ![The InventoryLakehouse Explorer with the Files menu open on Upload and Upload files highlighted](../images/challenge-00-lakehouse-upload-files.png)
 
-   ![The Upload files panel showing all seven Parquet files uploaded successfully](../images/challenge-00-lakehouse-upload-files-select.png)
+   ![The Upload files panel with the folder button and the file picker showing all seven Parquet files selected](../images/challenge-00-lakehouse-upload-files-select.png)
+
+   ![The Current uploads list with all seven Parquet files showing a green completion check](../images/challenge-00-lakehouse-upload-complete.png)
 
    **b. Load each file into a new table.**
-   In the Lakehouse **Explorer**, expand **Files**. For each `.parquet` file, select its **...** menu, then **Load to tables -> New table**.
+   In the Lakehouse **Explorer**, expand **Files**. For each `.parquet` file, select its **...** menu, then **Load to Tables → New table**.
 
-   ![The menu for a Parquet file with Load to tables and New table selected](../images/challenge-00-lakehouse-load-to-tables.png)
+   ![The menu for a Parquet file with Load to Tables and New table selected](../images/challenge-00-lakehouse-load-to-tables.png)
 
    Keep the schema as **`dbo`**, set the table name to the file name without the `.parquet` extension, and click **Load**. For example, load `demandhistory.parquet` into a table named `demandhistory`. Repeat this for all seven files.
 
    > [!NOTE]
-   > **Load the files one at a time.** *Load to tables* runs as a background Spark job. If a load seems stuck, or the next one fails with a *load already in progress* error, a finished job may still show **In progress** and hold on to Spark cores. This is not a capacity problem, so you don't need a larger capacity. Cancel the stuck job instead:
-   > 1. Open the **Monitor** hub from the left navigation rail (the new **Monitoring -> Job runs** view).
-   > 2. Find the **TableLoad** job for `InventoryLakehouse` with Status **In progress**.
-   > 3. Open it, then on **Last run details** select **Cancel** and confirm.
+   > **Load the files one at a time.** *Load to Tables* runs as a background Spark job. After a few loads (it can be around the fourth file), a finished job may keep showing **In progress** and hold on to Spark cores, so the next load fails or hangs. This is not a capacity problem, so you don't need a larger capacity. If Fabric suggests the legacy Monitor hub, use the new **Monitoring** view instead. Cancel the stuck job:
+   > 1. Open the **Monitor** hub from the left navigation rail, then select **Job runs** (the new **Monitoring** view).
+   > 2. Select **`InventoryLakehouse`** in the list. On **Last run details**, find the **TableLoad** job with Status **In progress**.
+   > 3. Select **Cancel** and confirm.
    > 4. Wait until the status shows **Cancelled**, then retry that file into a new table.
    >
    > ![The Monitoring Job runs page showing a TableLoad job In progress with the Cancel button highlighted](../images/challenge-00-monitor-cancel-tableload.png)
@@ -119,14 +123,22 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    ![The InventoryLakehouse Explorer showing all seven tables under the dbo schema](../images/challenge-00-lakehouse-data-loaded.png)
 
    **d. Create the Data Agent.**
-   Return to **your** `inventory-hack-…` workspace, select **+ New item**, search for `agent`, and choose **Data agent**. Name it  **`inventory-hack-agent`**.
+   Return to **your** `inventory-hack-…` workspace, select **+ New item**, search for `agent`, and choose **Data agent**.    Name it  **`inventory-hack-agent`** and select **Create**.
 
-   ![The Fabric New item panel filtered to show the Data agent item](../images/challenge-00-new-data-agent.png)
+      ![The Create data agent dialog with the name inventory-hack-agent entered](../images/challenge-00-create-data-agent-dialog.png)
+
+      ![The Fabric New item panel filtered to show the Data agent item](../images/challenge-00-new-data-agent.png)
 
    **e. Add the Lakehouse data source.**
-   On the agent's **Data** tab, select **Add Data -> Data source**. Choose **`InventoryLakehouse`**, select all seven tables, and add them to the agent.
+   On the agent's **Sources** tab (in the left **Explorer**), select **Add sources -> Data source**.
 
-   ![The new inventory-hack-agent with Add Data and Data source selected](../images/challenge-00-agent-add-data.png)
+   ![The new inventory-hack-agent with Add sources and Data source selected](../images/challenge-00-agent-add-data.png)
+
+   The **OneLake catalog** opens. It can list several lakehouses called `InventoryLakehouse` from other attendees, so use the **Filter** to show only **Lakehouse**, and hover over the entries or open the **Explorer** pane on the left of the catalog to pick the one in **your** `inventory-hack-…` workspace. Select it, then **Add**. When the agent opens, tick all seven tables under **Schemas -> dbo -> Tables**.
+
+   ![The OneLake catalog Add a data source dialog listing several InventoryLakehouse items, filtered to Lakehouse](../images/challenge-00-agent-select-source.png)
+
+   ![The agent's Explorer with InventoryLakehouse and all seven tables under dbo ticked](../images/challenge-00-agent-select-tables.png)
 
    **f. Add the agent instructions.**
    Open **Setup -> Agent instructions** and enter the following instructions:
@@ -200,11 +212,11 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    **"Show inventory for product P999."** (expected: **no matching rows**).
    A grammatically convincing response is not proof: check the numbers and filters.
 
-   ![The published data agent answering the Leaf Blower X2 test question with exact CRITICAL stock levels for Portland and Seattle](../images/challenge-00-agent-test.png)
+   ![The Test the agent's responses pane answering the Leaf Blower X2 question with Portland 8 and Seattle 6 units, both CRITICAL](../images/challenge-00-agent-test.png)
 
    **h. Publish the Data Agent.**
 
-   Click **Publish** in the top toolbar. In the **Publish data agent** dialog, enter a short description of the agent's purpose and capabilities, for example: `Zava inventory data agent for the Agentic Inventory Planning MicroHack.` Leave **Also publish to the Agent Store in Microsoft 365 Copilot** turned off, then click **Publish**.
+   Click **Publish** in the top toolbar. In the **Publish data agent** dialog, enter a short description of the agent's purpose and capabilities, for example: `Zava inventory data agent for the Agentic Inventory Planning MicroHack.` Leave **Also publish to Microsoft Copilot** turned off, then click **Publish**.
 
    ![Publish data agent dialog with a purpose description entered and the Publish button highlighted](../images/challenge-00-agent-publish.png)
 
@@ -215,8 +227,7 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    > [!NOTE]
    > Earlier builds of Fabric exposed a **Publishing → Published URL** here. That field has been replaced by the **Model Context Protocol** page — use the **MCP server URL** instead; it carries the same two IDs.
 
-   ![The Settings gear in the data agent toolbar](../images/challenge-00-agent-settings.png)
-   ![The Model Context Protocol settings page with the MCP server URL copy button highlighted](../images/challenge-00-agent-url.png)
+   ![The Settings gear in the data agent toolbar highlighted, and the Model Context Protocol page with the MCP server URL](../images/challenge-00-agent-url.png)
 
    Paste the URL into a text editor. It has this format:
 
@@ -251,6 +262,8 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    **b. Attach your Lakehouse to the notebook.**
    Open the imported notebook. In the left **Explorer** pane click **Add data items → From OneLake catalog**. In the dialog, tick **`InventoryLakehouse`** and click **Add** — if more than one appears, pick the row whose **Location** is **your `inventory-hack-…` workspace**. It becomes the notebook's **default** Lakehouse. **Without this, the table-write cells fail.**
 
+   ![The imported notebook with Add data items open in the Explorer and From OneLake catalog listed](../images/challenge-00-notebook-add-data-items.png)
+
    ![OneLake catalog dialog selecting InventoryLakehouse in the inventory-hack workspace as the notebook's lakehouse](../images/challenge-00-attach-lakehouse.png)
 
    **c. Run all.**
@@ -271,9 +284,9 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    > 2. Then **either** re-run the notebook's publish cell (it's idempotent), **or** open the **`inventory-hack-agent`** data agent → tick **all 7 tables** in the **Explorer** (left pane) → **Publish**.
 
    **d. Copy your two IDs.**
-   When it finishes, the **last cell prints your Workspace ID and Agent ID**. Note both for diagnostics/SDKs. Challenge 2 now selects the published item through **Fabric IQ (OneLake Catalog)**.
+   When it finishes, the **last cell prints your IDs** as `fabricWorkspaceId`, `fabricAgentId` and `lakehouseId`. Note the workspace and agent IDs for diagnostics/SDKs. Challenge 2 now selects the published item through **Fabric IQ (OneLake Catalog)**.
 
-   ![Final notebook cell output printing the Workspace ID and Data Agent ID](../images/challenge-00-notebook-ids.png)
+   ![The last notebook cell printing fabricWorkspaceId, fabricAgentId and lakehouseId, above the agent's test answer for Portland and Seattle](../images/challenge-00-notebook-ids.png)
 
    **e. Verify your agent answers.** *(1 min)*
    Open the data agent's **Test data agent** pane and ask:
@@ -288,7 +301,7 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    **30 at each store**. Both are CRITICAL. Also ask "How many Retail locations do
    we have?" (4) and "Show inventory for product P999." (no matching rows).
 
-   ![The published data agent answering the Leaf Blower X2 test question with exact CRITICAL stock levels for Portland and Seattle](../images/challenge-00-agent-test.png)
+   ![The Test the agent's responses pane answering the Leaf Blower X2 question with Portland 8 and Seattle 6 units, both CRITICAL](../images/challenge-00-agent-test.png)
 
    | Value | Where it comes from |
    |-------|---------------------|
@@ -342,7 +355,7 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
 | The generated query uses `Stores.type = 'Retail'` and returns zero rows | Stored values are lowercase `retail` / `warehouse`. Apply the **data-source instructions and example queries** in step f2, publish again, and re-test. Do not change the seed data or remove requested filters. |
 | Portal labels do not match the English screenshots | Switch the portal display language to English in Settings and refresh. Resource names remain exactly as written; restore your preferred language afterward. |
 | The publish cell raises **`No tables were selected (schema may still be syncing)`** | Expected on a **cold capacity** — the 7 tables wrote fine, but the Lakehouse **SQL analytics endpoint** hasn't exposed them yet. Open `InventoryLakehouse` → **SQL analytics endpoint** → confirm all 7 tables under `dbo`, then **re-run the publish cell** (idempotent) or tick the tables in the data agent's **Explorer** and **Publish**. |
-| Ticking tables in the data agent shows **`Error updating data agent data source selection(s)`** | Same root cause — the SQL endpoint schema isn't fully synced. Wait until all 7 tables show under the Lakehouse's **SQL analytics endpoint**, **refresh** the data agent page (F5), then re-tick and **Publish**. If it persists, remove and re-add the `InventoryLakehouse` data source (**+ Add data source → OneLake catalog**), tick the 7 tables, and **Publish**. |
+| Ticking tables in the data agent shows **`Error updating data agent data source selection(s)`** | Same root cause — the SQL endpoint schema isn't fully synced. Wait until all 7 tables show under the Lakehouse's **SQL analytics endpoint**, **refresh** the data agent page (F5), then re-tick and **Publish**. If it persists, remove and re-add the `InventoryLakehouse` data source (**Add sources → Data source**), tick the 7 tables, and **Publish**. |
 | The agent answers in the **Test data agent** pane but a Foundry agent later errors **`Stage configuration not found`** | The test pane runs the **draft/Preview** runtime; Foundry consumes the **published** version. On a cold capacity the notebook's publish can leave the agent in draft. Open `inventory-hack-agent` → confirm all 7 tables → click **Publish**, then retry. |
 
 ![The data agent's Data tab showing InventoryLakehouse tables unselected and the agent replying that it cannot access the data source](../images/challenge-00-no-tables.png)

@@ -22,9 +22,8 @@ The approval is **not** left to the AI. The app only accepts exact commands (`YE
 You don't install anything on your computer.
 
 1. Make sure your three agents from Challenges 2–4 are **saved**, use **Fabric IQ**, and that your Fabric capacity is **running**.
-2. Open a private window (Edge InPrivate or Chrome Incognito), sign in to the [Azure portal](https://portal.azure.com/) with your **lab account**, then open [Cloud Shell](https://shell.azure.com/powershell) and choose **PowerShell**.
-3. Follow the [step-by-step deployment guide](../orchestrator/README.md#participant-self-deployment-from-github-in-cloud-shell). You run two short commands, filling in the values from your lab dashboard and the name of your Fabric IQ connection.
-4. Wait for `PASS: hosted multi-turn checks` (a few minutes). If it fails, read the error and ask your facilitator before moving on.
+2. Follow the [deployment guide](../orchestrator/README.md). It takes you through three short steps: open Cloud Shell in a private window, download the lab files, and run one command with the **ResourceGroupName** from your lab dashboard.
+3. Wait for `PASS: hosted multi-turn checks` (about 10 minutes in total). If it fails, read the message and ask your facilitator before moving on.
 
 > [!IMPORTANT]
 > Never type your Temporary Access Pass (TAP) into the terminal. Enter it only on the Microsoft sign-in page. If you change an agent later, run the deployment again so the assistant picks up the new version.
@@ -38,7 +37,9 @@ You don't install anything on your computer.
    A prolonged heatwave is hitting the Pacific Northwest. Check our exposure on outdoor power tools and prepare a replenishment order for approval.
    ```
 
-3. Wait 2–4 minutes: three agents run in turn and query your Fabric data. You should get **PURCHASE ORDER PROPOSAL (simulation only)** with status **AWAITING_APPROVAL**, a proposal ID, revision 1 and several lines for Portland and Seattle.
+3. Wait 2–4 minutes: three agents run in turn and query your Fabric data. You should get **PURCHASE ORDER PROPOSAL (simulation only)** with status **AWAITING_APPROVAL**, a proposal ID, revision 1 and one or more lines. Locations appear as store IDs (`ST03` is Portland, `ST04` is Seattle). The model decides how many lines to propose.
+
+   ![The hosted assistant's purchase order proposal with five lines, unit costs, a total, and the approve, cancel and change commands](../images/challenge-05-proposal.png)
 4. Check the unit costs against your data. For the seed data they are **$95** (P004 Leaf Blower X2), **$140** (P005 Chainsaw) and **$85** (P006 Hedge Trimmer). Quantities vary a little between runs.
 
 ### Part C — Modify, approve and cancel (15 min)
@@ -49,31 +50,51 @@ Use the exact proposal ID printed in your answer, and stay in the **same convers
 2. Try the old approval: `YES <proposal-id> 1`. It must be rejected as stale.
 3. Send the new one: `YES <proposal-id> 2`. Expect **SIMULATED submission** and a statement that nothing went to a real ERP.
 4. Send the same approval again. It must **not** submit twice.
+
+   ![The approval accepted as a SIMULATED submission at revision 2, followed by the same approval rejected with No duplicate submission](../images/challenge-05-approve-and-replay.png)
 5. Send `NEW`, then ask for another plan, and cancel it with `NO <new-proposal-id> <revision>`.
 6. Send `STATUS` to see the saved result.
 
+   ![An order cancelled with NO, then STATUS showing the same proposal as CANCELLED](../images/challenge-05-cancel-status.png)
+
 ### Part D — Inspect the trace (10 min)
 
-Open the assistant's **Traces** and find your run. Expect a tree like this:
+Open the assistant's **Traces** tab and select your run (a planning run lasts about three minutes and has many spans). Expect a tree like this:
 
 ```text
 invoke_agent inventory-planning-assistant:<version>
-  workflow.run                       (the fixed graph)
-    executor.process demand          -> chat <model> -> Fabric Data Agent call
-    executor.process optimisation    -> chat <model> -> Fabric Data Agent call
-    executor.process replenishment   -> chat <model> -> Fabric Data Agent cost lookup
+  invoke_agent
+    workflow.build
+    workflow.run                       (the fixed graph)
+      executor.process demand          -> model and Fabric calls
+      executor.process optimisation    -> model and Fabric calls
+      executor.process replenishment   -> model and Fabric cost lookup
 ```
 
-Your own agents' instructions drive each stage. Span names can change between preview versions, so look for the three stages and the Data Agent calls rather than exact names.
+![A planning run's trace with workflow.run and the three executor.process stages: demand, optimisation and replenishment](../images/challenge-05-trace.png)
+
+Under each stage you see `POST .../openai/v1/responses` calls: the model calls that run your agent's instructions and the Fabric lookups that return the data. Short calls elsewhere in the same trace are your commands (`MODIFY`, `YES` and so on), which are handled by code and not by a model. Your own agents' instructions drive each stage. Span names can change between preview versions, so look for the three stages rather than the exact names.
 
 ### Part E — Publish and try it in Teams and Microsoft 365 (optional, 20 min)
 
 Ask your facilitator whether publishing is enabled for your lab before you start.
 
-1. In the hosted agent, choose the latest **active** version, then **Publish → Teams and Microsoft Copilot**. Fill in the name and description and select **Just you**.
-2. Open a **new private window**, sign in with your lab account, and open [Teams for the web](https://teams.cloud.microsoft/). Find your assistant under **Apps / Your agents** and repeat Parts B and C.
-3. In another tab, open [Microsoft 365 Copilot for the web](https://m365copilot.com/). Start a **new chat** with the assistant, run Part B, then cancel an order and send `STATUS`.
-4. If you are asked to sign in or consent, use the same private window and your lab account.
+1. In the hosted agent, choose the latest **active** version, then **Publish → Teams & Microsoft 365 Copilot**.
+2. In the dialog, keep the pre-filled **Agent name**, **Publish version** and **Azure bot services** name. Check the **Short description**, write a one-sentence **Description** (for example, *Plans replenishment for outdoor power tools and asks for approval before a simulated order*), and enter your own name as the **Developer**.
+
+   ![The Publish to Teams and Microsoft 365 dialog with the agent name, version, descriptions, Azure bot service name and developer filled in](../images/challenge-05-publish-dialog.png)
+
+3. Select **Next: Publish options**. On the **Direct publish** tab, choose **Just you** (the default, available immediately). Leave **People in your organization** alone: it needs approval from your Microsoft 365 admin. Then select **Publish**.
+
+   ![The Publish options screen with Just you selected and People in your organization requiring admin approval](../images/challenge-05-publish-options.png)
+
+   When it finishes you see **Publish successful**. It says your assistant is now in the **Microsoft 365 Copilot agent store** (**All agents → Your agents**) and in Teams (**Apps → Manage your apps**). Select **Done**.
+
+   ![The Publish successful message pointing to the Microsoft 365 Copilot agent store and Teams](../images/challenge-05-publish-success.png)
+
+4. Open a **new private window**, sign in with your lab account, and open [Teams for the web](https://teams.cloud.microsoft/). Find your assistant under **Apps → Manage your apps** and repeat Parts B and C.
+5. In another tab, open [Microsoft 365 Copilot for the web](https://m365copilot.com/). Open **All agents → Your agents**, start a **new chat** with the assistant, run Part B, then cancel an order and send `STATUS`.
+6. If you are asked to sign in or consent, use the same private window and your lab account.
 
 > [!TIP]
 > Use the **web** apps, not desktop clients. **Just you** means only you can use the assistant. A private window can reset your browser sign-in, but your conversation stays on the server — use **New chat** to start fresh.

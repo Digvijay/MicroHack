@@ -15,11 +15,11 @@ Build the Inventory Optimisation Agent and use agent tracing to inspect its reas
 Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`), including when
 the facilitator has configured a fallback.
 
-This agent should have **only Fabric IQ**, connected to the published `inventory-hack-agent` — no Web Search. Remove any default Web Search tool. Select the Data Agent through the OneLake Catalog as in Challenge 2, complete OAuth consent, and save the specialist version for Challenge 5. Do not use the retiring Fabric Data Agent connector. Optimisation decisions should be traceable to authoritative internal data, not unverified web content.
+This agent should have **only Fabric IQ**, connected to the published `inventory-hack-agent` — no Web Search. Remove any default Web Search tool. Select the Data Agent by reusing the `inventoryhackagent` connection from Challenge 2 (**Tools → Add → Add tools → Configured → `inventoryhackagent`**), so no second connection is created, and save the specialist version for Challenge 5. Do not use the retiring Fabric Data Agent connector. Optimisation decisions should be traceable to authoritative internal data, not unverified web content.
 
 ### Reading the trace — what to look for
 
-In the agent's **Traces → Response view**, each run shows a tree of spans:
+In the agent's **Traces** tab, open a run's **Trace ID**. The **Trajectories** tab shows a tree of spans:
 
 ```
 run
@@ -39,7 +39,8 @@ run
 |---------|-------|-----|
 | Agent returns "I don't have enough information" or an empty table | Product/category words don't match Fabric values | Ask by **SKU/productId** (e.g. `P004`) or the exact snake_case category value (`outdoor_power_tools`), not a friendly label like "Outdoor Power Tools" |
 | Reorder quantity seems wrong | Agent used a different formula | Remind the agent of the formula in a follow-up: "Use the rule: reorder_qty = max(0, 30-day demand - current stock)" |
-| Trace not appearing | Tracing may take 30–60 seconds to update | Refresh the agent's **Traces → Response view** |
+| "Show me only the CRITICAL items" returns more rows than the first table | The chat was new, so the agent re-queried the data. It used the Data Agent's Challenge 1 rule (on hand below **safety stock**, five SKU/store pairs) instead of this agent's rule (below **reorder point**, 14 rows incl. warehouses) | Ask in the same chat as the table (it then returns the three rows), or name the SKUs and locations in the prompt |
+| Trace not appearing | Tracing may take 30–60 seconds to update | Refresh the agent's **Traces** tab |
 
 ### Sample recommendation table
 

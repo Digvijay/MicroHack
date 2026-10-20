@@ -18,7 +18,7 @@ Your agent must sense this signal from the web, query the governed inventory dat
 
 ### Part A — Create the agent (15 min)
 
-1. In the Foundry portal, navigate to **Agents** and click **+ New agent**.
+1. In the Foundry portal, navigate to **Agents** and click **New agent**.
 2. Name it `demand-sensing-agent`.
 3. Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`).
 4. Paste the following **system instructions** into the Instructions field:
@@ -62,12 +62,7 @@ Your agent must sense this signal from the web, query the governed inventory dat
 
 ### Part B — Confirm the Web Search tool (5 min)
 
-**Web Search** is added to prompt agents by default and needs no configuration — it grounds the demand signal in live external context (news, market trends). Confirm it's listed under **Tools** in the agent editor. If it isn't there, add it via **+ Add tool → Web Search** (no API key required), then **Save**.
-
-> The screenshot below is historical and includes the retiring connector. Follow
-> Part C's Fabric IQ catalog steps for the current connection.
-
-![Historical tool catalogue showing Web Search and the earlier Fabric Data Agent connector](../images/challenge-01-add-tool.png)
+**Web Search** is added to prompt agents by default and needs no configuration — it grounds the demand signal in live external context (news, market trends). Confirm it's listed under **Tools** in the agent editor. A notice explains that Web search uses Grounding with Bing, which has additional costs and terms, and that customer data flows outside the Azure compliance boundary. That is fine for this lab, which only sends public scenario text. If Web search isn't listed, select **Add** under **Tools** and switch **Web search** on (no API key required), then **Save**.
 
 ### Part C — Connect the Data Agent through Fabric IQ (10 min)
 
@@ -76,10 +71,18 @@ Foundry connector is now **Fabric IQ (OneLake Catalog)**: the earlier Foundry
 Fabric Data Agent tool retires on **6 November 2026**. No ontology is required
 when connecting to the published Data Agent created in Challenge 1.
 
-1. In the agent editor, expand **Tools** and select **Add**.
-2. Choose **Browse all tools → Fabric IQ (OneLake Catalog) → Add tool**.
+1. In the agent editor, under **Tools**, select **Add → Add tools**.
+2. In the **Select a tool** dialog, stay on the **Configured** tab, choose
+   **Fabric IQ (OneLake Catalog)** and select **Add tool**. The older **Fabric Data
+   Agent** tile is greyed out; don't use it.
+
+   ![The Select a tool dialog with Fabric IQ (OneLake Catalog) selected and the retiring Fabric Data Agent greyed out](../images/challenge-01-add-tool.png)
 3. In the **OneLake Catalog**, filter by **Data agent**, then select your published
-   **`inventory-hack-agent`** in your workspace. Do not select another team's item.
+   **`inventory-hack-agent`**. Check that its **Location** is **your**
+   `inventory-hack-…` workspace. Do not select another team's item.
+
+   ![The OneLake Catalog dialog with inventory-hack-agent selected and its Location column visible](../images/challenge-01-fabric-iq-catalog.png)
+
 4. If the portal asks you to sign in or consent for Fabric, do so with your **lab
    account** in the same browser, so the tool runs with your own Fabric
    permissions. Then **Add** and **Save**. Your account needs read access to both
@@ -90,8 +93,7 @@ when connecting to the published Data Agent created in Challenge 1.
 6. If migrating an existing agent, remove the earlier **Fabric Data Agent** tool
    after adding Fabric IQ. Retest and note the new agent version.
 
-The old ID-entry screenshots show the earlier connector; use the OneLake Catalog
-steps above instead. Workspace/Agent IDs printed by the notebook remain useful
+Workspace/Agent IDs printed by the notebook remain useful
 for diagnostics and SDK configuration.
 
 > [!TIP]
@@ -110,10 +112,11 @@ for diagnostics and SDK configuration.
    ```text
    A prolonged heatwave and early spring across the Pacific Northwest is driving a surge in demand for garden and outdoor power equipment. Retailer search trends and social media show spikes for leaf blowers and lawn tools. Our planning team needs to know if current stock levels can absorb this demand or if we are already exposed.
    ```
-3. Observe the agent's response — look for:
+3. Observe the agent's response. The first answer can take one to two minutes, so wait until it stops streaming. Look for:
    - At least one web source cited with a URL.
    - At least one inventory query result from Fabric (stock level or sales velocity).
    - A clear demand assessment: adequate / at risk / critically exposed.
+   - Under the answer, tool chips for `inventoryhackagent` (Fabric IQ) and `Web search`.
 
    ![Playground response citing a web source and a Fabric inventory query result with a demand assessment](../images/challenge-01-playground.png)
 
@@ -144,7 +147,7 @@ for diagnostics and SDK configuration.
 
 | Symptom | Fix |
 |---------|-----|
-| **Web Search** isn't listed on the agent | Add it via **+ Add tool → Web Search** — it needs no extra configuration. |
+| **Web Search** isn't listed on the agent | Under **Tools**, select **Add** and switch **Web search** on. It needs no extra configuration. |
 | **Data Agent** isn't in the OneLake Catalog | Select **Fabric IQ**, filter by **Data agent**, confirm publication and permissions, and resume **your** Fabric capacity. Do not look for the retiring Foundry Fabric Data Agent connector. |
 | The agent answers inventory questions from memory | Strengthen the *IMPORTANT – tool use* line in the instructions; it must call the Fabric Data Agent for any stock number. |
 | The agent gives a demand assessment from web signals only (says it *"couldn't verify inventory"*) | It skipped the Fabric call. Reply *"Call the Fabric Data Agent now for current stock + sales velocity of the affected SKUs before assessing,"* or set **tool choice = required** in the agent's tool settings. `gpt-5.4-mini` (a reasoning model) sometimes skips available tools. |

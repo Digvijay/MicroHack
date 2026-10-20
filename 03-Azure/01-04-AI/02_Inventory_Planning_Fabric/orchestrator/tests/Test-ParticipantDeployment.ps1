@@ -5,6 +5,7 @@ $fixture = Join-Path ([IO.Path]::GetTempPath()) ("inventory-bootstrap-test-" + [
 $global:InventoryBootstrapCalls = [Collections.Generic.List[string]]::new()
 $global:InventoryBootstrapPipInstalls = 0
 $global:InventoryBootstrapSubscription = 'test-subscription'
+$global:InventoryBootstrapConnections = @('test-connection')
 $global:InventoryBootstrapPins = @{
     DEMAND_AGENT_NAME = 'demand-sensing-agent'; DEMAND_AGENT_VERSION = '8'
     OPTIMISATION_AGENT_NAME = 'inventory-optimisation-agent'; OPTIMISATION_AGENT_VERSION = '6'
@@ -19,8 +20,12 @@ function global:az {
     $global:InventoryBootstrapCalls.Add("az $($args -join ' ')")
     switch ("$($args[0]) $($args[1])") {
         'account show' { $global:InventoryBootstrapSubscription }
-        'resource list' { "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.CognitiveServices/accounts/test-account" }
+        'resource list' {
+            if ($args -contains 'Microsoft.CognitiveServices/accounts/projects') { 'test-account/test-project' }
+            else { "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.CognitiveServices/accounts/test-account" }
+        }
         'resource show' { "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.CognitiveServices/accounts/test-account/projects/test-project" }
+        'rest --method' { $global:InventoryBootstrapConnections }
         default { throw "Unexpected az invocation: $args" }
     }
 }
@@ -81,7 +86,28 @@ try {
         $blocked = $true
     }
     Assert-True $blocked 'Wrong subscription must stop the bootstrap.'
-    Write-Host 'PASS: participant bootstrap command flow, pinned versions, authentication, repeat run and scope guards (mocked CLIs).'
+    $global:InventoryBootstrapSubscription = 'test-subscription'
+
+    # Only the resource group is required: subscription, project and connection are detected.
+    $global:InventoryBootstrapCalls.Clear()
+    & (Join-Path $fixture 'Start-ParticipantDeployment.ps1') -ResourceGroupName 'test-rg' -ConfigureOnly
+    Assert-True ([bool]($global:InventoryBootstrapCalls | Where-Object { $_ -like 'python *configure_specialists.py*--connection-name test-connection*' })) 'Must detect the single Fabric IQ connection.'
+    Assert-True ([bool]($global:InventoryBootstrapCalls | Where-Object { $_ -like 'azd env set FOUNDRY_PROJECT_ENDPOINT https://test-account.services.ai.azure.com/api/projects/test-project *' })) 'Must derive the project endpoint from the resource group.'
+    foreach ($case in @(
+        @{ Connections = @(); Expected = '*No Fabric IQ connection found*' },
+        @{ Connections = @('one', 'two'); Expected = '*More than one Fabric IQ connection*' }
+    )) {
+        $global:InventoryBootstrapConnections = $case.Connections
+        $stopped = $false
+        try { & (Join-Path $fixture 'Start-ParticipantDeployment.ps1') -ResourceGroupName 'test-rg' -ConfigureOnly }
+        catch {
+            if ($_.Exception.Message -notlike $case.Expected) { throw }
+            $stopped = $true
+        }
+        Assert-True $stopped "Connection lookup '$($case.Connections -join ',')' must stop with a clear message."
+    }
+    $global:InventoryBootstrapConnections = @('test-connection')
+    Write-Host 'PASS: participant bootstrap command flow, pinned versions, authentication, repeat run, auto-detection and scope guards (mocked CLIs).'
 }
 finally {
     Remove-Item -LiteralPath $fixture -Recurse -Force

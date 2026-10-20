@@ -1,323 +1,73 @@
-# Hosted Inventory Planning Assistant
+# Deploy the Inventory Planning Assistant (Challenge 5, Part A)
 
-This optional Challenge 5 runtime replaces the Foundry visual workflow designer,
-which retires on **1 December 2026**. Participants work in a browser and deploy
-this starter themselves through **Azure Cloud Shell**, into their own lab project.
-The original deployment automation remains responsible for the model and Fabric
-capacity. This folder does not replace that automation.
+In this step you deploy a small app that runs your three agents from Challenges 2–4 in order and returns a purchase order proposal. You do it from **Azure Cloud Shell** in your browser. Nothing is installed on your computer, and it takes about 15 minutes.
 
-## Runtime and approval design
+> Facilitators and developers: see the [facilitator guide](FACILITATOR.md).
 
-An Agent Framework graph runs the team's pinned prompt-agent versions in order:
-`demand -> optimisation -> replenishment`. Each stage uses the participant's saved
-instructions and model, receives the scenario plus all earlier stage output, and
-queries the published Fabric Data Agent through a Foundry toolbox (see
-[Fabric access through the toolbox](#fabric-access-through-the-toolbox)). The last
-stage returns validated JSON
-proposal lines using Fabric-derived unit costs, not a fallback price. Invalid
-JSON, missing costs and permission errors stop planning; no approval state is saved.
+## Before you start
 
-The hosted Responses adapter stores the proposal in `AgentSession.state`, using
-Foundry's scoped session store. Between turns there is no running workflow waiting
-for input and no process-global approval state. A new request creates fresh
-clients, credentials and specialists. It forwards the platform's opaque call ID
-to Foundry; it never stores user tokens or substitutes a facilitator's credentials.
+- Your three agents are **saved** and use **Fabric IQ** (Challenges 2–4).
+- Your Fabric capacity is **running**.
+- Your lab dashboard is open. You need one value from it: **ResourceGroupName**.
 
-The approval commands are deterministic, not interpreted by an LLM:
+## Step 1: Open Cloud Shell
+
+1. Open a private window (Edge InPrivate or Chrome Incognito).
+2. Sign in to the [Azure portal](https://portal.azure.com/) with your **lab account**.
+3. Select the Cloud Shell icon (`>_`) at the top, or open [Cloud Shell](https://shell.azure.com/powershell), and choose **PowerShell**. If you are asked about storage, choose the option without storage if you can.
+
+> [!IMPORTANT]
+> Never type your Temporary Access Pass (TAP) in the terminal. Enter it only on the Microsoft sign-in page.
+
+## Step 2: Download the lab files
+
+This copies only this lab's folder from GitHub (about 8 MB) into Cloud Shell, then moves you into it. It takes a few seconds.
+
+```powershell
+git clone --depth 1 --filter=blob:none --sparse https://github.com/microsoft/MicroHack inventory-microhack
+Set-Location ./inventory-microhack
+git sparse-checkout set 03-Azure/01-04-AI/02_Inventory_Planning_Fabric
+Set-Location ./03-Azure/01-04-AI/02_Inventory_Planning_Fabric/orchestrator
+```
+
+If your facilitator gives you a release tag, add `--branch <tag>` after `--sparse` in the first command.
+
+## Step 3: Deploy and check
+
+Replace `<ResourceGroupName>` with the value from your lab dashboard, then run:
+
+```powershell
+./Start-ParticipantDeployment.ps1 -ResourceGroupName '<ResourceGroupName>' -VerifyHosted
+```
+
+What this does:
+
+1. Finds your Foundry project and your Fabric IQ connection in that resource group.
+2. Saves a copy of your three agents' instructions for the app to use.
+3. Deploys the app, `inventory-planning-assistant`, into your Foundry project (about 3 minutes).
+4. Tests it with a full planning conversation, so you know it works before you try it (about 5–8 minutes).
+
+The first run also prepares some tools, so you will see a lot of text scroll past. That is normal. During the test you will see lines like `Turn 3/12 passed`. The planning turns take 2–4 minutes each, so wait while the screen looks quiet.
+
+You are done when you see:
 
 ```text
-STATUS
-MODIFY <proposal-id> <revision> <line-number> <positive-integer-quantity>
-YES <proposal-id> <revision>
-NO <proposal-id> <revision>
-NEW
+PASS: hosted multi-turn checks.
 ```
 
-The assistant prints the exact commands. A modification increments the revision
-and requires fresh approval. `NEW` is allowed only after approval/cancellation.
-Old revisions and duplicate approvals do not submit again. The result is
-**SIMULATED**: no real ERP write or external side effect exists.
+Go back to [Challenge 5, Part B](../challenges/challenge-05.md#part-b--run-the-complete-planning-loop-10-min) to run the assistant.
 
-The host persists the completed proposal between turns, not in-flight specialist
-work. A failed planning turn must be retried. Host session-store concurrency
-checks protect saved state, but are not exactly-once delivery to an ERP. A real
-ERP integration would additionally require a transactional approval ledger and
-idempotency keys.
+> [!NOTE]
+> The deployment also saves new versions of your three agents (for example version 3 instead of 2). That is expected. If you change an agent later, run Step 3 again so the assistant uses the new version.
 
-## Lab prerequisites
+## If something goes wrong
 
-- A standalone browser and Azure Cloud Shell **PowerShell**. The bootstrap
-  prepares any missing `azd`/extensions and an isolated SDK environment **inside
-  Cloud Shell**. Nothing is installed on the participant's computer.
-- The platform-provided username and **Temporary Access Pass (TAP)** for portal
-  sign-in. Enter the TAP only on the Microsoft sign-in page, never in chat,
-  scripts, command arguments, environment variables or source control.
-- **Contributor** on the lab resource group plus **Foundry User** on the Foundry
-  account/project. The platform deployment grants Foundry User to participants
-  and the project identity. Contributor alone does not grant Foundry data-plane
-  agent operations. Provider registration and missing role assignments remain
-  platform/admin preparation, not attendee Owner privileges.
-- A supported hosted-agent region, existing Foundry project/model and suitable
-  deployment permissions. Budget for hosted compute separately from Fabric.
-- Three prompt specialists completed in Challenges 2-4, with pinned version
-  numbers. Their **Fabric IQ** tool must target the team's published
-  `inventory-hack-agent`; the old `fabric_dataagent_preview` tool retires on
-  **6 November 2026**.
-- Fabric capacity running; calling users need permission to the published Data
-  Agent and underlying data. Configure delegated OAuth through the supported
-  Fabric IQ connection. Do not grant the whole workshop access through a shared
-  facilitator identity.
-- For personal publishing, `Microsoft.BotService` registered, Foundry publishing
-  permissions, Azure Bot Service resource/channel write permissions and compatible
-  tenant app policies. Organization-wide publication is a separate admin step.
-
-## Participant self-deployment from GitHub in Cloud Shell
-
-1. In standalone Edge InPrivate/Chrome Incognito, sign in to
-   [Azure portal](https://portal.azure.com/) using the supplied lab username/TAP.
-   Confirm the lab tenant/subscription, not your normal work account.
-2. Open [Azure Cloud Shell](https://shell.azure.com/powershell) and select
-   **PowerShell**, using the same lab identity. Prefer a session without mounted
-   storage if the lab policy allows it. If persistent storage is required, use
-   only the approved lab resource group; don't create resources in another
-   subscription.
-3. Download the workshop code. Your facilitator gives you the repository URL and the
-   branch or tag to use; don't pick one yourself.
-
-   ```powershell
-   git clone --depth 1 --branch '<branch-or-tag-from-your-facilitator>' `
-     '<repository-URL-from-your-facilitator>' inventory-microhack
-   if ($LASTEXITCODE -ne 0) { throw 'Workshop download failed.' }
-   Set-Location ./inventory-microhack/03-Azure/01-04-AI/02_Inventory_Planning_Fabric/orchestrator
-   ```
-
-4. Keep Fabric running, save the three specialists, and find the existing
-   Fabric IQ connection name in Foundry. Use the lab dashboard values:
-
-   ```powershell
-   az account set --subscription '<SubscriptionId>'
-   if ($LASTEXITCODE -ne 0) { throw 'Cannot select the lab subscription.' }
-   ./Start-ParticipantDeployment.ps1 `
-     -SubscriptionId '<SubscriptionId>' `
-     -ResourceGroupName '<ResourceGroupName>' `
-     -ProjectEndpoint '<FoundryProjectEndpoint>' `
-     -FabricIQConnectionName '<your-existing-Fabric-IQ-connection-name>' `
-     -VerifyHosted
-   ```
-
-   The default specialist names match Challenges 2-4. If you used different
-   names, supply `-DemandAgentName`, `-OptimisationAgentName` and
-   `-ReplenishmentAgentName`.
-
-The bootstrap uses Cloud Shell's existing Python **3.10+** only for SDK tooling.
-It creates `.venv-tools`, installs the three pinned tooling dependencies, and
-prepares a user-local `azd` if missing/too old. **Python 3.13 application builds
-run remotely in Foundry**; no local runtime installation, Docker or ACR is needed.
-The script isolates azd configuration under `.azure/bootstrap`, delegates azd
-authentication to the existing Azure CLI identity, and never requests the TAP.
-If sign-in expires, refresh Cloud Shell's lab-user sign-in and rerun.
-
-It looks up the actual project ARM ID in the supplied lab RG, resolves the latest
-**saved** specialist versions once, then records concrete pins. Connection reuse,
-versioning, deployment and hosted verification are described below. It does not
-assign permissions, register providers, create models/capacities or run
-`azd provision`. `-ConfigureOnly` prepares tooling/configuration without deploying
-code; it still wires the explicitly supplied Fabric IQ connection.
-
-Only after the hosted checks pass, continue with
-[Challenge 5, Part E](../challenges/challenge-05.md) to publish and test the assistant.
-A deployment success message alone does not certify planning or channels.
-Each new Cloud Shell session might require rerunning the bootstrap; private
-browser logout does not delete server-side deployments or conversations.
-
-### Advanced/local configuration
-
-From this folder, use a local Python 3.13 virtual environment:
-
-```powershell
-py -3.13 -m venv .venv
-& '.\.venv\Scripts\python.exe' -m pip install -r requirements.txt
-$env:FOUNDRY_PROJECT_ENDPOINT = 'https://<account>.services.ai.azure.com/api/projects/<project>'
-$env:DEMAND_AGENT_NAME = 'demand-sensing-agent'
-$env:DEMAND_AGENT_VERSION = '<tested-version>'
-$env:OPTIMISATION_AGENT_NAME = 'inventory-optimisation-agent'
-$env:OPTIMISATION_AGENT_VERSION = '<tested-version>'
-$env:REPLENISHMENT_AGENT_NAME = 'replenishment-action-agent'
-$env:REPLENISHMENT_AGENT_VERSION = '<tested-version>'
-& '.\.venv\Scripts\python.exe' verify_configuration.py
-```
-
-The checker rejects the retired connector. It does not certify OAuth consent or
-Fabric data access: test each specialist in the playground before deploying.
-Then run:
-
-```powershell
-.\Deploy-Orchestrator.ps1 `
-  -SubscriptionId '<subscription-id>' `
-  -ProjectResourceId '<existing-project-ARM-id>' `
-  -ProjectEndpoint $env:FOUNDRY_PROJECT_ENDPOINT `
-  -DemandAgentName $env:DEMAND_AGENT_NAME -DemandAgentVersion $env:DEMAND_AGENT_VERSION `
-  -OptimisationAgentName $env:OPTIMISATION_AGENT_NAME -OptimisationAgentVersion $env:OPTIMISATION_AGENT_VERSION `
-  -ReplenishmentAgentName $env:REPLENISHMENT_AGENT_NAME -ReplenishmentAgentVersion $env:REPLENISHMENT_AGENT_VERSION `
-  -Deploy
-```
-
-The helper checks that endpoint and ARM ID identify the same project. With
-`-Deploy` it also runs the specialist configuration checker using
-`.venv\Scripts\python.exe` (override with `-PythonExecutable` if needed).
-
-### Reduce repeat setup
-
-Create **one** supported Fabric IQ connection in the project's Foundry portal,
-targeting the team's published Data Agent. Use a standalone browser and complete
-the lab user's OAuth consent there, not in VS Code's embedded browser. Then add
-these options to the deployment command above:
-
-```powershell
-  -FabricIQConnectionName '<existing-project-connection-name>' -Deploy -VerifyHosted
-```
-
-Do not specify `-Deploy` twice. The options have separate effects:
-
-| Option | Automated work |
-| --- | --- |
-| `-FabricIQConnectionName` | Validates the connection belongs to this project and targets a published Data Agent, replaces only the Fabric tool in all three supplied prompt specialists, creates new versions when needed, and saves their resulting pins to azd. Preserves instructions, model and other tools. |
-| `-Deploy` | Validates the pinned specialists, then deploys the hosted assistant into the existing project. |
-| `-VerifyHosted` | After deployment, runs two real planning requests and deterministic multi-turn checks: proposal, MODIFY, stale approval, approval, replay, STATUS, NEW, cancellation and separate-conversation isolation. This is billed model/Fabric/hosted usage. |
-
-Without `-FabricIQConnectionName`, existing specialists are not modified. With
-it, the **named specialists** get new versions; use isolated test names for a
-rehearsal. Supplying stale source versions when newer unrelated edits exist
-fails instead of overwriting them. Identical already-configured latest versions
-are reused. If interrupted after some versions were created, rerun with the same
-inputs; successful writes are reused, not rolled back.
-
-The hosted checker saves pass/fail and turn evidence under the ignored
-`.azure/<environment>/hosted-check-<timestamp>.json` and deletes only the two
-conversations it creates. It also stops only sandbox IDs returned by those test
-responses, including failed responses. If a request fails before returning its
-sandbox ID, inspect the test sessions separately as described below. Cleanup
-errors fail the check rather than being ignored. A failed test stops the helper
-and does not publish an app.
-
-The automation deliberately does not create a guessed OAuth connector, store
-user tokens, consent as another user, or submit an organization-wide app. Initial
-supported connection creation, per-user consent and tenant policy approval stay
-explicit. Foundry's [Microsoft 365 publishing API](https://learn.microsoft.com/azure/foundry/agents/how-to/publish-copilot-virtual-network)
-can automate package/catalog submission after runtime acceptance, but publishing
-as a facilitator does not install a personal app for every attendee or verify
-their license, permissions or browser sign-in.
-
-Without `-Deploy` the script configures azd and, only if requested, the specialists.
-It does not run `azd provision`
-or create new accounts/models. Direct code deployment uses Python 3.13; no local
-Docker/ACR is required. Don't reuse the assistant name for unrelated deployments:
-a new deployment creates a new version of that named agent.
-
-For local development only, set `INVENTORY_LOCAL_DEVELOPMENT=1` and run `main.py`;
-this explicitly uses the signed-in Azure CLI developer identity. Never set that
-flag on the hosted service. Local testing is not a substitute for channel identity
-and isolation tests.
-
-## Participant path
-
-Use [Challenge 5](../challenges/challenge-05.md) for self-deploying, running,
-approving, tracing and publishing the hosted assistant. It appears alongside the
-three prompt specialists. Participants do not edit application code or install
-desktop clients. They use **Teams for web** and **Microsoft 365 Copilot for web**
-in standalone Edge InPrivate or Chrome Incognito with their licensed lab account.
-The embedded VS Code browser is not part of the sign-in path. Rehearse browser
-cookie/pop-up policy and actual Copilot provisioning before the event.
-
-## Tests and live release gate
-
-```powershell
-& '.\.venv\Scripts\python.exe' -m unittest discover -s tests -v
-& '.\tests\Test-ParticipantDeployment.ps1'
-```
-
-The PowerShell test uses mocked CLIs; it does not certify an actual Cloud Shell
-deployment.
-
-Before committing/pushing a migration:
-
-1. Run the actual setup notebook successfully if it changed.
-2. Verify the three **Fabric IQ** specialists against real data and inspect tool
-   calls. Check retail/Retail = 4, P004 Portland 8/Seattle 6 below safety stock 30,
-   Outdoor Power Tools retail stock = 232, and nonexistent P999 has no rows.
-3. Run the deployed assistant end to end. Confirm all three specialist stages.
-4. Test MODIFY, cancellation, approval, stale revisions, duplicate approval,
-   persisted state after idle/restart, and two distinct users/conversations.
-5. Publish personal scope and repeat the conversation in **Teams for web and
-   Microsoft 365 Copilot for web** in external InPrivate/Incognito tabs using the
-   lab account, including OAuth consent. Test a user without Fabric access.
-6. Record source revision/hash, agent versions, responses/traces and outstanding
-   failures. API-only or mock tests do not certify Teams/M365.
-
-Until these checks pass, this migration is **not live-certified**. Keep the branch
-uncommitted/unpushed if live verification is blocked.
-
-If planning fails while reaching Fabric, the checker records the response and
-request IDs as a failure, not a completed conversation. Do not replace delegated
-access with a shared facilitator token or approve a fabricated proposal.
-
-### Fabric access through the toolbox
-
-The assistant does **not** call the three specialist agents as nested agents.
-Nested calls from a hosted agent to a prompt agent with its own Fabric IQ tool
-failed live with HTTP 403 during tool enumeration, even though the same
-specialist worked directly. Instead:
-
-- Challenges 2-4 stay as written: participants author the three prompt agents
-  and give each the Fabric IQ tool for the published `inventory-hack-agent`.
-- The assistant reads each pinned specialist version's **instructions and model**
-  and runs them itself, so participant-authored behavior is preserved. The deploy
-  helper saves those definitions to `specialists.json` (git-ignored) and ships them
-  with the package, so the running assistant needs no permission to read agents.
-  Changing a specialist therefore requires rerunning the deploy helper.
-- Fabric is reached through a Foundry **toolbox** (`inventory-fabric-iq`) created
-  from the same Fabric IQ connection. The toolbox is the documented path for
-  hosted agents; the platform resolves the caller from the opaque call ID.
-- The helper creates the toolbox idempotently (`configure_specialists.py`), pins its
-  version in `TOOLBOX_ENDPOINT`, and the assistant calls it with MCP **task mode**.
-  A plain call to the Data Agent tool failed with "response completed without a
-  reply"; task mode completes.
-
-If the toolbox call fails, check in this order: Fabric capacity is running, the
-caller can read the published Data Agent, the connection exists in the same
-project, then the failed request ID. A role assignment, a successful direct
-specialist call or a created connection record is not proof of working
-delegation. The first failed hosted run is the right check, not a mock.
-
-Authentication mode: the lab uses the existing `UserEntraToken` connection that
-the OneLake Catalog creates. Per-user enforcement was verified only for the
-lab owner. Before relying on it for attendees, test a second user and a user
-without Fabric access. Do not create tenant apps, grant tenant consent or use a
-shared token to make this pass; those are platform decisions.
-
-For a managed OAuth connection, a created ARM record is not proof of OAuth:
-verify that consent-link discovery succeeds and a real tool call succeeds.
-`ConnectorNamespaceConnectionNotFound` or `TokenIsMissing` means authentication
-was not established. The BYO Entra route is documented in the
-[Fabric IQ authentication guide](https://learn.microsoft.com/azure/foundry/agents/how-to/tools/fabric-iq#authentication-and-security).
-
-## Cleanup
-
-Keep resource retention aligned with the event policy. Pause only the team's
-Fabric capacity. Hosted sandboxes idle out automatically; use Foundry session
-management to stop/delete test sessions when available. Do **not** run `azd down`
-against this existing-project integration: it must not delete shared lab resources.
-Deleting a session loses that session's approval proposal.
-
-Use `azd ai agent sessions list --help` and `azd ai agent sessions stop --help`
-for the installed extension's supported flags. Select only the test session IDs;
-never stop every session in a shared project. Verify Fabric is **Paused** after
-live testing even if an invocation fails. The deploy helper does not resume or
-suspend capacity implicitly.
-
-## References
-
-- [Workflow retirement and migration](https://learn.microsoft.com/azure/foundry/agents/concepts/workflow#migration-guide)
-- [Foundry hosted agents](https://learn.microsoft.com/agent-framework/hosting/foundry-hosted-agent?pivots=programming-language-python)
-- [Fabric IQ migration](https://learn.microsoft.com/azure/foundry/agents/how-to/tools/fabric-iq#migrate-from-the-fabric-data-agent-tool)
-- [Teams/M365 publishing](https://learn.microsoft.com/azure/foundry/agents/how-to/publish-copilot)
+| What you see | What to do |
+|--------------|------------|
+| `Select the assigned lab subscription` | Cloud Shell is using a different subscription. Run `az account list -o table`, then `az account set --subscription '<lab subscription id>'` (ask your facilitator which one it is), and repeat Step 3. |
+| `No Fabric IQ connection found` | Add **Fabric IQ** to your `demand-sensing-agent` as in Challenge 2, **Save**, then repeat Step 3. |
+| `More than one Fabric IQ connection found` | Repeat Step 3 with `-FabricIQConnectionName '<one of the names shown>'` added. |
+| `Project not found` | Wait a few minutes and repeat Step 3. If it happens again, tell your facilitator. |
+| Permission denied | Tell your facilitator. Don't ask for Owner access. |
+| Cloud Shell timed out or the lab files are gone | Reopen Cloud Shell and repeat Steps 2 and 3. |
+| The check fails and mentions Fabric | Make sure your Fabric capacity is **running** and your Data Agent is **published**, then repeat Step 3. Give your facilitator the request ID from the error if it keeps failing. |

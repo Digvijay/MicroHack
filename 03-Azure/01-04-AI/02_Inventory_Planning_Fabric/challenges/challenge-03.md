@@ -20,7 +20,7 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
 
 ### Part A — Create the Inventory Optimisation Agent (20 min)
 
-1. In the Foundry portal, navigate to **Agents** and click **+ New agent**.
+1. In the Foundry portal, navigate to **Agents** and click **New agent**.
 2. Name it `inventory-optimisation-agent`.
 3. Select dashboard **ModelDeploymentName** (default `gpt-5.4-mini`).
 4. Paste the following **system instructions**:
@@ -62,7 +62,9 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
    > [!NOTE]
    > **Two meanings of CRITICAL.** In Challenge 1 the Data Agent flags an item CRITICAL when `onHand` is below `safetyStock`. This agent's rule (step 5) flags CRITICAL when stock is below the `reorderPoint`, which is a higher bar, so it can flag more items than the Data Agent did.
 
-5. Add **Fabric IQ (OneLake Catalog)** and select the published **`inventory-hack-agent`** in your workspace, as in Challenge 2. Name that Data Agent in the instructions as the source for Zava inventory and demand. Do not add the retiring Fabric Data Agent connector.
+5. Add **Fabric IQ** by **reusing the connection you made in Challenge 2**: under **Tools** select **Add → Add tools**, and on the **Configured** tab choose the existing **`inventoryhackagent`** tile, then **Add tool**. It points to your published `inventory-hack-agent`, so you don't need to browse the catalog again. Name that Data Agent in the instructions as the source for Zava inventory and demand. Do not add the retiring Fabric Data Agent connector.
+
+   ![The Select a tool dialog with the existing inventoryhackagent connection listed under Configured](../images/challenge-02-reuse-connection.png)
 6. **Remove the Web Search tool.** New prompt agents may ship with it attached. Under **Tools**, delete **Web Search** so **Fabric IQ** is the only tool — this agent works from internal data only. Record the saved version for the hosted assistant in Challenge 5.
 7. Click **Save**.
 
@@ -79,11 +81,14 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
    > **Phrasing matters — name the SKUs.** A purely prose prompt (e.g. *"leaf blowers and chainsaws are exposed"*) often makes the Fabric Data Agent generate a query that filters on a friendly category label and returns **nothing**. Naming the **SKUs/productIds** (e.g. `P004`, `P006`) and the exact fields you want — as in the example above — reliably returns data. If a prompt comes back empty, re-ask it by SKU.
 
 3. The agent should query Fabric and return a recommendation table.
-4. Ask a follow-up:
+4. Ask a follow-up **in the same chat as the table**:
 
    ```text
    Show me only the CRITICAL items.
    ```
+
+   > [!NOTE]
+   > In a new chat the agent has no table to filter, so it queries the data again and can return a wider list. Stay in the same chat, or re-send the first message first.
 5. Ask:
 
    ```text
@@ -97,18 +102,18 @@ Your Inventory Optimisation Agent answers these questions by querying the Fabric
 > [!IMPORTANT]
 > This is the most important part of the challenge. Understanding what an agent did — and why — is essential for building trust with stakeholders and catching errors before they reach production.
 
-1. Open the `inventory-optimisation-agent` and select **Traces → Response view**. (In the current Foundry portal, tracing lives on the agent as **Traces** — there is no top-level *Tracing* menu.)
-2. Find the most recent run of `inventory-optimisation-agent`.
-3. Open the trace and locate:
-   - The **model call** — what instructions and context were sent to gpt-5.4-mini?
-   - The **tool call** — what exact NL query was sent to the Fabric Data Agent?
-   - The **tool response** — what data did Fabric return?
-   - The **final generation** — how did the model synthesise the data into the recommendation?
+1. Open the `inventory-optimisation-agent` and select the **Traces** tab (next to **Playground** and **Details**). The **Trace view** lists each run with its duration, tokens, estimated cost and agent version.
+2. Select the **Trace ID** of the most recent run.
+3. In the **Trajectories** tab, expand the span tree and locate:
+   - The **model call**: the `Chat` span. Select it to see what instructions and context were sent to gpt-5.4-mini.
+   - The **tool call**: the `Execute Tool` span (`mcp_inventoryhackagent.DataAgent_inventory_hack_agent`). Select it to see the exact natural-language query sent to the Fabric Data Agent.
+   - The **tool response**: the same span. Select **Input + Output** on the right to see what data Fabric returned.
+   - The **final generation**: the `Invoke Agent` span's output, which shows how the model turned the data into the recommendation.
 
-   ![Expanded trace view showing the model call, Fabric tool call, tool response, and final generation spans](../images/challenge-02-trace.png)
+   ![A trace showing the Invoke Agent span with its Execute Tool and Chat spans, and the Input + Output panel with the agent's final answer](../images/challenge-02-trace.png)
 
    > [!NOTE]
-   > The **Traces → Response view** on the agent gives the full span tree shown above. The quick **Traces** link at the bottom of a playground chat opens a lighter, differently-laid-out view of the same run — either works, but the Response view is the one this challenge describes.
+   > The quick **Traces** link under an answer in the playground opens the same viewer as a popup for the whole conversation, with one **Invoke Agent** span per question. The **Traces** tab shows one run at a time. Either works.
 4. Answer these questions by reading the trace:
    - Did the agent query Fabric once or multiple times? Why?
    - Was the reorder quantity calculation visible in the trace?

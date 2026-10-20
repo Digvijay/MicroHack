@@ -8,10 +8,10 @@ Does not install software on the participant's computer, assign roles, or provis
 #Requires -Version 7.2
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$SubscriptionId,
     [Parameter(Mandatory)][string]$ResourceGroupName,
-    [Parameter(Mandatory)][uri]$ProjectEndpoint,
-    [Parameter(Mandatory)][string]$FabricIQConnectionName,
+    [string]$SubscriptionId,
+    [uri]$ProjectEndpoint,
+    [string]$FabricIQConnectionName,
     [string]$DemandAgentName = 'demand-sensing-agent',
     [string]$OptimisationAgentName = 'inventory-optimisation-agent',
     [string]$ReplenishmentAgentName = 'replenishment-action-agent',
@@ -22,10 +22,6 @@ param(
 $ErrorActionPreference = 'Stop'
 if (-not $IsLinux) { throw 'Run this bootstrap in Azure Cloud Shell (PowerShell), not on your computer.' }
 if ($VerifyHosted -and $ConfigureOnly) { throw '-VerifyHosted cannot be combined with -ConfigureOnly.' }
-if ($ProjectEndpoint.AbsoluteUri.TrimEnd('/') -notmatch '^https://(?<Account>[a-z0-9-]+)\.services\.ai\.azure\.com/api/projects/(?<Project>[a-zA-Z0-9_-]+)$') {
-    throw 'Use the FoundryProjectEndpoint supplied by the lab dashboard.'
-}
-$accountName, $projectName = $Matches.Account, $Matches.Project
 foreach ($tool in @('az', 'python3', 'bash')) {
     if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) {
         throw "$tool is missing from this Cloud Shell. Use a supported Azure Cloud Shell session."
@@ -36,9 +32,30 @@ function Invoke-Checked([string]$Program, [string[]]$Arguments) {
     if ($LASTEXITCODE -ne 0) { throw "$Program failed (exit $LASTEXITCODE)." }
 }
 $subscription = az account show --query id -o tsv
-if ($LASTEXITCODE -ne 0 -or $subscription -ne $SubscriptionId) {
+if ($LASTEXITCODE -ne 0 -or -not $subscription) {
+    throw 'Cannot read the Cloud Shell subscription. Sign in to Cloud Shell with the lab account and rerun.'
+}
+if (-not $SubscriptionId) { $SubscriptionId = $subscription }
+if ($subscription -ne $SubscriptionId) {
     throw 'Select the assigned lab subscription with az account set before continuing.'
 }
+if (-not $ProjectEndpoint) {
+    $projects = @(az resource list --resource-group $ResourceGroupName `
+        --resource-type Microsoft.CognitiveServices/accounts/projects --query '[].name' -o tsv)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Cannot list Foundry projects in resource group '$ResourceGroupName'. Check the name on your lab dashboard."
+    }
+    $projects = @($projects | Where-Object { $_ })
+    if ($projects.Count -ne 1) {
+        throw "Expected exactly one Foundry project in '$ResourceGroupName' but found $($projects.Count). Pass -ProjectEndpoint from your lab dashboard."
+    }
+    $found = "$($projects[0])" -split '/'
+    $ProjectEndpoint = [uri]"https://$($found[0]).services.ai.azure.com/api/projects/$($found[1])"
+}
+if ($ProjectEndpoint.AbsoluteUri.TrimEnd('/') -notmatch '^https://(?<Account>[a-z0-9-]+)\.services\.ai\.azure\.com/api/projects/(?<Project>[a-zA-Z0-9_-]+)$') {
+    throw 'Use the FoundryProjectEndpoint supplied by the lab dashboard.'
+}
+$accountName, $projectName = $Matches.Account, $Matches.Project
 $accountId = az resource list --resource-group $ResourceGroupName `
     --resource-type Microsoft.CognitiveServices/accounts --query "[?name=='$accountName'].id | [0]" -o tsv
 if ($LASTEXITCODE -ne 0 -or -not $accountId) {
@@ -46,6 +63,24 @@ if ($LASTEXITCODE -ne 0 -or -not $accountId) {
 }
 $projectId = az resource show --ids "$accountId/projects/$projectName" --query id -o tsv
 if ($LASTEXITCODE -ne 0 -or -not $projectId) { throw 'Cannot read the existing lab Foundry project.' }
+if (-not $FabricIQConnectionName) {
+    $connections = @(az rest --method get --url "$($ProjectEndpoint.AbsoluteUri.TrimEnd('/'))/connections" `
+        --uri-parameters api-version=v1 --resource https://ai.azure.com `
+        --query "value[?metadata.type=='fabric_iq_preview'].name" -o tsv)
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Cannot list the project connections. Pass -FabricIQConnectionName (the name shown next to Fabric IQ under Tools on your agents).'
+    }
+    $connections = @($connections | Where-Object { $_ })
+    if ($connections.Count -eq 0) {
+        throw 'No Fabric IQ connection found in your project. Add Fabric IQ to your demand-sensing-agent in Challenge 2, save it, and rerun.'
+    }
+    if ($connections.Count -gt 1) {
+        throw "More than one Fabric IQ connection found: $($connections -join ', '). Rerun with -FabricIQConnectionName '<one of these>'."
+    }
+    $FabricIQConnectionName = $connections[0]
+}
+Write-Host "Project: $($ProjectEndpoint.AbsoluteUri.TrimEnd('/'))"
+Write-Host "Fabric IQ connection: $FabricIQConnectionName"
 
 $bootstrap = Join-Path $PSScriptRoot '.azure/bootstrap'
 $bin = Join-Path $bootstrap 'bin'
