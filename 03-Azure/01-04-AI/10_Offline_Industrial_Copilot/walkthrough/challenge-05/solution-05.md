@@ -49,24 +49,58 @@ agent.run_agent(client, model, question, extra_tools=[(fault_tool.SCHEMA, fault_
 ```
 
 ```powershell
-python copilot.py "Run the fault prediction model for CNC-07."
+python copilot.py "Predict the most likely fault for CNC-07 from its sensor readings."
 ```
 
 ```text
   -> predict_fault({'machine_id': 'CNC-07'})
-The fault prediction model has identified a high likelihood of bearing wear in CNC-07.
+The most likely fault for CNC-07 is bearing wear, with a confidence level of 98%.
 ```
 
-💥 **The wording of the question decides which tool the model picks, and it is fragile.** We asked the same request in four ways, three times each, with `phi-4-mini` on the laptop (GPU variant) and the final reference code:
+Without help, the agent often does not make this call (see task 3b). The copilot in [copilot.py](../code/copilot.py) uses the router from task 3b, so this request works.
 
-| Wording | Calls the classifier |
-|---------|----------------------|
-| *"Run the fault prediction model for CNC-07."* | 3 of 3 |
-| *"Predict the most likely fault for CNC-07 from its sensor readings."* | 0 of 3 |
-| *"Use the fault classifier to predict the fault of CNC-07."* | 0 of 3 |
-| *"What does the classifier say is wrong with CMP-01?"* | 0 of 3 |
+### **Task 3b: Make the tool choice reliable**
 
-In the other cases the model searched the SOPs instead and gave a plausible answer from the SOP text (*"spindle vibration high, error E-SPN-214"*), which is correct but is **not** the classifier's verdict. The CPU variant on the VM mis-routed the *"Predict the most likely fault..."* wording in the same way. The same prompts also routed correctly in some earlier runs on the laptop and not in later ones, even at temperature 0, so do not promise a team that a wording "always works". [check_routing.py](../code/check_routing.py) re-runs the four canonical requests a few times and counts how often the right tool is chosen first. This is a good discussion: *what would make routing reliable?* Teams can try a stronger tool description, fewer tools per request, or choosing the tool with the embedding model.
+💥 **A small model picks the wrong tool surprisingly often.** With all four tools in front of it, `phi-4-mini` sent most fault requests to the SOP search instead of the classifier. We measured this with 23 requests that were written once and never used to tune anything ([routing_holdout.json](../../resources/data/eval/routing_holdout.json), run with [check_routing.py](../code/check_routing.py)):
+
+| `phi-4-mini` sees... | First tool correct | Fault prediction |
+|----------------------|--------------------|------------------|
+| all four tools (what we had) | 14 of 23 (61%) | 0 of 5 |
+| the tool chosen by the router | **23 of 23** | 5 of 5 |
+
+The wording mattered a lot: *"Run the fault prediction model for CNC-07"* worked, while *"Predict the most likely fault for CNC-07 from its sensor readings"* or *"What does the classifier say is wrong with CMP-01?"* did not. The same prompts even routed differently from one session to the next, so there is no wording that "always works".
+
+**The fix is to shorten the list the model chooses from.** This is called *tool retrieval*: the same idea as the SOP search, applied to tools. Foundry Local's own documentation says `tool_choice="required"` is only best-effort, and research on tool retrieval reports large gains in selection accuracy when the model sees fewer, more relevant tools. [tool_router.py](../code/tool_router.py) does two things:
+
+1. **A tool whose required argument is missing is not a candidate.** Status, fault prediction and tickets all need a machine ID. A request that names none (*"At what vibration level must a spindle be stopped?"*) can only be a question for the SOPs. This one rule fixes most of the mix-ups.
+2. **The rest is matched with the embedding model that is already loaded.** Every tool has a short *card*: what it is for and a few example requests. The request is embedded and compared with the cards.
+
+```python
+router = ToolRouter(client, embed_model)
+agent.run_agent(client, model, question, extra_tools=tools, router=router)   # shortlist=1 by default
+```
+
+The agent then shows the model **only the best-matching tool**, and the model only fills in the arguments. The write tool is only shown if it is the best match, so the approval and the other protections from challenge 3 still apply.
+
+```text
+Technician> Predict the most likely fault for CNC-07 from its sensor readings.
+  -> predict_fault({'machine_id': 'CNC-07'})
+The most likely fault for CNC-07 is bearing wear, with a confidence level of 98%.
+```
+
+Results with `phi-4-mini`, first tool correct:
+
+| Set | No router | Router, shows 1 tool | Router, shows 2 tools |
+|-----|-----------|----------------------|-----------------------|
+| Tuning set, 32 requests (used to build the cards) | 20 of 32 | **31 of 32** | 26 of 32 |
+| Held-out set, 23 requests | 14 of 23 | **23 of 23** | not run |
+| Held-out set on the **CPU variant** of the model | not run | **23 of 23** | not run |
+
+- **Showing two tools is worse than showing one.** With *status* and *fault prediction* side by side the model chose *status* for 5 of the 8 fault requests. So the router decides and the model does not.
+- **The one miss** is *"CNC-07 shows error E-SPN-214. What should I do about it?"*: it names a machine and an error code, so both *status* and *SOP search* are reasonable. The model then wrote a procedure that is not from any SOP. A good discussion: when the router cannot tell, should the agent ask?
+- **Be careful with these numbers.** The cards were written by us after we had seen the first failures, and the held-out set is only 23 requests. The held-out result shows the idea works. It does not prove that a new phrasing can never fail. Teams should add their own requests to the two JSON files.
+- The router costs one embedding call per request (about 0.2 s on the laptop GPU).
+
 
 ### **Task 4: How far do you trust it?**
 

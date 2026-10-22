@@ -18,6 +18,7 @@
 * Record the latency of each step while offline.
 * Find out whether **anything** still needs the internet. Look at what your copilot does at start-up, and what the Foundry Local service does.
 * Discuss what must still happen when the device is back online: updates, new models, syncing tickets, monitoring.
+* **Stretch:** make your copilot survive a restart of the model service while the device is offline. The Foundry Local SDK (`pip install foundry-local-sdk`) can start models from your local cache. What does it need that the `foundry` service gets from the internet?
 
 ## Success criteria
 

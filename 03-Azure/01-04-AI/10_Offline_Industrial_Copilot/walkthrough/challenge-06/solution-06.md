@@ -11,23 +11,23 @@ Please ensure that you successfully completed [Challenge 5](../../challenges/cha
 ### **Task 1: Run it while connected and write down the timings**
 
 ```powershell
-python copilot.py "What is the status of machine CNC-07?" "Run the fault prediction model for CNC-07." "At what vibration level must a CNC spindle be stopped?" "Open a high priority ticket for CNC-07: spindle vibration above the stop limit."
+python copilot.py "What is the status of machine CNC-07?" "Predict the most likely fault for CNC-07 from its sensor readings." "At what vibration level must a CNC spindle be stopped?" "Open a high priority ticket for CNC-07: spindle vibration above the stop limit."
 ```
 
-Reference timings, **connected**. Your numbers will differ with your hardware.
+Reference timings on the laptop (Snapdragon X Elite, GPU variant), **connected**, for the first run after the service started. Your numbers will differ with your hardware.
 
-| Step | Laptop (Snapdragon X Elite, GPU variant) | Windows VM (8 vCPU, CPU variant) |
-|------|------------------------------------------|----------------------------------|
-| Machine status (tool call and answer) | 6 s | 18.5 s |
-| Fault prediction (ONNX model and answer) | 5 s | n/m |
-| SOP question (split, embed, search, answer) | 13 s | 25.7 s |
-| Ticket (tool call and confirmation) | 3 s | n/m |
+| Step | Laptop |
+|------|--------|
+| Machine status (tool call and answer) | 13 s |
+| Fault prediction (ONNX model and answer) | 9 s |
+| SOP question (split, embed, search, answer) | 17 s |
+| Ticket (tool call and confirmation) | 6 s |
 
-*n/m: not measured on the VM with the final code.* The ticket time includes the seconds the technician needs to type `y`.
+The ticket time includes the seconds the technician needs to type `y`. The first request is the slowest because the models are still cold. The times for the Windows VM are in task 5.
 
 ### **Task 2: Get ready, then disconnect**
 
-💥 **Start everything before you disconnect, and do not restart the Foundry Local service while you are offline.** The service loads its model catalog from the internet when it starts. A service that is already running, with its models loaded, keeps answering offline. A service that is restarted offline cannot find any model, even a model that is on the disk (see the coach notes).
+💥 **Start everything before you disconnect, and do not restart the `foundry` service while you are offline.** The service loads its model catalog from the internet when it starts. A service that is already running, with its models loaded, keeps answering offline. A service that is restarted offline cannot find any model, even a model that is on the disk (see the coach notes).
 
 1. Make sure the service is running and both models are loaded:
 
@@ -37,6 +37,16 @@ Reference timings, **connected**. Your numbers will differ with your hardware.
    ```
 
 2. Ask one question of each kind, so every model is warm and the SOP index exists.
+
+💡 **If your device must be able to restart while it is offline**, start the models with [serve_offline.py](../code/serve_offline.py) instead of the `foundry` service. It uses the Foundry Local Python SDK, which finds the models in your local cache without contacting the internet:
+
+```powershell
+pip install foundry-local-sdk                  # while you are still online
+python serve_offline.py                        # serves phi-4-mini and the embedding model
+$env:FOUNDRY_LOCAL_URL = "http://127.0.0.1:5272/v1"    # in the terminal where you run the copilot
+```
+
+By default it uses the **CPU** variants of the models. On the VM that is what you get anyway. The GPU and NPU variants need an extra component that may need the internet (see the coach notes).
 
 ### **Task 3: Disconnect**
 
@@ -82,18 +92,18 @@ If it says `REACHABLE`, the block does not work yet. Do not continue until it sa
 
 Repeat the questions from task 1 and write down the timings. Every capability from challenges 3 to 5 must work: the tools, the SOP search with sources, the ONNX model and the ticket.
 
-Offline results on the VM (the same question set, internet blocked at the network level):
+Offline results on the VM (8 vCPU, no GPU, CPU variants), with the internet blocked at the network level **and the service freshly started while offline** with `serve_offline.py`:
 
-| Step | Connected | Offline |
-|------|-----------|---------|
-| Machine status | 18.5 s | 20.1 s |
-| SOP question | 25.7 s | 26.4 s |
-| Embedding the 25 SOP chunks | n/m | 36 s |
-| One SOP retrieval | n/m | 1.0 s |
-| ONNX fault prediction | n/m | 1 ms |
-| Short chat answer | 1.4 to 1.8 s | 1.1 s |
+| Step | Offline, on the VM |
+|------|--------------------|
+| Machine status (first request after the start, models still cold) | 26 s |
+| Fault prediction (ONNX model and answer) | 19 s |
+| SOP question (split, embed, search, answer) | 38 s |
+| Ticket (tool call and confirmation) | 13.5 s |
+| Error code plus machine ID (goes to the SOP search) | 40 s |
+| The very first chat call after the start | 26 s, the next one 0.4 s |
 
-The offline and connected times are the same within normal variation. **Nothing in the question path needs the internet.**
+In an earlier run with the `foundry` service (started online, block applied afterwards) the connected and the offline times were the same within normal variation: status 18.5 s against 20.1 s, SOP question 25.7 s against 26.4 s. **Nothing in the question path needs the internet.**
 
 ### **Task 6: What still needs the cloud?**
 
@@ -133,8 +143,24 @@ RegionFallback: region 'centralus' unhealthy (transport failure); trying next ca
 
 It tries 7 regions in turn, which is about 2.5 minutes of waiting, and then gives up. Teams that block the network and then restart the service (or reboot the VM) will lose the copilot and will think the network block broke something.
 
-- **Tell teams in the briefing:** start and warm up first, disconnect second, do not restart.
-- **For a real shop-floor device** this is a design question: the device needs a way to start the service while disconnected. The Foundry Local SDK has a local catalog (`register_model`) that is meant for model files you already have. We did **not** test it. It is the first thing to try if a customer asks for a device that must survive an offline reboot.
+- **Tell teams in the briefing:** start and warm up first, disconnect second, do not restart the `foundry` service.
+
+### The fix we verified: start the models from the SDK
+
+[serve_offline.py](../code/serve_offline.py) starts the models with the Foundry Local Python SDK. It gives the SDK a catalog address that fails at once (`http://127.0.0.1:9`, nothing listens there), so the SDK never goes looking for the 7 cloud regions. It finds the models in the local cache on the disk and serves them on an OpenAI-compatible address. [fl.py](../code/fl.py) reads what it serves when `FOUNDRY_LOCAL_URL` is set.
+
+Verified on a fresh Windows VM (SDK installed with `pip` and the two CPU model variants downloaded with the SDK while online, 93 s for 5.8 GB):
+
+- Started online: ready in 30 s. Then the internet was blocked and the launcher was **stopped and started again while offline**: ready again in 30 s, both models served. The `foundry` service could not do this.
+- Offline, against that freshly started service: all 5 copilot requests went to the right tool, and the 23 held-out routing requests scored 23 of 23 (see [solution 5](../challenge-05/solution-05.md)).
+- It runs fine as a Windows scheduled task under the `SYSTEM` account, so it can start at boot without anyone signing in.
+
+What this does **not** cover:
+
+- **GPU and NPU variants.** They need an "execution provider" to be registered first (`download_and_register_eps()`), and we could not prove that this works with no internet: the SDK ignores a proxy setting, so we could not cut the network for one process, and we had no administrator rights to block it for the laptop. `serve_offline.py --accelerate` tries it and falls back to the CPU variants if it fails. Test this on the real device before you promise a customer that a GPU or NPU device survives an offline reboot.
+- The `foundry` command line cannot see a service that the SDK started (`foundry model list --loaded` will not list its models). That is why `fl.py` reads a small file.
+- The first chat request after any start is slow on a CPU (26 s here for the first one, 0.4 s for the next). Send a warm-up request before the technician asks.
+- On the VM, embedding the 25 SOP chunks takes 36 s on the CPU and one SOP retrieval about 1 s. The ONNX prediction takes about 1 ms.
 
 ### Other observations
 
@@ -142,9 +168,20 @@ It tries 7 regions in turn, which is about 2.5 minutes of waiting, and then give
 - **Python packages must be installed before the disconnect.** `pip` has no internet either.
 - **The block must not stop the loopback address.** `127.0.0.1` is not "Internet" for the firewall rule above. If a team blocks "all" outbound traffic and the copilot stops, this is why.
 
+### Verified on a laptop (Windows 11 ARM64)
+
+`New-NetFirewallRule -Direction Outbound -Action Block -RemoteAddress Internet` was run in an administrator terminal. With the rule active, `offline_check.py` printed `not reachable (offline)`, the local model still answered (1.5 s, loopback is not "Internet") and a full copilot question worked. We scoped the rule to the Foundry service and to Python with `-Program`, because the documented rule without `-Program` would have cut our own session. **The rule exactly as written in task 3 (for all programs) was not run.** Two things to know:
+
+- If you scope the rule to Python with `-Program`, use the **real interpreter**, not the one in the virtual environment. `.venv\Scripts\python.exe` is only a launcher that starts the real one, so a rule for it blocks nothing (our first attempt printed `REACHABLE`). `python -c "import sys; print(sys._base_executable)"` shows the real path. The rule in task 3 has no `-Program`, so it does not have this problem.
+- Remove the rule when you are done, also if a test fails halfway. A `try ... finally` around the test is a good habit.
+
+### A Foundry Local documentation claim that does not hold for the CLI service
+
+The documentation says: *"After the initial download, models run entirely offline from the local cache."* That is true for a service that is already running, and for the SDK as shown above, but **not** for a `foundry` service that is restarted offline.
+
 ### Not verified
 
-- The Windows Firewall rule on a **laptop**. It needs an administrator terminal, which we did not have. The rule is standard (`New-NetFirewallRule`), and the VM test used the equivalent network rule. Run it once on a laptop before the first event.
 - Turning Wi-Fi off or unplugging the cable.
+- A GPU or NPU device that restarts while offline (see above).
 
 **Stretch:** design the reconnection routine from task 6 and write the ticket-sync part.
