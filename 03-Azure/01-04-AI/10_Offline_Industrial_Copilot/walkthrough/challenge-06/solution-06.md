@@ -46,7 +46,7 @@ python serve_offline.py                        # serves phi-4-mini and the embed
 $env:FOUNDRY_LOCAL_URL = "http://127.0.0.1:5272/v1"    # in the terminal where you run the copilot
 ```
 
-By default it uses the **CPU** variants of the models. On the VM that is what you get anyway. The GPU and NPU variants need an extra component that may need the internet (see the coach notes).
+By default it uses the **CPU** variants of the models. On the VM that is what you get anyway. On a laptop with a GPU or NPU, add `--accelerate` to use those variants instead. That works offline as long as you ran a GPU model once while you were online (see the coach notes).
 
 ### **Task 3: Disconnect**
 
@@ -155,9 +155,14 @@ Verified on a fresh Windows VM (SDK installed with `pip` and the two CPU model v
 - Offline, against that freshly started service: all 5 copilot requests went to the right tool, and the 23 held-out routing requests scored 23 of 23 (see [solution 5](../challenge-05/solution-05.md)).
 - It runs fine as a Windows scheduled task under the `SYSTEM` account, so it can start at boot without anyone signing in.
 
-What this does **not** cover:
+Details and limits:
 
-- **GPU and NPU variants.** They need an "execution provider" to be registered first (`download_and_register_eps()`), and we could not prove that this works with no internet: the SDK ignores a proxy setting, so we could not cut the network for one process, and we had no administrator rights to block it for the laptop. `serve_offline.py --accelerate` tries it and falls back to the CPU variants if it fails. Test this on the real device before you promise a customer that a GPU or NPU device survives an offline reboot.
+- **GPU and NPU variants (`--accelerate`). Verified on the laptop with the network blocked for the process** (a firewall rule for the Python interpreter, administrator terminal). The root cause of the problem we first saw:
+  - The **NPU** (QNN) execution provider is installed with Foundry Local, registers offline in about 2 s, and the NPU model loaded.
+  - The **GPU** (WebGPU) execution provider is downloaded the first time a GPU model runs online and kept in `~/.foundry/ep/webgpu-ep`. But the SDK **tries to download it again at every start** (`https://foundrypackages-....azurefd.net/webgpu_ep_0.2.1_win-arm64.zip`). Offline that fails, the provider is not registered, and every GPU model refuses to load with `requires WebGpuExecutionProvider which is not registered`. The call to register the providers still reports `success=True`, which is misleading.
+  - The native library has an undocumented environment variable, **`FOUNDRY_LOCAL_WEBGPU_EP_LIBRARY`**, that points to a provider on the disk. With it set to the copy in `~/.foundry/ep`, both providers register offline in 1.6 s with no download, the GPU variant of `phi-4-mini` loads and answers in 1.3 s. `serve_offline.py --accelerate` sets it for you.
+  - With the launcher under the same block: CPU variants ready in 18 s, GPU variants ready in 12 s, and the copilot answered correctly in both (fault prediction 8.4 s on CPU against 5.7 s on GPU).
+  - **Caveats.** The variable is undocumented, so it may change in a later version (Foundry Local 0.11.0, SDK 2.1.0 here). The provider must have been downloaded once, so run a GPU model online before you disconnect. We cut the network for one process and did not reboot the laptop, but everything the launcher needs is a file on the disk. A CUDA provider has a similar variable (`FOUNDRY_LOCAL_CUDA_EP_LIBRARY`), which we did not test.
 - The `foundry` command line cannot see a service that the SDK started (`foundry model list --loaded` will not list its models). That is why `fl.py` reads a small file.
 - The first chat request after any start is slow on a CPU (26 s here for the first one, 0.4 s for the next). Send a warm-up request before the technician asks.
 - On the VM, embedding the 25 SOP chunks takes 36 s on the CPU and one SOP retrieval about 1 s. The ONNX prediction takes about 1 ms.
@@ -182,6 +187,7 @@ The documentation says: *"After the initial download, models run entirely offlin
 ### Not verified
 
 - Turning Wi-Fi off or unplugging the cable.
-- A GPU or NPU device that restarts while offline (see above).
+- A real reboot of a GPU or NPU device with no network. We blocked the network for the launcher process and did not restart the machine.
+- The `foundry` service itself with a local provider: we only fixed the SDK path.
 
 **Stretch:** design the reconnection routine from task 6 and write the ticket-sync part.
