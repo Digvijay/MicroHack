@@ -188,7 +188,8 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = if (deployVm) {
   }
 }
 
-// Installs Python for all users so participants can start with challenge 1 right after they sign in.
+// Installs Python for all users and the Visual C++ runtime that Foundry Local needs. A fresh Windows image does not
+// have the runtime, and the Foundry Local service then stops at start-up with "Unable to load DLL 'foundry_local'".
 resource vmSetup 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = if (deployVm) {
   parent: vm
   name: 'setup-python'
@@ -199,7 +200,7 @@ resource vmSetup 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = if 
     typeHandlerVersion: '1.10'
     autoUpgradeMinorVersion: true
     protectedSettings: {
-      commandToExecute: 'powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference=\'SilentlyContinue\'; Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.12.8/python-3.12.8-amd64.exe -OutFile C:\\py.exe; Start-Process C:\\py.exe -ArgumentList \'/quiet InstallAllUsers=1 PrependPath=1\' -Wait; Remove-Item C:\\py.exe"'
+      commandToExecute: 'powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference=\'SilentlyContinue\'; Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.12.8/python-3.12.8-amd64.exe -OutFile C:\\py.exe; Start-Process C:\\py.exe -ArgumentList \'/quiet InstallAllUsers=1 PrependPath=1\' -Wait; Remove-Item C:\\py.exe; Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile C:\\vc.exe; Start-Process C:\\vc.exe -ArgumentList \'/install /quiet /norestart\' -Wait; Remove-Item C:\\vc.exe"'
     }
   }
 }

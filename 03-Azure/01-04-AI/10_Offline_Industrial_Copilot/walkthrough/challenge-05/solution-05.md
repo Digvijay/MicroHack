@@ -49,15 +49,24 @@ agent.run_agent(client, model, question, extra_tools=[(fault_tool.SCHEMA, fault_
 ```
 
 ```powershell
-python copilot.py "Predict the most likely fault for CMP-01 from its sensor readings."
+python copilot.py "Run the fault prediction model for CNC-07."
 ```
 
 ```text
-  -> predict_fault({'machine_id': 'CMP-01'})
-The most likely fault for CMP-01 is overheating.
+  -> predict_fault({'machine_id': 'CNC-07'})
+The fault prediction model has identified a high likelihood of bearing wear in CNC-07.
 ```
 
-💡 The wording of the question matters. *"What is the likely fault on CNC-07?"* often makes the model look in the SOPs instead of calling the classifier. Mention the sensor readings, or make the tool description stronger.
+💥 **The wording of the question decides which tool the model picks, and it is fragile.** We asked the same request in four ways, three times each, with `phi-4-mini` on the laptop (GPU variant) and the final reference code:
+
+| Wording | Calls the classifier |
+|---------|----------------------|
+| *"Run the fault prediction model for CNC-07."* | 3 of 3 |
+| *"Predict the most likely fault for CNC-07 from its sensor readings."* | 0 of 3 |
+| *"Use the fault classifier to predict the fault of CNC-07."* | 0 of 3 |
+| *"What does the classifier say is wrong with CMP-01?"* | 0 of 3 |
+
+In the other cases the model searched the SOPs instead and gave a plausible answer from the SOP text (*"spindle vibration high, error E-SPN-214"*), which is correct but is **not** the classifier's verdict. The CPU variant on the VM mis-routed the *"Predict the most likely fault..."* wording in the same way. The same prompts also routed correctly in some earlier runs on the laptop and not in later ones, even at temperature 0, so do not promise a team that a wording "always works". [check_routing.py](../code/check_routing.py) re-runs the four canonical requests a few times and counts how often the right tool is chosen first. This is a good discussion: *what would make routing reliable?* Teams can try a stronger tool description, fewer tools per request, or choosing the tool with the embedding model.
 
 ### **Task 4: How far do you trust it?**
 
@@ -82,5 +91,6 @@ You successfully completed challenge 5! 🚀🚀🚀
 - **Decide the path per team at the start of the day**, based on experience and Azure access. Teams on the shortcut gain about 35 minutes. Give them a longer challenge 4 or the stretch goals.
 - **Custom model serving in Foundry Local:** this MicroHack does **not** serve the classifier through Foundry Local. Foundry Local serves the catalog models, and a scikit-learn classifier is not a chat model. What we validated is the fallback from the outline: the ONNX classifier runs as an **agent tool next to** the small language model, with ONNX Runtime. A fine-tuned small language model served by Foundry Local is not covered here.
 - **Cost:** the Azure Machine Learning workspace costs nothing while idle. The compute instance costs a few cents per hour. Remind teams to stop it.
-- **Not yet dry-run:** the Azure Machine Learning studio steps in Task 1 (compute creation time, kernel start). The notebook code itself was run end to end. Do the studio steps once before the first event and adjust the timings.
+- **Verified with the `az ml` command line** against the workspace that the lab automation creates: the compute instance (`Standard_DS3_v2`) was `Running` **3.7 minutes** after the request, and the training job (`pip install skl2onnx onnx`, then `train_fault_classifier.py`) ran in **2.5 minutes** on it. It reproduced the local result exactly: accuracy 0.940, the same confusion matrix, and an ONNX file that is **byte-identical** to `resources/shortcut/fault_classifier.onnx`. So the shortcut file is a faithful stand-in for a team's own result, and a team's file can be checked against it with a file hash.
+- **Not verified:** the clicks in the Azure Machine Learning **studio** (notebooks, kernel start-up) were not exercised, only the same steps through the command line. Plan about 4 minutes for the compute instance to start, and do the studio steps once before the first event.
 - **Stretch:** compare the classifier's verdict with what the language model says about the same readings (*"given vibration 9.4 mm/s and 78 °C, what is wrong?"*) and discuss which to trust when.

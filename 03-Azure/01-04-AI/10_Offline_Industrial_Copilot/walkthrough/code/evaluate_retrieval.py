@@ -11,6 +11,14 @@ import fl
 import retrieval as r
 
 
+REFUSAL_PHRASES = ("could not find", "not find", "not specified", "not available", "not mentioned",
+                   "no information", "not contain", "not in the")
+
+
+def is_refusal(text):
+    return any(p in text.lower() for p in REFUSAL_PHRASES)
+
+
 def evaluate(mode="pipeline"):
     client = fl.client()
     embed_model, chat_model = fl.load(r.EMBED_MODEL), fl.load(r.CHAT_MODEL)
@@ -26,7 +34,7 @@ def evaluate(mode="pipeline"):
         else:
             text, sources = r.answer(client, chat_model, embed_model, chunks, vectors, case["question"])
         if not case["expected_sop"]:
-            ok = "could not find" in text.lower() or "not find" in text.lower()
+            ok = is_refusal(text)
             refused += ok
             print(f"{case['id']} {'PASS' if ok else 'FAIL'} (should refuse) -> {text[:70]!r}")
             continue

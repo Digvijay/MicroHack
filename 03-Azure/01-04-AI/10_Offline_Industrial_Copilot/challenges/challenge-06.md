@@ -9,6 +9,7 @@
 ## Actions
 
 * Run your complete copilot once **while connected** and write down how long each kind of question takes: a procedure question, a machine status, a fault prediction, and a ticket.
+* **Get ready before you disconnect.** Make sure the Foundry Local service is running and your models are loaded, and ask one question of each kind so everything is warm. **Do not restart the service while you are offline.** Find out why: what does the service need when it starts?
 * Disconnect the device from the internet. Choose a way that matches your setup:
   * Laptop: turn off Wi-Fi, unplug the cable, or block outbound traffic with the firewall.
   * VM: block outbound internet traffic with a network security group rule. Keep a way to reach the VM.

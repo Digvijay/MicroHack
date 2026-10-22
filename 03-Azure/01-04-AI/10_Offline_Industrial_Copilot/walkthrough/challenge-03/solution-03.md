@@ -76,23 +76,35 @@ A question that needs no tool, such as *"Why is the sky blue?"*, still gets a fo
 
 ### **Task 5: The confirmation step**
 
-Writing a ticket changes something, so a person must approve it:
+Writing a ticket changes something, so three things protect the technician. All three are in [agent.py](../code/agent.py).
+
+**1. The write tool is only offered when the technician asked for it.** A model cannot invent a ticket it is never offered:
 
 ```python
-WRITE_TOOLS = {"create_maintenance_ticket"}
-
-if name in WRITE_TOOLS and not approve(name, args):
-    result = {"error": "The technician did not approve this action."}
+WRITE_INTENT = re.compile(r"\b(?:open|create|log|raise|file|make)\b[^.?!]{0,40}\bticket\b", re.I)
+wants_write = bool(WRITE_INTENT.search(question))
+offered = write_only if (wants_write and step == 0) else (schemas if wants_write else read_only)
 ```
+
+A ticket request also always reaches the ticket tool, because it is the only tool offered in that step. Without this rule the same request was sent to `search_sops` instead, in 3 of 3 runs on the laptop and also on the CPU VM.
+
+**2. A person must approve it:**
+
+```python
+if not approve(name, args):
+    return "Cancelled: the technician did not approve, so nothing was changed."
+```
+
+**3. The app reports the result, not the model.** After the ticket tool runs, the app builds the confirmation from the tool result:
 
 ```text
-  -> create_maintenance_ticket({'machine_id': 'CNC-07', 'priority': 'high', 'summary': 'Spindle vibration above stop limit'})
-  The assistant wants to run create_maintenance_ticket(...). Allow? [y/N]
+  The assistant wants to run create_maintenance_ticket({'machine_id': 'CNC-07', 'priority': 'high', ...}). Allow? [y/N] y
+Ticket MT-1001 created for CNC-07 (high priority): Spindle vibration above the stop limit
 ```
 
-The model is told what happened when the technician says no, so it can answer sensibly.
+💥 **Why the model does not write the confirmation.** In a test where the ticket tool was never called, `phi-4-mini` answered *"A high-priority ticket has been opened for CNC-07"*. No ticket existed. An agent that tells a technician that work is logged when it is not is worse than an agent that fails. So the app writes the confirmation from the tool result, and `TICKET_CLAIM` in `agent.py` replaces any answer that claims a ticket exists when no ticket tool ran with an honest *"No ticket was created"*.
 
-💡 This is not only for show. In the model comparison, `qwen3-1.7b` created a ticket with an invented summary for a plain status question. **A person in the loop is what makes a small model safe enough to give write access.**
+💡 This is not only for show. In the model comparison, `qwen3-1.7b` created a ticket with an invented summary for a plain status question. **A person in the loop, plus an app that decides when a write is allowed and reports what really happened, is what makes a small model safe enough to give write access.**
 
 You successfully completed challenge 3! 🚀🚀🚀
 
@@ -101,4 +113,5 @@ You successfully completed challenge 3! 🚀🚀🚀
 - If a team's model handles tool calls badly, send it back to [challenge 2](../../challenges/challenge-02.md): switch to a model that passes more tool cases, or use `tool_choice="required"`.
 - `phi-4-mini` sometimes writes the call as text, for example `<|tool_call|>[{...}]`. The loop in challenge 4 parses that form as well.
 - Give teams that are new to function calling the loop skeleton in Task 3 and let them write the tools themselves.
+- **Tool choice is fragile.** Which tool the model picks first depends on the wording of the request, on the variant of the model (GPU, NPU or CPU) and, in our runs, even on the day. [check_routing.py](../code/check_routing.py) runs the four canonical requests several times and prints how often the right tool was chosen first. Run it on every device type you will use. Laptop result with the final code (3 runs each): status 3/3, SOP search 3/3, ticket 3/3, fault prediction 0/3 for the wording used there (see [challenge 5](../challenge-05/solution-05.md)).
 - **Stretch:** log every tool call and its arguments to a file, so a technician can see afterwards what the agent did.

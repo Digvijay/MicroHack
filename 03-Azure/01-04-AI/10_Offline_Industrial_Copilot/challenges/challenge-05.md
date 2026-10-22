@@ -27,7 +27,7 @@ Your coach tells you which path to take. The result is the same.
 
 * Run the ONNX model on your device with ONNX Runtime, **without** the training library. How long does one prediction take?
 * Add a `predict_fault(machine_id)` tool to your agent. It reads the machine's readings and returns the predicted fault with its confidence.
-* Ask the agent: *"What is the most likely fault on CNC-07?"* Does the answer use the classifier?
+* Ask the agent for the most likely fault of CNC-07 in **three different ways**. Does it call your classifier every time? Which wording makes it call the classifier, and why do you think that is?
 * Look at CNC-07, CMP-01 and PRESS-02. Which prediction would you trust, and which not?
 
 ## Success criteria

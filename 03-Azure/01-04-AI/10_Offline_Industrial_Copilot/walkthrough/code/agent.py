@@ -28,6 +28,7 @@ FINAL_ANSWER = {"type": "function", "function": {
                    "required": ["answer"]}}}
 
 WRITE_TOOLS = {"create_maintenance_ticket"}
+WRITE_INTENT = re.compile(r"\b(?:open|create|log|raise|file|make)\b[^.?!]{0,40}\bticket\b", re.I)
 KNOWN_SOPS = {p.name.split("_")[0] for p in (fl.DATA / "sops").glob("*.md")}
 
 
@@ -36,6 +37,11 @@ def ask_technician(name, args):
 
 
 SOP_REFERENCE = re.compile(r"SOP(?:\s+ID)?[\s:-]+[A-Z0-9][A-Z0-9-]*")
+# "A ticket has been opened", "ticket MT-1001", "I created a ticket" - claims in the past tense, not SOP advice like "create a ticket".
+TICKET_CLAIM = re.compile(
+    r"ticket[^.]{0,60}\b(?:has|have|had|was|is)\s+(?:now\s+|successfully\s+)?(?:been\s+)?(?:opened|created|logged|raised)\b"
+    r"|\b(?:I|we)(?:\s+have|'ve)?\s+(?:opened|created|logged|raised)\b[^.]{0,30}ticket"
+    r"|\bMT-\d{3,}\b", re.I)
 
 
 def scrub_citations(text):
@@ -73,12 +79,20 @@ def run_agent(client, model, question, extra_tools=None, approve=ask_technician,
     """
     schemas = list(TOOL_SCHEMAS) + [s for s, _ in (extra_tools or [])] + ([FINAL_ANSWER] if multi_step else [])
     functions = dict(IMPLEMENTATIONS) | {s["function"]["name"]: f for s, f in (extra_tools or [])}
+    # A tool that changes something is only offered when the technician asked for it. A model cannot invent a
+    # ticket it is never offered, and a ticket request cannot be sent to the wrong tool.
+    wants_write = bool(WRITE_INTENT.search(question))
+    read_only = [s for s in schemas if s["function"]["name"] not in WRITE_TOOLS]
+    write_only = [s for s in schemas if s["function"]["name"] in WRITE_TOOLS]
     messages = [{"role": "system", "content": MULTI_STEP_SYSTEM if multi_step else SYSTEM},
                 {"role": "user", "content": question}]
     sources = []
 
     def finish(text):
         text = scrub_citations(text or "")
+        # No write tool ran in this branch, so any claim that a ticket was opened is made up.
+        if TICKET_CLAIM.search(text):
+            return "No ticket was created: the assistant did not call the ticket tool. Please ask again, for example: 'Open a high priority ticket for CNC-07: <problem>'."
         # Small models forget to cite, so the app attaches the SOPs it really retrieved.
         if sources and "not find" not in text.lower():
             text += "\n  Sources: " + "; ".join(sources)
@@ -88,8 +102,9 @@ def run_agent(client, model, question, extra_tools=None, approve=ask_technician,
         # Small models often describe a tool call instead of making one, so a call is mandatory.
         # In the simple loop only the first step is forced and the next step must answer in text.
         choice = "required" if (multi_step or step == 0) else "none"
+        offered = write_only if (wants_write and step == 0) else (schemas if wants_write else read_only)
         reply = client.chat.completions.create(
-            model=model, messages=messages, tools=schemas, tool_choice=choice, temperature=0, max_tokens=500,
+            model=model, messages=messages, tools=offered, tool_choice=choice, temperature=0, max_tokens=500,
         ).choices[0].message
         call = first_tool_call(reply)
         if call is None:
@@ -104,10 +119,16 @@ def run_agent(client, model, question, extra_tools=None, approve=ask_technician,
         # One tool call at a time keeps the history valid and stops a model from inventing extra actions.
         messages.append({"role": "assistant", "content": None, "tool_calls": [
             {"id": call_id, "type": "function", "function": {"name": name, "arguments": json.dumps(args)}}]})
-        if name in WRITE_TOOLS and not approve(name, args):
-            result = {"error": "The technician did not approve this action."}
-        else:
+        if name in WRITE_TOOLS:
+            # The app, not the model, reports what happened. A small model can claim a ticket exists when it never called the tool.
+            if not approve(name, args):
+                return "Cancelled: the technician did not approve, so nothing was changed."
             result = functions[name](**args)
+            if "error" in result:
+                return f"Nothing was changed: {result['error']}"
+            return (f"Ticket {result['ticket_id']} created for {result['machine_id']} "
+                    f"({result['priority']} priority): {result['summary']}")
+        result = functions[name](**args)
         if isinstance(result, dict) and isinstance(result.get("excerpts"), list):
             sources += [s for s in (f"{e['sop']} rev {e['revision']} / {e['section']}" for e in result["excerpts"])
                         if s not in sources]
