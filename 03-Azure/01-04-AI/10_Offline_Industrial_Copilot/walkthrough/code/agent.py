@@ -71,8 +71,10 @@ def first_tool_call(reply):
 
 
 def run_agent(client, model, question, extra_tools=None, approve=ask_technician, multi_step=False,
-              max_steps=6, verbose=True):
+              router=None, shortlist=1, max_steps=6, verbose=True):
     """extra_tools is a list of (schema, function) pairs added to the two built-in tools.
+
+    router (a ToolRouter) shortlists the tools shown to the model for this request. shortlist is how many.
 
     Tools that change something (WRITE_TOOLS) only run if approve() says yes. A small model can
     decide to create a ticket nobody asked for, so a person stays in the loop.
@@ -84,6 +86,14 @@ def run_agent(client, model, question, extra_tools=None, approve=ask_technician,
     wants_write = bool(WRITE_INTENT.search(question))
     read_only = [s for s in schemas if s["function"]["name"] not in WRITE_TOOLS]
     write_only = [s for s in schemas if s["function"]["name"] in WRITE_TOOLS]
+    first_step = write_only if wants_write else read_only
+    if router is not None:
+        # Tool shortlisting: show the model only the best-matching tools. A write tool is only shown if it is the best match.
+        best = router.candidates(question)[:shortlist]
+        if best and best[0] in WRITE_TOOLS:
+            wants_write, first_step = True, [s for s in schemas if s["function"]["name"] == best[0]]
+        else:
+            first_step = [s for s in read_only if s["function"]["name"] in best] or read_only
     messages = [{"role": "system", "content": MULTI_STEP_SYSTEM if multi_step else SYSTEM},
                 {"role": "user", "content": question}]
     sources = []
@@ -102,7 +112,7 @@ def run_agent(client, model, question, extra_tools=None, approve=ask_technician,
         # Small models often describe a tool call instead of making one, so a call is mandatory.
         # In the simple loop only the first step is forced and the next step must answer in text.
         choice = "required" if (multi_step or step == 0) else "none"
-        offered = write_only if (wants_write and step == 0) else (schemas if wants_write else read_only)
+        offered = first_step if step == 0 else (schemas if wants_write else read_only)
         reply = client.chat.completions.create(
             model=model, messages=messages, tools=offered, tool_choice=choice, temperature=0, max_tokens=500,
         ).choices[0].message
