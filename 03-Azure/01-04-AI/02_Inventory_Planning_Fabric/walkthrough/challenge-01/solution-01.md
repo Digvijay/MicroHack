@@ -28,7 +28,7 @@ Understand the inventory scenario, provision your own Fabric workspace + Data Ag
 2. Select your project — in a shared tenant, match the **`FoundryProjectEndpoint`** from your lab dashboard (Credentials tab) to the project's **Parent resource** to be sure it's yours.
 3. Open **Models → Deployments** → confirm `gpt-5.4-mini` is listed with status **Succeeded**.
 4. Open a **deployed model → Playground** → send "Hello" → confirm a response is returned. (The current portal opens the Playground from a model or agent, not a top-level *Agents → Playground* menu.)
-5. In Challenge 2, use **Tools → Add → Browse all tools → Fabric IQ (OneLake Catalog)**, filter by **Data agent** and select your published `inventory-hack-agent`. Complete OAuth consent and verify that user's Data Agent/source access. The notebook's Workspace/Agent IDs remain useful for SDKs and diagnostics; the earlier ID-entry Foundry connector retires on **6 November 2026**.
+5. In Challenge 2, use **Tools → Add → Add tools → Fabric IQ (OneLake Catalog)**, filter by **Data agent** and select your published `inventory-hack-agent`. Complete OAuth consent and verify that user's Data Agent/source access. The `inventoryhackagent` connection is created here and reused by later agents; no standalone connection page is needed. The notebook's Workspace/Agent IDs remain useful for SDKs and diagnostics; the earlier ID-entry Foundry connector retires on **6 November 2026**.
 
 ### Provision your Fabric workspace + Data Agent (Challenge 1 Task 3)
 

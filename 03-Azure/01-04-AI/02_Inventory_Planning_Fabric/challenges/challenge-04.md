@@ -109,7 +109,7 @@ You need exactly **one** tool here — Fabric IQ connected to your Data Agent �
     - Three **Invoke Agent** spans, one per message. Only the first has an **Execute Tool** span (the unit-cost lookup from `Products`), followed by its `Chat` span that presents the proposal. The **MODIFY** and **YES** turns have only a `Chat` span, because the agent reuses the costs it already has.
 6. **Discuss with your team:** At which step did the human add value that an automated pipeline could not?
 
-![Trace view showing the model calls and the Fabric unit-cost lookup across the approval cycle](../images/challenge-03-trace.png)
+![The conversation trace for the approval run: three Invoke Agent spans, with the Fabric unit-cost lookup only in the first](../images/challenge-03-trace.png)
 
 ### Part D — Reflect on the full loop (optional, 10 min)
 

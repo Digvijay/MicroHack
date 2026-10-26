@@ -22,16 +22,12 @@ This agent should have **only Fabric IQ**, connected to the published `inventory
 In the agent's **Traces** tab, open a run's **Trace ID**. The **Trajectories** tab shows a tree of spans:
 
 ```
-run
-├── model_call (instructions + user message sent to gpt-5.4-mini)
-├── tool_call: Fabric Data Agent
-│   ├── input: { query: "current stock and reorder point for Leaf Blower X2 (P004) across all locations" }
-│   └── output: { ... table of rows ... }
-├── tool_call: Fabric Data Agent   ← agent may call multiple times
-│   ├── input: { query: "average weekly sales for outdoor power tools over the last 8 weeks" }
-│   └── output: { ... }
-└── model_call (final synthesis → recommendation table)
+Invoke Agent: invoke_agent inventory-optimisation-agent:<version>
+├── Execute Tool: mcp_inventoryhackagent.DataAgent_inventory_hack_agent   (the Fabric call, tens of seconds)
+└── Chat: gpt-5.4-mini                                                    (final synthesis, under a second)
 ```
+
+Select a span and use **Input + Output** on the right to read the query, the data Fabric returned and the final answer. The agent may call Fabric more than once.
 
 ### Common issues
 

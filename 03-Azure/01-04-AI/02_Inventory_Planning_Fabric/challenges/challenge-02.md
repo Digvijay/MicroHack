@@ -87,6 +87,8 @@ when connecting to the published Data Agent created in Challenge 1.
    account** in the same browser, so the tool runs with your own Fabric
    permissions. Then **Add** and **Save**. Your account needs read access to both
    the Data Agent and its source data.
+   The tool appears as **Fabric IQ (inventoryhackagent)**; later challenges reuse
+   this connection from the **Configured** tab.
 5. In your instructions, identify `inventory-hack-agent` as the source for Zava
    stock, demand, external sample signals and product costs. References to the
    "Fabric Data Agent" below mean that item accessed through Fabric IQ.
@@ -157,7 +159,7 @@ for diagnostics and SDK configuration.
 | The facilitator supplies a different model deployment | Select dashboard **ModelDeploymentName**, save the agent and start a fresh conversation. The facilitator must verify the same governed-answer and tool-call checks on the fallback. |
 | A Fabric query returns no rows for retail stores | Inspect `Stores.type`: it must filter `'retail'`, not `'Retail'`. Confirm Challenge 1 data-source instructions/examples were applied and published; don't drop filters to manufacture a result. |
 | The run fails with **`Stage configuration not found`** (or *configuration not found*) | Your Fabric Data Agent works in Fabric's **Test data agent** pane but isn't **published** — the Foundry tool consumes the *published* stage, not the draft/Preview runtime. In Fabric, open `inventory-hack-agent` → confirm the 7 tables → click **Publish**, then retry. |
-| You're asked to type a **Workspace ID** / **Agent ID** | You're in the retired Fabric Data Agent connector. Cancel and use **Add → Browse all tools → Fabric IQ (OneLake Catalog)** instead (Part C); you select the agent by name there. |
+| The Fabric Data Agent tool is deprecated or asks for a **Workspace ID** / **Agent ID** | You're in the earlier Fabric Data Agent connector. Cancel and use **Add → Add tools → Fabric IQ (OneLake Catalog)** instead (Part C); you select the agent by name there. |
 
 ## 🚀 Go further
 

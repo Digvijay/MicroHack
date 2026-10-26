@@ -315,6 +315,9 @@ The data lives in **Microsoft Fabric** (a governed Lakehouse with inventory, dem
    > specialists at the Data Agent on **your** Lakehouse. The earlier Foundry
    > Fabric Data Agent connector retires on **6 November 2026**.
 
+   > The connection is created the first time you add it in Challenge 2; later
+   > agents reuse it. Select the Data Agent by name, not by entering its IDs.
+
 5. **Understand the three-agent pattern.**
    Draw (on paper or a whiteboard) the flow:
    ```

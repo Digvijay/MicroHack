@@ -34,8 +34,14 @@ You don't install anything on your computer.
 2. Send:
 
    ```text
-   A prolonged heatwave is hitting the Pacific Northwest. Check our exposure on outdoor power tools and prepare a replenishment order for approval.
+   A prolonged heatwave is hitting the Pacific Northwest. Check our exposure on outdoor power tools and prepare a replenishment order for approval. Include Leaf Blower X2 (P004) at Seattle and Portland.
    ```
+
+   > [!TIP]
+   > **Name the product, as in Challenge 3.** A category-only request can make the
+   > Fabric Data Agent generate a query with a collation conflict. Naming `P004`,
+   > Seattle and Portland makes the request more precise. If inventory cannot be
+   > verified, retry the request before approving anything.
 
 3. Wait 2–4 minutes: three agents run in turn and query your Fabric data. You should get **PURCHASE ORDER PROPOSAL (simulation only)** with status **AWAITING_APPROVAL**, a proposal ID, revision 1 and one or more lines. Locations appear as store IDs (`ST03` is Portland, `ST04` is Seattle). The model decides how many lines to propose.
 
@@ -117,6 +123,7 @@ Ask your facilitator whether publishing is enabled for your lab before you start
 | No `inventory-planning-assistant` in Foundry | Rerun Part A. You don't create a visual workflow in this challenge. |
 | Planning fails and mentions Fabric | Check that your Fabric capacity is **running**, that your Data Agent is **published**, and that you can query it in Fabric. Rerun, and give your facilitator the request ID from the error. |
 | The proposal is missing or has no costs | Send the request again. Costs must come from Fabric, and the assistant retries once by itself. |
+| The assistant asks you to paste a recommendation table or SKU data | An earlier stage returned no usable recommendation. Start a new conversation and name Leaf Blower X2 (`P004`) at Seattle and Portland, as in Part B. |
 | An approval is rejected | Copy the command from the **newest** proposal in the **same** conversation. The ID and revision must match. |
 | You changed an agent but the assistant behaves as before | Rerun Part A so the assistant is deployed with the new version. |
 | You can't find the assistant in Teams or Microsoft 365 | Publishing can take a few minutes, and your lab might not enable it. Ask your facilitator. |
