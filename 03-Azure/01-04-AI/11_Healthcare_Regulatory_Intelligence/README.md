@@ -67,7 +67,9 @@ flowchart LR
     AUDIT --> LAKE
 ```
 
-> 📸 **Screenshot to add:** `images/readme-architecture.png`: final architecture diagram for the hack.
+![Regulatory Intelligence architecture: public portals, the change monitor, the regulatory lake, Foundry IQ on Azure AI Search, the four Foundry agents, human sign-off and the optional event-driven assistant](images/readme-architecture.png)
+
+The editable source is [readme-architecture.excalidraw](images/readme-architecture.excalidraw). Open it at <https://excalidraw.com> to change it.
 
 ### What each Azure service does here
 

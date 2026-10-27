@@ -123,7 +123,7 @@ Stuck for more than 10 minutes? Compare with `orchestrator/workflow.py`, which i
 
 ![The assistant processes the warning letter event, writes the briefing and uploads it to the lake](../images/challenge-06-process-events.png)
 
-> 📸 **Screenshot to add:** `images/challenge-06-pending-briefing.png`: a briefing in the lake marked PENDING HUMAN SIGN-OFF.
+![The generated briefing in the lake: PENDING HUMAN SIGN-OFF, with the change event and the agent versions used](../images/challenge-06-pending-briefing.png)
 
 ## ✔️ Success criteria
 
