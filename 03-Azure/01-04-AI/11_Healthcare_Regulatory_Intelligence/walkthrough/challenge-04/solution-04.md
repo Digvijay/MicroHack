@@ -28,4 +28,5 @@ Reject a draft that invents clinical detail not in the source (for example, a fr
 |---|---|
 | The assistant gives dosing advice | Strengthen the "no medical advice" line and the "can't find it" rule; test again in a new chat |
 | Drafts lack the DRAFT marker | Ask again with "use the draft format from your instructions"; check the instructions were saved |
+| Answers show only numbered markers (①, ②…) | The model let Foundry IQ's markers stand in for the lake's citations | Check the instruction line about writing citations in the text was saved; ask again in a new chat. In our first test run all four answers were correct but cited only with markers |
 | UK pen answer says "yes" | It relied on the EU alert naming both products. Ask it to check `products.md`; this is a good teaching moment about geography |

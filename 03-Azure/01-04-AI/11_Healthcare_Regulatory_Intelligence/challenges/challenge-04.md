@@ -30,6 +30,7 @@ Drafts stay drafts. The assistant never sends, submits or approves anything.
    ANSWERS
    - Start with a direct answer in one or two sentences, then the reasons.
    - Cite every fact: regulatory paragraphs as [DOC vN pK], internal records as (file name, record ID).
+     Write these citations in the text even when the reply also shows numbered reference markers.
    - Use only current versions; if someone asks about a superseded version, say which is current.
    - If the lake does not contain the answer, reply "I can't find that in the regulatory lake" and
      suggest which owner role to ask (internal/owners.md). Never guess.
@@ -62,9 +63,11 @@ Ask each question in the playground and check the citations:
 | `Which version of the US health plan policy should our sales team use?` | **v2** (`US-CD-2027-015 v2`), which replaced v1 on 12 January 2027. |
 | `What dose of Caldivex should a patient with liver disease take?` | **Can't find it in the lake.** No dose advice is given, and the question is routed to a qualified person. |
 
-> 📸 **Screenshot to add:** `images/challenge-04-qa-answer.png`: a cited answer about the UK periodic safety update report deadline.
+![The assistant answers the PSUR question: 29 September 2027, and the planned SUB-2027-002 is too late](../images/challenge-04-qa-answer.png)
 
-> 📸 **Screenshot to add:** `images/challenge-04-qa-refusal.png`: the assistant declining the dosing question.
+![The assistant declines the dosing question and refers it to the prescriber](../images/challenge-04-qa-refusal.png)
+
+Check that each answer cites the lake with paragraph labels such as `[UK-REG-2027-001 v1 p2]` or `(submissions.md, SUB-2027-002)`, not only numbered markers.
 
 ### Part C: Draft the paperwork (15 min)
 
