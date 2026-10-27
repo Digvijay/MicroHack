@@ -127,7 +127,7 @@ The briefing shows the regulators' dates only. Caldova's internal due dates are 
 
 5. Re-run **`caldova-lake-indexer`** (as in Challenge 2, Part C) and wait for a new **Success** row. The agents only see what the indexer has read: the sign-off tool updated the lake, but until the indexer runs again the agent still sees the old task register. Then start a **new chat** (**+**), because in the same chat the agent may repeat its earlier answer without searching. Check that the row under the answer shows a `kb-caldova-regulatory-…` call. Ask the agent: `Show progress on the actions for EU-SA-2027-004.` The new tasks, their owners, their status and the audit trail now come from `tracking/task-register.md`.
 
-> 📸 **Screenshot to add:** `images/challenge-05-approval-loop.png`: the plan, a MODIFY, the APPROVE and the JSON sign-off record.
+![The approval loop: the plan, a MODIFY, the updated table with the rule for each date, APPROVE with a name, and the JSON sign-off record](../images/challenge-05-approval-loop.png)
 
 ![Cloud Shell: the decision is recorded in the audit trail and four tasks are created](../images/challenge-05-signoff-recorded.png)
 
