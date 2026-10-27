@@ -131,7 +131,7 @@ The briefing shows the regulators' dates only. Caldova's internal due dates are 
 
 ![Cloud Shell: the decision is recorded in the audit trail and four tasks are created](../images/challenge-05-signoff-recorded.png)
 
-> 📸 **Screenshot to add:** `images/challenge-05-progress.png`: the agent reporting task progress and the audit trail.
+![Progress on EU-SA-2027-004 from the task register: TASK-2027-002 done, three tasks open, none at risk](../images/challenge-05-progress.png)
 
 ### Part D: Try to break it (10 min)
 
