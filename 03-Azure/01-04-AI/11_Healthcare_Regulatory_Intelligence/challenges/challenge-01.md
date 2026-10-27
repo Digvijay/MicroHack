@@ -59,7 +59,7 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
    python3 -m regintel --account <StorageAccountName> monitor --day monday
    ```
 
-5. Read the summary. Answer for your team:
+5. Read the summary. It is also saved in the lake as `lake-raw/reports/monitor-monday.txt`; if your Cloud Shell session closes, open it again with `cat out/lake/lake-raw/reports/monitor-monday.txt` or in the Storage browser in Part C. Answer for your team:
    - How many pages were crawled, and how many of them were just index pages?
    - Which document was found twice, and why is it **not** counted as new?
    - Which links were not followed, and why is that a good thing?

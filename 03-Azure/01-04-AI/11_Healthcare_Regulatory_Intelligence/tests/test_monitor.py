@@ -80,6 +80,21 @@ def test_cli_reports_errors_without_traceback(tmp_path, capsys):
     assert "ERROR: Crawl monday first" in capsys.readouterr().err
     assert main(["--lake", str(tmp_path / "l"), "monitor", "--day", "monday"]) == 0
     assert "New documents:          9" in capsys.readouterr().out
+    saved = (tmp_path / "l" / "lake-raw" / "reports" / "monitor-monday.txt").read_text(encoding="utf-8")
+    assert "Duplicates ignored:     1" in saved
+
+
+def test_az_never_reads_the_terminal_or_draws_progress(monkeypatch):
+    import regintel.__main__ as cli
+
+    calls = []
+    monkeypatch.setattr(cli.shutil, "which", lambda name: "az")
+    monkeypatch.setattr(cli.subprocess, "run", lambda command, **kwargs: calls.append((command, kwargs))
+                        or type("Done", (), {"returncode": 0, "stdout": "", "stderr": ""})())
+    cli._az("storage", "blob", "upload-batch", "--account-name", "x")
+    cli._az("storage", "blob", "download", "--account-name", "x")
+    assert "--no-progress" in calls[0][0] and "--no-progress" not in calls[1][0]
+    assert all(kwargs["stdin"] is cli.subprocess.DEVNULL for _, kwargs in calls)
 
 
 def test_tools_run_on_cloud_shell_python():

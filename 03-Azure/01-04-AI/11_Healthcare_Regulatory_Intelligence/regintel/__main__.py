@@ -22,7 +22,10 @@ def _az(*arguments: str) -> None:
     if not executable:
         raise LakeError("Azure CLI (az) was not found. Use Azure Cloud Shell, Codespaces or the lab devcontainer.")
     command = [executable, *arguments, "--auth-mode", "login", "--only-show-errors", "--output", "none"]
-    completed = subprocess.run(command, capture_output=True, text=True)
+    if arguments[2].endswith("-batch"):
+        command.append("--no-progress")
+    # Never let az read from or redraw the Cloud Shell terminal.
+    completed = subprocess.run(command, capture_output=True, text=True, stdin=subprocess.DEVNULL)
     if completed.returncode != 0:
         detail = (completed.stderr or completed.stdout).strip()
         raise LakeError(f"Azure Storage command failed: az {' '.join(arguments[:3])}\n{detail}\n"
@@ -45,16 +48,22 @@ def upload(lake: Lake, account: str) -> None:
 
 
 def _print_monitor(report: dict, lake: Lake) -> None:
-    print(f"Regulatory Web and Change Monitor - {report['day']} ({report['date']})")
-    print(f"  Pages crawled:          {report['pages_crawled']} ({report['navigation_pages']} index pages)")
-    print(f"  Links not followed:     {report['skipped_links']} (outside the allowlisted portals)")
-    print(f"  New documents:          {len(report['new'])}  {', '.join(report['new'])}")
-    print(f"  Updated documents:      {len(report['updated'])}  {', '.join(report['updated'])}")
-    print(f"  Duplicates ignored:     {len(report['duplicates'])}")
-    for duplicate in report["duplicates"]:
-        print(f"    - {duplicate}")
-    print(f"  Change events written:  {len(report['new']) + len(report['updated'])}  ({lake.raw / 'events'})")
-    print(f"  Change log:             {lake.knowledge / 'change-log.md'}")
+    lines = [
+        f"Regulatory Web and Change Monitor - {report['day']} ({report['date']})",
+        f"  Pages crawled:          {report['pages_crawled']} ({report['navigation_pages']} index pages)",
+        f"  Links not followed:     {report['skipped_links']} (outside the allowlisted portals)",
+        f"  New documents:          {len(report['new'])}  {', '.join(report['new'])}",
+        f"  Updated documents:      {len(report['updated'])}  {', '.join(report['updated'])}",
+        f"  Duplicates ignored:     {len(report['duplicates'])}",
+        *[f"    - {duplicate}" for duplicate in report["duplicates"]],
+        f"  Change events written:  {len(report['new']) + len(report['updated'])}  (lake-raw/events)",
+        "  Change log:             regulatory-knowledge/change-log.md",
+    ]
+    report_path = lake.raw / "reports" / f"monitor-{report['day']}.txt"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    print("\n".join(lines))
+    print(f"  Summary saved:          {report_path}")
 
 
 def main(argv=None) -> int:
