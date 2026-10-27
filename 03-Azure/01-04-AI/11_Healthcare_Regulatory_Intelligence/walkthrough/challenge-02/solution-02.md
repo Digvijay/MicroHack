@@ -1,0 +1,45 @@
+# Challenge 2 solution: Document & Citation Agent
+
+**[← Previous Solution](../challenge-01/solution-01.md)** - [Home](../../README.md) - [Challenge](../../challenges/challenge-02.md) - [Next Solution →](../challenge-03/solution-03.md)
+
+**Duration:** 45 minutes
+
+## Expected citation card for EU-SA-2027-004
+
+The wording will vary, but the facts and citations must match:
+
+| Section | Expected content |
+|---|---|
+| Document | EU-SA-2027-004 v1, *Caldivex: new warning on liver injury*, current |
+| Source | EU medicines regulator (fictional), EU, health authority, safety alert; `portal://eu-medicines-regulator/safety/EU-SA-2027-004.html`, also at `…/news/2027-01-11-caldivex.html` |
+| Dates | Published and effective 2027-01-11; DHPC to prescribers by **1 March 2027** [p4]; variation by **15 March 2027** [p3] |
+| What it says | Reports of liver injury with tablets and pen [p1]; add warning to 4.4, add liver injury to 4.8, update leaflet, check liver function before treatment and after 3 months [p2]; submit variation [p3]; agree and send DHPC [p4]; add liver injury to RMP and next PSUR [p5] |
+| Tags | labelling, vigilance; CDX-TAB, CDX-PEN |
+| Version history | One version |
+
+`EU-SA-2027-099` → "Not found in the regulatory lake".
+
+## Expected answer after Tuesday's crawl
+
+| Item | v1 (11 Jan, superseded) | v2 (12 Jan, current) |
+|---|---|---|
+| Tier change effective | 1 March 2027 [v1 p2] | **1 April 2027** [v2 p2] |
+| Prior authorisation | Two failed preventive treatments [v1 p3] | **One** [v2 p3] |
+| Evidence deadline | 15 February 2027 [v1 p4] | **1 March 2027** [v2 p4] |
+
+The monitor output is: `Updated documents: 1 US-CD-2027-015 v2` and `Duplicates ignored: 9`.
+
+## Teaching points
+
+- The **monitor** decides what is new; the **agent** explains it. A model is never asked whether two pages are duplicates.
+- Citations are anchored to `document + version + paragraph`. Because a version never changes after it is written, a citation stays valid even after the source page changes.
+- Ask participants to compare one cited statement with the lake file. Fluent text is not evidence; the citation is.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| The agent answers without citations or from general knowledge | The knowledge tool is missing, or a Web Search tool is still attached | Keep only `caldova-regulatory-kb`; save; start a new chat |
+| Citations such as `p7` that don't exist | The model invented them | Check the trace for retrieval. Strengthen the "only use labels that appear" rule; never accept an unverified citation |
+| After Tuesday, the agent still says v1 is current | The indexer has not re-run | Search service → Indexers → Run, wait for success, then start a new chat |
+| `Crawl monday first` error | Tuesday was run before Monday | Run Monday, then Tuesday |
