@@ -75,16 +75,17 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
 
 ### Part C: Look inside the lake (10 min)
 
-1. In the Azure portal, open your storage account → **Storage browser** → **Blob containers**.
-2. Open `regulatory-knowledge/change-log.md` (select it, then **Edit** or **Download**). This is the list of everything the monitor found.
-3. Open `regulatory-knowledge/documents/EU-SA-2027-004-v1.md`. Find:
+1. In the Azure portal, open your storage account (`StorageAccountName`), then **Storage browser** in the left menu, then **Blob containers**. The authentication method is already **Microsoft Entra ID**: the lake has no access keys.
+2. Open the `regulatory-knowledge` container and select `change-log.md`. In the panel that opens, select the **Edit** tab to see the text, then **Preview** at the bottom to see the tables formatted. This is the list of everything the monitor found, with one row per monitor run at the end. Close the panel without saving.
+
+   ![Storage browser: the regulatory-knowledge container with the change log open on the Edit tab](../images/challenge-01-storage-browser.png)
+
+3. Open `regulatory-knowledge/documents/EU-SA-2027-004-v1.md` the same way. Find:
    - the metadata the monitor added (region, document type, effective date, impacted domains, products named),
    - the second address under **Also published at**,
    - the paragraph labels `[EU-SA-2027-004 v1 p1]` … `p5`.
 4. Browse `regulatory-knowledge/internal/`. These are Caldova's records: products, labels, studies, submissions, SOPs, quality records, market access, owners and history. `tracking/task-register.md` lists the tasks already in progress.
-5. Open `lake-raw/events/`. There is one **change event** per new document. In Challenge 6 these events trigger your agents automatically.
-
-> 📸 **Screenshot to add:** `images/challenge-01-storage-browser.png`: Storage browser showing the two containers and the documents folder.
+5. Open the `lake-raw` container and its `events` folder. There is one **change event** per new document. In Challenge 6 these events trigger your agents automatically. The `reports` folder holds the summary of each monitor run.
 
 ### Part D: Build the Foundry IQ knowledge base (25 min)
 
