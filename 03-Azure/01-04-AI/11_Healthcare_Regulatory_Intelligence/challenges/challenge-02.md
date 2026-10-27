@@ -126,6 +126,8 @@ The row under each answer lists the calls the agent made, for example the knowle
 
    Check that every statement in *What it says* ends with a paragraph label such as `[US-CD-2027-015 v1 p2]`, not only with a numbered marker. If the labels are missing, the agent is not following its rules; ask again in a new chat.
 
+   Then check the meaning, not just the label: did prior authorisation get easier or harder? Compare `v1 p3` with `v2 p3` yourself. Agents often call the change "stricter", with a correct citation.
+
 ### Part D: Look at the trace (5 min)
 
 A trace shows what the agent actually did, not what it says it did.

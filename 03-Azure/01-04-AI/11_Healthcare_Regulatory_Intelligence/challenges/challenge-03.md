@@ -51,12 +51,14 @@ Your agent reads both sides of the lake:
       CAL-301, SUB-2027-002, SOP-PV-003, CAPA-2026-031, MA-US-DOSSIER) | Why it is affected |
       Internal source (file name)
 
-   4. PROPOSED ACTIONS - table: # | Action | Owner role (from internal/owners.md) | Internal due
-      date | How the date was calculated (rule from internal/owners.md) | Citation [DOC vN pK]
+   4. PROPOSED ACTIONS - table: # | Action | Owner role (from internal/owners.md) | How the date
+      was calculated (rule from internal/owners.md, with the arithmetic) | Internal due date |
+      Citation [DOC vN pK]
       For each action, first search internal/sops.md for the SOP that governs it and name it in
       the action. Every action gets a date: apply the first rule that fits from
       internal/owners.md (an SOP time limit comes first), using only the deadline that belongs
-      to that action. Today is the 'Status as of' date in tracking/task-register.md.
+      to that action. Never write "Not found" as a due date: when no other rule fits, the last
+      rule gives today plus 30 days. Today is the 'Status as of' date in tracking/task-register.md.
 
    5. EXISTING TASKS AND RISKS - related tasks already in tracking/task-register.md (do not
       duplicate them), tasks marked at risk, supply or timing risks, and questions for experts.

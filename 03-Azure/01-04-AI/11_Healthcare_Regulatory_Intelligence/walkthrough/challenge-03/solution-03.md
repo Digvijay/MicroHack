@@ -4,7 +4,7 @@
 
 **Duration:** 60 minutes
 
-Caldova's due-date rules (`internal/owners.md`), first match wins: **an SOP time limit counted from today**; otherwise **deadline − 14 days**; otherwise **effective date − 30 days**; otherwise **today + 30 days**. A deadline set for another organisation (CMO-17's reply) is not a Caldova deadline. *Today* is the *Status as of* date in `tracking/task-register.md`: **12 January 2027** after Tuesday's crawl, so rule 3 gives **11 February 2027**. A past due date means **at risk**. Label text belongs to the Labelling Lead; preparing and submitting the variation belongs to the Regulatory Affairs Lead.
+Caldova's due-date rules (`internal/owners.md`), first match wins: **an SOP time limit counted from today**; otherwise **deadline − 14 days**; otherwise **effective date − 30 days**, only for an effective date after today; otherwise **today + 30 days**. A deadline set for another organisation (CMO-17's reply) is not a Caldova deadline. *Today* is the *Status as of* date in `tracking/task-register.md`: **12 January 2027** after Tuesday's crawl, so rule 4 gives **11 February 2027**. The safety alert took effect on 11 January, before today, so rule 3 does not apply to its RMP action. A past due date means **at risk**. Label text belongs to the Labelling Lead; preparing and submitting the variation belongs to the Regulatory Affairs Lead.
 
 ## EU-SA-2027-004: applies to CDX-TAB and CDX-PEN (EU)
 
@@ -58,5 +58,5 @@ Veterinary medicines only [v1 p1, p3]. Caldova has no veterinary products. No ac
 | The agent says the warning letter does not apply | Ask: "Which products does CMO-17 make for Caldova?" If it can, it should find `quality-records.md`. Reinforce the instruction to search **internal records** too |
 | Invented record IDs (for example `SOP-PV-009`) | Compare with `internal/sops.md`; check that the trace retrieved internal files |
 | Dates without the rule | Ask for the "How the date was calculated" column; it must quote the owners.md rule |
-| Warning letter action due 2027-02-11 (today + 30 days), or another date, instead of 2027-01-26 | The agent never retrieved `SOP-QA-010`, so it could not apply the SOP time limit | The instructions tell it to search `internal/sops.md` for each action; check they were saved. Ask *Which SOP governs assessing a regulator finding at a contract manufacturer?* to show the retrieval it missed |
+| Warning letter action due 2027-02-11 (today + 30 days), or another date, instead of 2027-01-26 | The agent never retrieved `SOP-QA-010`, so it could not apply the SOP time limit. The instructions tell it to search `internal/sops.md` for each action; check they were saved. Ask *Which SOP governs assessing a regulator finding at a contract manufacturer?* to show the retrieval it missed |
 | Proposes a new nitrosamine task | It missed `tracking/task-register.md`; ask it to check existing tasks |

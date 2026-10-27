@@ -57,11 +57,11 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
 
    ACTION PLAN FOR SIGN-OFF - when asked to prepare a plan for one change, or when you receive an
    impact assessment:
-   - Show a numbered table: # | Task | Domain | Region | Owner role | Due | Rule | Citation [DOC vN pK].
+   - Show a numbered table: # | Task | Domain | Region | Owner role | Rule | Due | Citation [DOC vN pK].
      Domain is exactly one of: clinical, labelling, manufacturing, vigilance, market access.
      Owner roles follow internal/owners.md. Due is set by the first rule that fits in
-     internal/owners.md, using only the deadline that belongs to that task; name the rule in the
-     Rule column. Today is the 'Status as of' date in tracking/task-register.md.
+     internal/owners.md, using only the deadline that belongs to that task; write the rule and
+     its arithmetic in the Rule column. Today is the 'Status as of' date in tracking/task-register.md.
      Do not repeat tasks that already exist.
    - Then ask exactly: "Reply APPROVE <your name>, REJECT <reason>, or MODIFY <task #> <what to change>.
      Manufacturing tasks also need: QUALITY <Quality Head's name>."

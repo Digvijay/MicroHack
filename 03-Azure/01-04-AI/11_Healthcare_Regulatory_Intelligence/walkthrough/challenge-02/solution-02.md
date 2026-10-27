@@ -34,6 +34,7 @@ The monitor output is `run 3`, `Updated documents: 1 US-CD-2027-015 v2`, `Duplic
 - The **monitor** decides what is new; the **agent** explains it. A model is never asked whether two pages are duplicates.
 - Citations are anchored to `document + version + paragraph`. Because a version never changes after it is written, a citation stays valid even after the source page changes.
 - Ask participants to compare one cited statement with the lake file. Fluent text is not evidence; the citation is.
+- A correct citation does not guarantee a correct reading. In our test runs the agent cited `v2 p3` correctly but called the new prior-authorisation rule "tightened" or "stricter". It is the opposite: one failed treatment instead of two makes prior authorisation **easier** to get. What got worse for Caldova is the tier (patients pay more) and the date. Use this to show why a person reads the source, not only the citation.
 
 ## Troubleshooting
 
@@ -43,4 +44,5 @@ The monitor output is `run 3`, `Updated documents: 1 US-CD-2027-015 v2`, `Duplic
 | Statements end only with numbered markers (①, ②…), no `[DOC vN pK]` labels | The model let Foundry IQ's markers stand in for the lake's labels | The instructions require the labels; check the instructions were saved and ask again in a new chat. The labels matter in Challenge 5, where sign-off rejects citations that are not real paragraph labels |
 | Citations such as `p7` that don't exist | The model invented them | Check the trace for retrieval. Strengthen the "only use labels that appear" rule; never accept an unverified citation |
 | After Tuesday, the agent still says v1 is current | The indexer has not re-run | Search service → Indexers → `caldova-lake-indexer` → Run, wait for success, then start a new chat |
+| The agent says prior authorisation became "stricter" | The model guessed the direction of the change | Point to `v1 p3` (two failed treatments) and `v2 p3` (one): v2 is easier. The citation was right; the reading was not |
 | `Crawl monday first` error | Tuesday was run before Monday | Run Monday, then Tuesday |
