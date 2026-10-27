@@ -130,9 +130,9 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
    The source appears under **Knowledge sources** with status **Creating**.
 
    ![The caldova-lake knowledge source listed under the knowledge base, status Creating](../images/challenge-01-knowledge-source-added.png)
-7. Select **Save knowledge base** and wait until the knowledge source shows that indexing has **succeeded** (a few minutes).
+7. Select **Save knowledge base**. Within a few minutes the status of `caldova-lake` changes from **Creating** to **Active**: the lake is indexed and your agents can search it. The **Use in an agent** button is how you will attach it in Challenge 2.
 
-> 📸 **Screenshot to add:** `images/challenge-01-knowledge-base-ready.png`: the `caldova-regulatory-kb` knowledge base with indexing succeeded.
+![The saved caldova-regulatory-kb knowledge base with the caldova-lake source Active](../images/challenge-01-knowledge-base-ready.png)
 
 ### Part E: Discuss (5 min)
 
@@ -142,7 +142,7 @@ Which steps of the monitor would you **never** hand to a language model, and why
 
 - [ ] The Monday monitor run reports **9 new documents** and **1 duplicate**.
 - [ ] You can show the change log, one normalised document with its paragraph labels, and a change event in the lake.
-- [ ] `caldova-regulatory-kb` exists, uses the `regulatory-knowledge` container and has finished indexing.
+- [ ] `caldova-regulatory-kb` exists, uses the `regulatory-knowledge` container, and its source `caldova-lake` is **Active**.
 - [ ] You can explain why crawling, de-duplication and versioning are done in code.
 
 ## 📚 Learning resources
