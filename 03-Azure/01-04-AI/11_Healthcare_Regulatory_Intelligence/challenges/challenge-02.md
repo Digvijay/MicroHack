@@ -47,6 +47,8 @@ An **agent** is a model with instructions, tools and knowledge. Your agent has n
       versions, citing the paragraph in each version.
 
    Rules:
+   - Write every citation as the paragraph label in square brackets, for example
+     [US-CD-2027-015 v2 p3], even when the reply also shows numbered reference markers.
    - Only use paragraph labels that appear in the retrieved text. Never invent a citation.
    - If a document or fact is not in the knowledge base, say "Not found in the regulatory lake".
    - Do not judge what the document means for Caldova; another agent does that.
@@ -120,7 +122,9 @@ The row under each answer lists the calls the agent made, for example the knowle
 
    The agent should report that v1 is **superseded** by v2. Its version history should show that the effective date moved from 1 March to 1 April 2027, prior authorisation now needs **one** failed treatment rather than two, and the evidence deadline moved to 1 March 2027.
 
-> 📸 **Screenshot to add:** `images/challenge-02-version-history.png`: the agent's version history for US-CD-2027-015.
+![Version history for US-CD-2027-015: v1 superseded, v2 current, with the three changes](../images/challenge-02-version-history.png)
+
+   Check that every statement in *What it says* ends with a paragraph label such as `[US-CD-2027-015 v1 p2]`, not only with a numbered marker. If the labels are missing, the agent is not following its rules; ask again in a new chat.
 
 ### Part D: Look at the trace (5 min)
 
