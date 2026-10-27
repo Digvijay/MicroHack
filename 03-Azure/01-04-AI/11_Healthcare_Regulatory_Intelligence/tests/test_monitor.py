@@ -80,8 +80,12 @@ def test_cli_reports_errors_without_traceback(tmp_path, capsys):
     assert "ERROR: Crawl monday first" in capsys.readouterr().err
     assert main(["--lake", str(tmp_path / "l"), "monitor", "--day", "monday"]) == 0
     assert "New documents:          9" in capsys.readouterr().out
-    saved = (tmp_path / "l" / "lake-raw" / "reports" / "monitor-monday.txt").read_text(encoding="utf-8")
-    assert "Duplicates ignored:     1" in saved
+    saved = (tmp_path / "l" / "lake-raw" / "reports" / "monitor-monday-run1.txt").read_text(encoding="utf-8")
+    assert "run 1" in saved and "Duplicates ignored:     1" in saved
+    assert main(["--lake", str(tmp_path / "l"), "monitor", "--day", "monday"]) == 0
+    rerun = capsys.readouterr().out
+    assert "run 2" in rerun and "Nothing changed since the last crawl" in rerun
+    assert (tmp_path / "l" / "lake-raw" / "reports" / "monitor-monday-run1.txt").read_text(encoding="utf-8") == saved
 
 
 def test_az_never_reads_the_terminal_or_draws_progress(monkeypatch):

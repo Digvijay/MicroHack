@@ -48,22 +48,26 @@ def upload(lake: Lake, account: str) -> None:
 
 
 def _print_monitor(report: dict, lake: Lake) -> None:
+    run = len(lake.state()["runs"])
+    changed = len(report["new"]) + len(report["updated"])
     lines = [
-        f"Regulatory Web and Change Monitor - {report['day']} ({report['date']})",
+        f"Regulatory Web and Change Monitor - {report['day']} ({report['date']}), run {run}",
         f"  Pages crawled:          {report['pages_crawled']} ({report['navigation_pages']} index pages)",
         f"  Links not followed:     {report['skipped_links']} (outside the allowlisted portals)",
         f"  New documents:          {len(report['new'])}  {', '.join(report['new'])}",
         f"  Updated documents:      {len(report['updated'])}  {', '.join(report['updated'])}",
         f"  Duplicates ignored:     {len(report['duplicates'])}",
         *[f"    - {duplicate}" for duplicate in report["duplicates"]],
-        f"  Change events written:  {len(report['new']) + len(report['updated'])}  (lake-raw/events)",
+        f"  Change events written:  {changed}  (lake-raw/events)",
         "  Change log:             regulatory-knowledge/change-log.md",
     ]
-    report_path = lake.raw / "reports" / f"monitor-{report['day']}.txt"
+    if not changed:
+        lines.append("  Nothing changed since the last crawl, so no new change events were raised.")
+    report_path = lake.raw / "reports" / f"monitor-{report['day']}-run{run}.txt"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("\n".join(lines))
-    print(f"  Summary saved:          {report_path}")
+    print(f"  Summary saved:          lake-raw/reports/{report_path.name}")
 
 
 def main(argv=None) -> int:

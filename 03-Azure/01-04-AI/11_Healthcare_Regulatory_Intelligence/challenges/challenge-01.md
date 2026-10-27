@@ -52,6 +52,9 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
 
    If your facilitator gives you a fork or a branch, use that repository URL and add `--branch <name>` after `--sparse`.
 
+   > [!NOTE]
+   > Cloud Shell without storage starts empty every session. If it restarts or times out, you are back in your home folder (`~`) and the copy is gone: repeat this step. Nothing is lost, because everything the monitor finds is stored in your storage account.
+
 3. Check that Cloud Shell uses your lab subscription: `az account show --query name -o tsv`. If not, run `az account set --subscription "<lab subscription>"`.
 4. Run Monday's crawl. Replace `<StorageAccountName>` with the value from your dashboard:
 
@@ -59,12 +62,16 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
    python3 -m regintel --account <StorageAccountName> monitor --day monday
    ```
 
-5. Read the summary. It is also saved in the lake as `lake-raw/reports/monitor-monday.txt`; if your Cloud Shell session closes, open it again with `cat out/lake/lake-raw/reports/monitor-monday.txt` or in the Storage browser in Part C. Answer for your team:
+5. Read the summary. Each run's summary is also saved in the lake, for example `lake-raw/reports/monitor-monday-run1.txt`, so you can find it in the Storage browser in Part C even if Cloud Shell closes. Answer for your team:
    - How many pages were crawled, and how many of them were just index pages?
    - Which document was found twice, and why is it **not** counted as new?
    - Which links were not followed, and why is that a good thing?
 
 > 📸 **Screenshot to add:** `images/challenge-01-monitor-monday.png`: Cloud Shell showing the Monday monitor summary.
+
+6. Run exactly the same command again. A monitor that runs every hour must not raise the same change twice. This time it reports **0 new** and **10 duplicates**, and writes no change events.
+
+> 📸 **Screenshot to add:** `images/challenge-01-monitor-rerun.png`: the second Monday run with 0 new documents and 10 duplicates.
 
 ### Part C: Look inside the lake (10 min)
 

@@ -7,17 +7,20 @@
 ## Expected monitor output (Monday)
 
 ```text
-Regulatory Web and Change Monitor - monday (2027-01-11)
+Regulatory Web and Change Monitor - monday (2027-01-11), run 1
   Pages crawled:          15 (5 index pages)
   Links not followed:     2 (outside the allowlisted portals)
   New documents:          9  EU-SA-2027-004 v1, EU-GD-2027-011 v1, EU-GD-2027-019 v1, UK-SA-2027-002 v1, UK-REG-2027-001 v1, US-EL-2027-007 v1, US-REG-2027-003 v1, US-CD-2027-015 v1, UK-PR-2027-001 v1
   Updated documents:      0
   Duplicates ignored:     1
     - EU-SA-2027-004 v1 (same content at another address): portal://eu-medicines-regulator/news/2027-01-11-caldivex.html
-  Change events written:  9
+  Change events written:  9  (lake-raw/events)
+  Change log:             regulatory-knowledge/change-log.md
+  Summary saved:          lake-raw/reports/monitor-monday-run1.txt
+Uploaded the lake to storage account '<StorageAccountName>': containers 'lake-raw' and 'regulatory-knowledge'.
 ```
 
-Then two `Uploaded the lake …` lines confirm that both containers were written.
+The repeat run in step 6 is `run 2`, with `New documents: 0`, `Duplicates ignored: 10`, `Change events written: 0` and the line `Nothing changed since the last crawl, so no new change events were raised.` If a participant's **first** run already shows 0 new, someone has crawled Monday before in this lab; the change log under *Monitor runs* shows every run.
 
 ### Answers to the Part B questions
 
