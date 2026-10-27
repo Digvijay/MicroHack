@@ -41,5 +41,5 @@ The monitor output is: `Updated documents: 1 US-CD-2027-015 v2` and `Duplicates 
 |---|---|---|
 | The agent answers without citations or from general knowledge | The knowledge tool is missing, or a Web Search tool is still attached | Keep only `caldova-regulatory-kb`; save; start a new chat |
 | Citations such as `p7` that don't exist | The model invented them | Check the trace for retrieval. Strengthen the "only use labels that appear" rule; never accept an unverified citation |
-| After Tuesday, the agent still says v1 is current | The indexer has not re-run | Search service → Indexers → Run, wait for success, then start a new chat |
+| After Tuesday, the agent still says v1 is current | The indexer has not re-run | Search service → Indexers → `caldova-lake-indexer` → Run, wait for success, then start a new chat |
 | `Crawl monday first` error | Tuesday was run before Monday | Run Monday, then Tuesday |

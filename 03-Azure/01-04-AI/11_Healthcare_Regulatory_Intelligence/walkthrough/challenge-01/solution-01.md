@@ -48,7 +48,10 @@ Every publication type in the case overview appears once: regulation, guidance, 
 ## Knowledge base setup notes
 
 - The knowledge source must point at **`regulatory-knowledge`**. Indexing `lake-raw` would add raw HTML copies and JSON events, which makes retrieval noisy and duplicates citations.
-- The search service's managed identity already has **Storage Blob Data Reader** on the storage account and **Cognitive Services OpenAI User** on the Foundry account. Participants have **Foundry Project Manager** on the project, which they need to add the knowledge connection.
+- Two identities are involved, and both are set up by the template:
+  - **Connect** uses **Project Managed Identity**: the project's identity has Search Service Contributor, Search Index Data Contributor and Search Index Data Reader on the search service. Search API keys are disabled, so *API Key* fails.
+  - The **knowledge source** uses **System assigned identity**: the search service's identity has Storage Blob Data Reader on the storage account and Cognitive Services OpenAI User on the Foundry account (for embeddings). The storage account has no access keys, so *API Key* fails.
+- The portal creates an indexer named **`caldova-lake-indexer`**. After Monday's crawl it processes **21 items, 0 failed**: 9 documents, the change log, 9 internal records, `reference/geographies.md` and `tracking/task-register.md`. Participants re-run this indexer after every monitor run or sign-off.
 - **Minimal** reasoning effort with **extractive** output is deliberate: the knowledge base only retrieves, and the agents reason. This also keeps cost and latency low.
 
 ## Troubleshooting

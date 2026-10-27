@@ -110,11 +110,26 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
 
    ![Create a new knowledge base: name, chat completions model, Minimal reasoning effort and Extractive data output](../images/challenge-01-knowledge-base-form.png)
 
-6. Under **Knowledge sources**, select **Add sources** and choose **Azure Blob Storage**:
-   - Storage account: `StorageAccountName`; container: **`regulatory-knowledge`** (not `lake-raw`).
-   - Authentication: **managed identity** (the system identity of your search service). It already has read access.
-   - Embedding model: `EmbeddingDeploymentName`.
-   - Name it `caldova-lake`.
+6. Under **Knowledge sources**, select **Add sources** and choose **Azure Blob Storage**. In **Create a knowledge source**, on the **General** tab:
+
+   | Field | Value |
+   |---|---|
+   | Name | `caldova-lake` (replace the generated name) |
+   | Description | *Caldova regulatory lake: monitored regulator and payer documents with paragraph citations, Caldova's internal records, change log and task register.* Agents read this to decide when to use the source. |
+   | Storage account | `StorageAccountName` |
+   | Container name | **`regulatory-knowledge`** (not `lake-raw`) |
+   | Authentication type | **System assigned identity** (not *API Key*: the storage account accepts no keys; the search service's identity already has read access) |
+   | Content extraction mode | **Minimal** (the lake is plain text) |
+   | Embedding model | `EmbeddingDeploymentName` (`text-embedding-3-small`) |
+   | Chat completions model | leave empty |
+
+   Leave the **Advanced** tab as it is and select **Create**.
+
+   ![Create a knowledge source: caldova-lake on the regulatory-knowledge container with System assigned identity](../images/challenge-01-knowledge-source.png)
+
+   The source appears under **Knowledge sources** with status **Creating**.
+
+   ![The caldova-lake knowledge source listed under the knowledge base, status Creating](../images/challenge-01-knowledge-source-added.png)
 7. Select **Save knowledge base** and wait until the knowledge source shows that indexing has **succeeded** (a few minutes).
 
 > 📸 **Screenshot to add:** `images/challenge-01-knowledge-source.png`: creating the Azure Blob Storage knowledge source on the `regulatory-knowledge` container.

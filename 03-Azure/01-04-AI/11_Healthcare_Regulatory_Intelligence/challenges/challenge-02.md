@@ -88,7 +88,7 @@ The agent should say that it is **not found**, and it should not make one up.
    ```
 
    The monitor should report **1 updated document** (`US-CD-2027-015 v2`) and treat everything else as a duplicate.
-2. Refresh the knowledge base so it picks up the new files. In the Azure portal, open your **search service → Indexers**, select the indexer for `caldova-lake` and choose **Run**. Wait until the run succeeds.
+2. Refresh the knowledge base so it picks up the new files. In the Azure portal, open your search service (`SearchServiceName`), then **Search management → Indexers**, select **`caldova-lake-indexer`** and choose **Run**. Wait until the run succeeds.
 3. Ask the agent:
 
    ```text
