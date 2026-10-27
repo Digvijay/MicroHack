@@ -67,5 +67,5 @@ Discussion answer: instructions guide a model, but they can be ignored or misrea
 | The agent says "tasks created" | Point to the instruction "Never claim that tasks were created"; nothing exists until the command succeeds |
 | JSON contains extra text or comments | Copy only the JSON block; the tool reports invalid JSON clearly |
 | `owner_role must be one of …` | The agent used a role that is not in `owners.md`; MODIFY the task |
-| Progress not visible to the agent | Re-run the indexer after `signoff` or `task`; start a new chat |
+| Progress not visible to the agent: it lists only the three 2026 tasks | The indexer was not re-run after `signoff` or `task` (happened in our test run). The lake is correct; the index is stale | Re-run `caldova-lake-indexer`, wait for Success, start a new chat |
 | Cloud Shell timed out between steps | Clone again; `--account` makes the tool download the state and the task register first |
