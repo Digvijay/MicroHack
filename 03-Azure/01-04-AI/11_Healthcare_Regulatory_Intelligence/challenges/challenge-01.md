@@ -67,11 +67,11 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
    - Which document was found twice, and why is it **not** counted as new?
    - Which links were not followed, and why is that a good thing?
 
-> 📸 **Screenshot to add:** `images/challenge-01-monitor-monday.png`: Cloud Shell showing the Monday monitor summary.
+![Cloud Shell: the first Monday run finds 9 new documents and 1 duplicate, writes 9 change events and uploads the lake](../images/challenge-01-monitor-monday.png)
 
 6. Run exactly the same command again. A monitor that runs every hour must not raise the same change twice. This time it reports **0 new** and **10 duplicates**, and writes no change events.
 
-> 📸 **Screenshot to add:** `images/challenge-01-monitor-rerun.png`: the second Monday run with 0 new documents and 10 duplicates.
+![Cloud Shell: the second Monday run finds 0 new documents and 10 duplicates and raises no change events](../images/challenge-01-monitor-rerun.png)
 
 ### Part C: Look inside the lake (10 min)
 
