@@ -5,6 +5,7 @@
 - [**MicroHack context**](#microhack-context)
 - [**Objectives**](#objectives)
 - [**MicroHack challenges**](#microhack-challenges)
+- [**Contributors**](#contributors)
 
 ## MicroHack introduction
 
@@ -141,3 +142,11 @@ By the end of the day you can:
 | [Finish](challenges/finish.md) | Measure the impact and clean up | 20 min |
 
 Solutions and expected results for coaches are in [walkthrough](walkthrough/).
+
+## Contributors
+
+| Name | Role |
+|---|---|
+| Digvijay Chauhan | Author & maintainer |
+
+<!-- Add your name here when you contribute -->
