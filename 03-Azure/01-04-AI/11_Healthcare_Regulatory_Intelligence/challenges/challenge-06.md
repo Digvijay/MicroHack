@@ -106,7 +106,7 @@ Open `orchestrator/.env` and set `FOUNDRY_PROJECT_ENDPOINT` to the value from yo
 
 Stuck for more than 10 minutes? Compare with `orchestrator/workflow.py`, which is the finished version, or switch to the shortcut.
 
-> 📸 **Screenshot to add:** `images/challenge-06-check-starter.png`: `check_starter.py` showing NOT YET for a TODO, then PASS.
+![check_starter.py on the unfinished starter: NOT YET, with the next TODO to do](../images/challenge-06-check-starter.png)
 
 ### Part D: Process the rest and follow one through (15 min)
 
@@ -121,7 +121,7 @@ Stuck for more than 10 minutes? Compare with `orchestrator/workflow.py`, which i
 3. In Foundry, open **Traces** for `briefing-agent` and select one run. What did it receive from `impact-agent`?
 4. Discuss: what should trigger the assistant in production (a schedule, a storage event or a queue), and where would you publish it for staff?
 
-> 📸 **Screenshot to add:** `images/challenge-06-process-events.png`: the terminal processing change events and writing briefings.
+![The assistant processes the warning letter event, writes the briefing and uploads it to the lake](../images/challenge-06-process-events.png)
 
 > 📸 **Screenshot to add:** `images/challenge-06-pending-briefing.png`: a briefing in the lake marked PENDING HUMAN SIGN-OFF.
 

@@ -54,6 +54,15 @@ Ask shortcut participants to explain stop 4 back to you in one sentence: "Each s
 - Each briefing starts with a table: **PENDING HUMAN SIGN-OFF**, the event, the region, the time and the agent versions (for example `citation-agent v1, impact-agent v2, briefing-agent v1`).
 - In Traces, the `briefing-agent` run receives the impact assessment as its input.
 
+## What our test run produced
+
+The warning-letter event took about a minute and produced a briefing marked **PENDING HUMAN SIGN-OFF** with `citation-agent v3, impact-agent v6, briefing-agent v6`. The reasoning was right: it applies through CMO-17, with `DEV-2026-114`, no second site and the at-risk `TASK-2026-044`. Two things were wrong, and they make a good closing discussion:
+
+- It did not retrieve `SOP-QA-010` this time, so every action fell back to today + 30 days (2027-02-11) instead of 2027-01-26. The same agent got it right when asked directly in Challenge 3: retrieval varies between runs.
+- It proposed a *Supply Chain Lead*, a role that is not in `owners.md`. The sign-off tool would refuse that task, so the error cannot reach the task register.
+
+This is why the assistant only ever proposes: a person reviews the briefing and the sign-off tool checks the record.
+
 ## Troubleshooting
 
 | Symptom | Fix |
