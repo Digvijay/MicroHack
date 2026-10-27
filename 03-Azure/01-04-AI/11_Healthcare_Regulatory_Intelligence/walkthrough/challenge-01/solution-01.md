@@ -53,6 +53,7 @@ Every publication type in the case overview appears once: regulation, guidance, 
 | Symptom | Cause | Fix |
 |---|---|---|
 | `ERROR: Azure Storage command failed … AuthorizationPermissionMismatch` | Role assignment still propagating, or the wrong subscription | Wait 5 minutes; check `az account show`; use the exact `StorageAccountName` |
+| `The request may be blocked by network rules of storage account` | Tenant automation disabled public network access on the new storage account (seen in managed tenants such as MCAPS). The template's `SecurityControl: Ignore` tag prevents it; accounts deployed before the tag existed need it added | Facilitator: `az storage account update -n <StorageAccountName> -g <ResourceGroupName> --tags SecurityControl=Ignore`, then the same command with `--public-network-access Enabled` |
 | `python3: No module named regintel` | Not in the lab folder | `cd` to `…/11_Healthcare_Regulatory_Intelligence` |
 | Cloud Shell session lost | Cloud Shell without storage is temporary | Repeat the clone. The tool downloads its state from `lake-raw` before each run, so nothing is lost |
 | Search service not offered in Foundry | Connected to the wrong project | Open the project that matches `FoundryProjectEndpoint` |

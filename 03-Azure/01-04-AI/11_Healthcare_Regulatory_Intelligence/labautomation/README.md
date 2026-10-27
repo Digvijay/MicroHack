@@ -11,7 +11,7 @@ This folder follows the [scaffolding prompt](../.github/prompts/scaffold-lab-aut
 | Microsoft Foundry account and project `regulatory-intelligence` | Agents, traces and model deployments |
 | Chat model `gpt-5.4-mini` (version 2026-03-17, GlobalStandard, capacity 200) | Used by all four agents |
 | Embedding model `text-embedding-3-small` (GlobalStandard, capacity 30) | Used by Foundry IQ to index the lake |
-| Storage account with private containers `lake-raw` and `regulatory-knowledge` | The regulatory lake. Shared keys and public access are disabled |
+| Storage account with private containers `lake-raw` and `regulatory-knowledge` | The regulatory lake. Shared keys and public blob access are disabled; access is by Entra ID only. Tagged `SecurityControl: Ignore` (parameter `storageTags`) so that tenant automation in managed subscriptions does not disable public network access, which Cloud Shell and the Search indexer need |
 | Azure AI Search (Basic, semantic ranker free plan) with a system-assigned identity | Foundry IQ knowledge base |
 | Log Analytics and Application Insights | Monitoring |
 

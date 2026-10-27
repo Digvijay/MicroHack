@@ -29,14 +29,18 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
 
 ### Part A: Check your Foundry project (5 min)
 
-1. Open [ai.azure.com](https://ai.azure.com) and select **your** project. Match the **Parent resource** to the `FoundryProjectEndpoint` on your lab dashboard.
-2. Open **Models → Deployments**. Confirm that the chat model (`ModelDeploymentName`, default `gpt-5.4-mini`) and the embedding model (`EmbeddingDeploymentName`, default `text-embedding-3-small`) both show **Succeeded**.
+1. Open [ai.azure.com](https://ai.azure.com) and make sure the **New Foundry** toggle at the top right is on.
+2. Select **your** project from the project picker next to *Microsoft Foundry* at the top left. Its name is the last part of `FoundryProjectEndpoint` on your lab dashboard (`regulatory-intelligence`). The account name at the start of the endpoint tells your project apart from other attendees'.
+3. In the top menu select **Build**, then **Models** in the left menu. On the **Deployments** tab, under **Serverless deployments**, confirm that the chat model (`ModelDeploymentName`, default `gpt-5.4-mini`) and the embedding model (`EmbeddingDeploymentName`, default `text-embedding-3-small`) both show **Deployment status: Succeeded**.
 
-> 📸 **Screenshot to add:** `images/challenge-01-model-deployments.png`: Models → Deployments with both deployments Succeeded.
+![Build, then Models, Deployments tab: gpt-5.4-mini and text-embedding-3-small with deployment status Succeeded](../images/challenge-01-model-deployments.png)
 
 ### Part B: Run the monitor in Cloud Shell (15 min)
 
-1. In a private browser window, sign in to the [Azure portal](https://portal.azure.com) with your lab account. Open **Cloud Shell** (`>_`) and choose **Bash**. If you are asked about storage, choose the option without storage.
+1. In a private browser window, sign in to the [Azure portal](https://portal.azure.com) with your lab account. Select the **Cloud Shell** icon (`>_`) in the top bar and choose **Bash**. If you are asked about storage, choose the option without storage.
+
+   ![The Cloud Shell icon in the Azure portal top bar](../images/challenge-01-open-cloud-shell.png)
+
 2. Copy only this lab from GitHub and move into it:
 
    ```bash
@@ -46,7 +50,7 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
    cd 03-Azure/01-04-AI/11_Healthcare_Regulatory_Intelligence
    ```
 
-   If your facilitator gives you a branch or tag, add `--branch <name>` after `--sparse`.
+   If your facilitator gives you a fork or a branch, use that repository URL and add `--branch <name>` after `--sparse`.
 
 3. Check that Cloud Shell uses your lab subscription: `az account show --query name -o tsv`. If not, run `az account set --subscription "<lab subscription>"`.
 4. Run Monday's crawl. Replace `<StorageAccountName>` with the value from your dashboard:
@@ -77,7 +81,7 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
 
 ### Part D: Build the Foundry IQ knowledge base (25 min)
 
-1. In the Foundry portal (with the **New Foundry** toggle on), select **Build** in the top menu, then the **Knowledge** tab.
+1. In the Foundry portal, select **Build** in the top menu, then **Knowledge** in the left menu.
 2. When asked, **connect your existing Azure AI Search service** (`SearchServiceName` from the dashboard). Do not create a new one.
 3. **Create a knowledge base** named `caldova-regulatory-kb`, adding one knowledge source as follows.
 4. **Knowledge source** of type **Azure Blob Storage**:

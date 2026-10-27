@@ -39,11 +39,16 @@ def test_markdown_links_resolve_inside_the_lab():
 
 
 def test_screenshot_placeholders_are_named_and_unique():
-    names = []
+    placeholders, images = [], []
     for path in MARKDOWN:
-        names += re.findall(r"Screenshot to add:\*\* `(images/[a-z0-9-]+\.png)`", path.read_text(encoding="utf-8"))
-    assert len(names) >= 15
-    assert len(names) == len(set(names)), "Each placeholder needs its own file name"
+        text = path.read_text(encoding="utf-8")
+        placeholders += re.findall(r"Screenshot to add:\*\* `(images/[a-z0-9-]+\.png)`", text)
+        images += [m.lstrip("./") for m in re.findall(r"!\[[^\]]*\]\(((?:\.\./)?images/[a-z0-9-]+\.png)\)", text)]
+    names = placeholders + images
+    assert len(names) >= 27, "Every planned screenshot needs a placeholder or an image"
+    assert len(names) == len(set(names)), "Each screenshot needs its own file name"
+    already_taken = [name for name in placeholders if (LAB / name).is_file()]
+    assert not already_taken, f"Replace these placeholders with the image: {already_taken}"
 
 
 def test_only_the_simple_cast_remains():

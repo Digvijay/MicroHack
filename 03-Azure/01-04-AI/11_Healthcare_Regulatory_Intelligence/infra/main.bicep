@@ -22,6 +22,9 @@ param chatCapacity int = 200
 @minValue(1)
 param embeddingCapacity int = 30
 
+@description('Tags for the storage account. The default exempts it from tenant automation that disables public network access.')
+param storageTags object = { SecurityControl: 'Ignore' }
+
 var foundryName = 'airegintel${resourceSuffix}'
 var projectName = 'regulatory-intelligence'
 var blobContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
@@ -104,6 +107,9 @@ resource embedding 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01'
 resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: 'stregintel${resourceSuffix}'
   location: location
+  // Some managed tenants disable public access on new storage accounts unless this tag is set.
+  // Cloud Shell and the Search indexer reach the lake over the public endpoint with Entra ID.
+  tags: storageTags
   kind: 'StorageV2'
   sku: { name: 'Standard_LRS' }
   properties: {
