@@ -1,7 +1,7 @@
 {
-  "name": "Caldova Regulatory Intelligence (repository / Codespaces)",
+  "name": "Azure / AI / Regulatory Intelligence",
   "build": {
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "../../03-Azure/01-04-AI/11_Healthcare_Regulatory_Intelligence/.devcontainer/Dockerfile"
   },
   "features": {
     "ghcr.io/devcontainers/features/azure-cli:1": {
@@ -13,7 +13,9 @@
   "remoteUser": "vscode",
   "waitFor": "postCreateCommand",
   "postCreateCommand": "uv sync --frozen --all-extras && uv run --frozen --all-extras pytest -q",
-  "forwardPorts": [8088],
+  "forwardPorts": [
+    8088
+  ],
   "portsAttributes": {
     "8088": {
       "label": "Regulatory Intelligence Assistant (local run)",
@@ -32,7 +34,9 @@
         "python.defaultInterpreterPath": "/home/vscode/.venvs/regintel/bin/python",
         "python.testing.pytestEnabled": true,
         "python.testing.unittestEnabled": false,
-        "python.testing.pytestArgs": ["tests"],
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
         "terminal.integrated.defaultProfile.linux": "bash",
         "git.openRepositoryInParentFolders": "always"
       }

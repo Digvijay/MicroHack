@@ -19,6 +19,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: devcontainers/ci@v0.3
         with:
-          configFile: 03-Azure/01-04-AI/11_Healthcare_Regulatory_Intelligence/.devcontainer/repository/devcontainer.json
+          configFile: .devcontainer/03-azure-01-04-ai-11-healthcare-regulatory-intelligence/devcontainer.json
           push: never
           runCmd: uv run --frozen --all-extras pytest -q

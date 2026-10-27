@@ -14,17 +14,17 @@ The `regintel` tools use only the Python standard library and the Azure CLI. Onl
 
 ## GitHub Codespaces
 
-This lab's container settings live **inside the lab folder**, so choose them explicitly:
+Codespaces only reads dev container configurations from the repository root's `.devcontainer` folder, where every MicroHack has its own folder. This lab's is `.devcontainer/03-azure-01-04-ai-11-healthcare-regulatory-intelligence/`; it builds from the same Dockerfile as the lab's local devcontainer. Choose it explicitly:
 
 1. On GitHub, open the repository and branch your facilitator names, then select **Code → Codespaces → … → New with options**.
-2. Under **Dev container configuration**, select **Caldova Regulatory Intelligence (repository / Codespaces)**.
+2. Under **Dev container configuration**, select **Azure / AI / Regulatory Intelligence**.
 3. Select **Create codespace**. Codespaces may be billed to your GitHub account or organisation.
 
 From a terminal you can do the same:
 
 ```bash
 gh codespace create --repo <owner>/MicroHack --branch <branch> \
-  --devcontainer-path 03-Azure/01-04-AI/11_Healthcare_Regulatory_Intelligence/.devcontainer/repository/devcontainer.json
+  --devcontainer-path .devcontainer/03-azure-01-04-ai-11-healthcare-regulatory-intelligence/devcontainer.json
 ```
 
 ## Dev container on your machine

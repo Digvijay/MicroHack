@@ -97,11 +97,16 @@ def test_containers_and_dependencies_are_reproducible():
     pins = (LAB / "orchestrator" / "requirements.txt").read_text(encoding="utf-8").split()
     assert pins == project["project"]["optional-dependencies"]["orchestrator"]
     local = json.loads((LAB / ".devcontainer" / "devcontainer.json").read_text(encoding="utf-8"))
-    repository = json.loads((LAB / ".devcontainer" / "repository" / "devcontainer.json").read_text(encoding="utf-8"))
     assert "target=/workspaces/regulatory-intelligence," in local["workspaceMount"]
-    assert repository["workspaceFolder"].endswith("/03-Azure/01-04-AI/11_Healthcare_Regulatory_Intelligence")
-    for key in ("features", "postCreateCommand", "waitFor", "forwardPorts", "portsAttributes", "customizations", "remoteUser"):
-        assert repository[key] == local[key], key
+    # Codespaces only reads configurations under the repository root .devcontainer folder.
+    # It is absent when only this lab folder is mounted into the local devcontainer.
+    codespaces = LAB.parents[2] / ".devcontainer" / "03-azure-01-04-ai-11-healthcare-regulatory-intelligence" / "devcontainer.json"
+    if codespaces.is_file():
+        repository = json.loads(codespaces.read_text(encoding="utf-8"))
+        assert repository["workspaceFolder"].endswith("/03-Azure/01-04-AI/11_Healthcare_Regulatory_Intelligence")
+        assert (codespaces.parent / repository["build"]["dockerfile"]).resolve() == (LAB / ".devcontainer" / "Dockerfile").resolve()
+        for key in ("features", "postCreateCommand", "waitFor", "forwardPorts", "portsAttributes", "customizations", "remoteUser"):
+            assert repository[key] == local[key], key
     assert local["postCreateCommand"] == "uv sync --frozen --all-extras && uv run --frozen --all-extras pytest -q"
     assert all(port["visibility"] == "private" for port in local["portsAttributes"].values())
     assert "out/" in (LAB / ".gitignore").read_text(encoding="utf-8").splitlines()

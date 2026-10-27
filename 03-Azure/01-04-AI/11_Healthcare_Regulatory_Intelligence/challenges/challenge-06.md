@@ -35,7 +35,7 @@ Both paths share Parts A, B and D. Only Part C differs.
 ### Part A: Open the lab in GitHub Codespaces (10 min)
 
 1. On GitHub, open the repository that your facilitator names (`microsoft/MicroHack` or a fork), then select **Code → Codespaces → … → New with options**.
-2. Under **Dev container configuration**, choose **Caldova Regulatory Intelligence (repository / Codespaces)**, then **Create codespace**.
+2. Under **Dev container configuration**, choose **Azure / AI / Regulatory Intelligence**, then **Create codespace**. If the terminal greets you with *You are on our default image*, you picked the wrong configuration: delete that codespace and create a new one with this option.
 3. Wait until the setup finishes. It installs the pinned Python packages and runs every lab test. The terminal must end with **`passed`** and no failures.
 
    Prefer your own machine? Use the lab's [devcontainer](../environment/README.md) in VS Code; the experience is identical.
