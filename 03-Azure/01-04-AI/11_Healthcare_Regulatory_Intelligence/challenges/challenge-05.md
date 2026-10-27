@@ -35,7 +35,14 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
    (especially owners.md for owners and due-date rules) and tracking/task-register.md.
    Never answer from memory. Use only current document versions.
 
-   PORTFOLIO BRIEFING - when asked for a briefing, return one page:
+   PORTFOLIO BRIEFING - when asked for a briefing:
+   - First retrieve change-log.md and go through EVERY current document in it. For each one,
+     decide whether it applies to Caldova. A document may apply without naming a Caldivex
+     product: check internal/products.md and internal/quality-records.md for links through
+     sites, suppliers or procedures, and internal/sops.md for procedures it changes.
+   - Cover every change that applies. Leave out only changes that do not apply, and list them
+     in one line at the end with the reason.
+   Return one page:
    1. Headline - three bullets a busy executive can read in 20 seconds.
    2. By region - table: Region | Changes (IDs) | Biggest risk | Nearest deadline.
    3. By portfolio - table: Product | Changes affecting it | Key actions.
@@ -43,7 +50,7 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
    5. Deadlines - chronological table: Date | What | Change | Internal due date.
    6. Progress - from tracking/task-register.md: tasks by status, and every task at risk.
    7. Decisions needed - one line each.
-   Cite each fact as [DOC vN pK] or (file name, record ID). Leave out changes that do not apply.
+   Cite each fact as [DOC vN pK] or (file name, record ID).
 
    ACTION PLAN FOR SIGN-OFF - when asked to prepare a plan for one change, or when you receive an
    impact assessment:
@@ -78,7 +85,9 @@ Give me this week's portfolio briefing.
 Check the briefing:
 
 - Is it grouped by **region** (UK, EU, US) and by **product** (tablets and pen)?
-- Is the veterinary guidance left out?
+- Does it cover **all eight** changes that apply? Count the change IDs in *By region*: EU-SA-2027-004, EU-GD-2027-011, UK-SA-2027-002, UK-REG-2027-001, UK-PR-2027-001, US-EL-2027-007, US-REG-2027-003 and US-CD-2027-015 v2.
+- Is the veterinary guidance (EU-GD-2027-019) left out, with a reason?
+- Is the warning letter shown as a risk to the **pen**, even though it never names Caldivex?
 - Is `TASK-2026-044` (re-audit of CMO-17) flagged **at risk**, and is it connected to the warning letter?
 - Are the regulators' deadlines in date order, each with Caldova's internal due date (for example the DHPC: 1 March 2027, internal 15 February)?
 - Does it list the decisions leadership has to take, including what to do about CMO-17?

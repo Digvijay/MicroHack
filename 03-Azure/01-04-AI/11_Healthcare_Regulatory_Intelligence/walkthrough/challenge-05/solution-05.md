@@ -59,6 +59,7 @@ Discussion answer: instructions guide a model, but they can be ignored or misrea
 
 | Symptom | Fix |
 |---|---|
+| The briefing covers only 3 or 4 changes and misses the warning letter, the PSUR rule or the trial summary | The agent retrieved a few strong matches and stopped. Our first test run covered only the two safety alerts and the payer policy, and said the pen had no US change | The instructions make it go through every document in `change-log.md`; check they were saved and ask again in a new chat. Point participants back to the impact assessments from Challenge 3 |
 | The agent says "tasks created" | Point to the instruction "Never claim that tasks were created"; nothing exists until the command succeeds |
 | JSON contains extra text or comments | Copy only the JSON block; the tool reports invalid JSON clearly |
 | `owner_role must be one of …` | The agent used a role that is not in `owners.md`; MODIFY the task |
