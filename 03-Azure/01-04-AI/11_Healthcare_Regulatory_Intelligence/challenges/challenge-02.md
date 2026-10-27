@@ -122,7 +122,7 @@ The row under each answer lists the calls the agent made, for example the knowle
 
    The agent should report that v1 is **superseded** by v2. Its version history should show that the effective date moved from 1 March to 1 April 2027, prior authorisation now needs **one** failed treatment rather than two, and the evidence deadline moved to 1 March 2027.
 
-![Version history for US-CD-2027-015: v1 superseded, v2 current, with the three changes](../images/challenge-02-version-history.png)
+![Citation card for US-CD-2027-015 v1: every statement ends with its paragraph label, the version history cites both versions, and v1 is no longer current](../images/challenge-02-version-history.png)
 
    Check that every statement in *What it says* ends with a paragraph label such as `[US-CD-2027-015 v1 p2]`, not only with a numbered marker. If the labels are missing, the agent is not following its rules; ask again in a new chat.
 
