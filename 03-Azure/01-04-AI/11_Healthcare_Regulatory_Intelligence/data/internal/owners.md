@@ -6,6 +6,8 @@ Caldova uses roles, not personal names, in this register.
 
 ## Who owns which domain
 
+Caldova records every task under one of five domains: **clinical**, **labelling**, **manufacturing**, **vigilance** or **market access**.
+
 | Domain | Owner role | Typical work |
 |---|---|---|
 | Labelling | Labelling Lead | Label text, translations and artwork: the content of a label change |
@@ -13,7 +15,7 @@ Caldova uses roles, not personal names, in this register.
 | Clinical | Clinical Disclosure Lead | Trial registration and results disclosure |
 | Manufacturing and quality | Quality Head | Sites, contract manufacturers, CAPAs, deviations, batch release |
 | Market access | Market Access Lead | Payer dossiers, coverage, pricing schemes, forecasts |
-| Regulatory submissions | Regulatory Affairs Lead | Preparing and submitting variations and supplements; contact with regulators |
+| Submissions (not a domain: record the task under the domain of the change, for example labelling) | Regulatory Affairs Lead | Preparing and submitting variations and supplements; contact with regulators |
 
 ## Approval
 

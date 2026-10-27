@@ -52,6 +52,14 @@ def test_decision_cannot_be_recorded_twice(lake, tmp_path):
         lake.signoff(write(tmp_path, decision()))
 
 
+def test_content_errors_are_reported_before_the_duplicate_check(lake, tmp_path):
+    lake.signoff(write(tmp_path, decision()))
+    broken = decision()
+    broken["tasks"][0]["citation"] = "EU-SA-2027-004 v1 p9"
+    with pytest.raises(LakeError, match="not a paragraph"):
+        lake.signoff(write(tmp_path, broken))
+
+
 def test_rejection_is_audited_without_tasks(lake, tmp_path):
     assert lake.signoff(write(tmp_path, decision(decision="rejected", tasks=[]))) == []
     assert "rejected" in lake.audit_path.read_text(encoding="utf-8")
@@ -62,7 +70,7 @@ def test_rejection_is_audited_without_tasks(lake, tmp_path):
     ({"decision": "maybe"}, "'decision' must be"),
     ({"approver_role": "Labelling Lead"}, "Regulatory Affairs Lead"),
     ({"approved_by": "briefing-agent"}, "not an agent"),
-    ({"approved_by": ""}, "not an agent"),
+    ({"approved_by": ""}, "needs a person"),
     ({"tasks": []}, "at least one task"),
 ])
 def test_invalid_decisions_are_rejected(lake, tmp_path, overrides, message):

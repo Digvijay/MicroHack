@@ -42,6 +42,8 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
      sites, suppliers or procedures, and internal/sops.md for procedures it changes.
    - Cover every change that applies. Changes that do not apply appear nowhere in the briefing
      except one line at the end that lists them with the reason.
+   - Before you answer, check that every current document ID in change-log.md appears either in
+     "By region" or in that closing line. Pricing and payer changes count as changes.
    Return one page:
    1. Headline - three bullets a busy executive can read in 20 seconds.
    2. By region - table: Region | Changes (IDs) | Biggest risk | Nearest deadline.
@@ -58,10 +60,13 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
    ACTION PLAN FOR SIGN-OFF - when asked to prepare a plan for one change, or when you receive an
    impact assessment:
    - Show a numbered table: # | Task | Domain | Region | Owner role | Rule | Due | Citation [DOC vN pK].
+     Each citation is ONE paragraph label, never a range such as p2-p3.
      Domain is exactly one of: clinical, labelling, manufacturing, vigilance, market access.
-     Owner roles follow internal/owners.md. Due is set by the first rule that fits in
+     Owner roles follow internal/owners.md. Due is Caldova's internal due date, never the
+     regulator's deadline itself: set it with the first rule that fits in
      internal/owners.md, using only the deadline that belongs to that task; write the rule and
-     its arithmetic in the Rule column. Today is the 'Status as of' date in tracking/task-register.md.
+     its arithmetic in the Rule column. Due is always a date (YYYY-MM-DD): when no other rule fits,
+     the last rule gives today plus 30 days. Today is the 'Status as of' date in tracking/task-register.md.
      Do not repeat tasks that already exist.
    - Then ask exactly: "Reply APPROVE <your name>, REJECT <reason>, or MODIFY <task #> <what to change>.
      Manufacturing tasks also need: QUALITY <Quality Head's name>."
@@ -101,7 +106,7 @@ Check the briefing:
 
 The briefing shows the regulators' dates only. Caldova's internal due dates are calculated per change, in the action plan below and in Challenge 3. The CMO-17 warning letter gives Caldova no date, so it appears under risks and decisions.
 
-![Portfolio briefing: deadlines with internal due dates, task progress, the at-risk CMO-17 re-audit and decisions needed](../images/challenge-05-portfolio-briefing.png)
+![The end of the portfolio briefing: task progress, the at-risk CMO-17 re-audit and the decisions leadership has to take](../images/challenge-05-portfolio-briefing.png)
 
 ### Part C: Approve the plan and record it (20 min)
 
@@ -111,7 +116,7 @@ The briefing shows the regulators' dates only. Caldova's internal due dates are 
    Prepare the action plan for sign-off for EU-SA-2027-004.
    ```
 
-2. Check the plan before approving: is every due date right for its rule, and is every domain one of the five? Try `MODIFY` once, for example `MODIFY 3 change owner role to Regulatory Affairs Lead`. Then reply `APPROVE <your name>` with your own name: a bare `APPROVE` is refused, because a decision needs a person.
+2. Check the plan before approving: is every due date right for its rule, and is every domain one of the five? Try `MODIFY` once, for example `MODIFY 3 change owner role to Regulatory Affairs Lead`. Then reply `APPROVE <your name>` with your own name. A bare `APPROVE` gets you a JSON block with an empty `approved_by`, which the sign-off tool refuses: a decision needs a person.
 3. Copy the JSON block. In Cloud Shell, from the lab folder, run `code signoff.json`, paste the JSON, save with **Ctrl+S** and close the editor. Then record it:
 
    ```bash

@@ -43,7 +43,7 @@ EU-GD-2027-019 is omitted because it does not apply.
 }
 ```
 
-Recording it prints `Tasks created: TASK-2027-001, TASK-2027-002, TASK-2027-003, TASK-2027-004`, and the decision is written to `lake-raw/tracking/audit-log.jsonl` with a SHA-256 of the exact JSON that was approved.
+Recording it prints `Tasks created: TASK-2027-001, TASK-2027-002, TASK-2027-003`: one ID per task. Plans that also list the variation submission (Regulatory Affairs Lead, labelling, 2027-03-01) or split the RMP and PSUR get four or five IDs, which is fine. The DHPC task is usually `TASK-2027-002`, the one Part C marks as done, and the decision is written to `lake-raw/tracking/audit-log.jsonl` with a SHA-256 of the exact JSON that was approved.
 
 ## Expected refusals (Part D)
 
@@ -54,19 +54,26 @@ Recording it prints `Tasks created: TASK-2027-001, TASK-2027-002, TASK-2027-003,
 | `approved_by: briefing-agent` | `must be the person who made the decision, not an agent` |
 | Same sign-off twice | `already has a recorded decision` |
 | Warning-letter plan without `quality_approval_by` | `Manufacturing tasks also need 'quality_approval_by'` |
+| Bare `APPROVE` (the agent still writes JSON, with `approved_by` empty) | `'approved_by' is empty. A decision needs a person` |
+| Domain `regulatory submissions` | `unknown domain` |
+| Citation range such as `p2–p3` | `is not a paragraph in the lake` |
+
+The tool checks the content of the record before it checks for an earlier decision, so participants who try the `p9` citation on the plan they already approved still see the citation error.
 
 Discussion answer: instructions guide a model, but they can be ignored or misread. **Code enforces the rules every time**, and an auditor can read and test it (see `tests/test_signoff.py`).
 
 ## Troubleshooting
 
-| Symptom | Fix |
-|---|---|
-| The briefing covers only 3 or 4 changes and misses the warning letter, the PSUR rule or the trial summary | The agent retrieved a few strong matches and stopped. Our first test run covered only the two safety alerts and the payer policy, and said the pen had no US change | The instructions make it go through every document in `change-log.md`; check they were saved and ask again in a new chat. Point participants back to the impact assessments from Challenge 3 |
-| The out-of-scope veterinary guidance appears in *By region* or *Deadlines*; the deadlines table lists publication dates or tasks; the nitrosamine rule is linked to the pen | Normal run-to-run variation in a long one-page summary (all three happened in our third test run, with the instructions before this fix) | Treat it as a review exercise: the briefing is a draft for leadership, so ask participants to find what is wrong before it is sent. The nitrosamine rule covers tablets and capsules only |
-| Plan shows domain *Regulatory submissions*, or a due date that does not match its rule (our test run: label text due 2027-02-11 instead of 2027-03-01) | The agent recalculated dates without naming the rule, and used a team name as the domain | The instructions now require a Rule column and one of the five domains. If it still happens, use it: ask for `MODIFY 1 due 2027-03-01`. A wrong domain is also rejected by the sign-off tool |
-| Asked for a plan again, the agent says the tasks are *already captured in the task register* | Correct: the instruction not to repeat existing tasks. A second sign-off for the same change version is also refused by the tool (`already has a recorded decision`) | Nothing to fix. Use `regintel task` to update progress instead |
-| The agent says "tasks created" | Point to the instruction "Never claim that tasks were created"; nothing exists until the command succeeds |
-| JSON contains extra text or comments | Copy only the JSON block; the tool reports invalid JSON clearly |
-| `owner_role must be one of …` | The agent used a role that is not in `owners.md`; MODIFY the task |
-| Progress not visible to the agent: it lists only the three 2026 tasks | The indexer was not re-run after `signoff` or `task` (happened in our test run). The lake is correct; the index is stale | Re-run `caldova-lake-indexer`, wait for Success, start a **new** chat. If the row under the answer shows only `message` (no `kb-caldova-regulatory-…` call), the agent answered from the conversation, not the lake; this also happened in our test run |
-| Cloud Shell timed out between steps | Clone again; `--account` makes the tool download the state and the task register first |
+| Symptom | Cause | Fix |
+|---|---|---|
+| The briefing covers only some of the changes | The agent retrieved a few strong matches and stopped. In early test runs it missed the warning letter or the trial summary; in a later run, the UK pricing change | The instructions make it check every current document in `change-log.md` against *By region* and the closing line; with that check, three test runs in a row covered all eight. Check the instructions were saved and ask again in a new chat |
+| The out-of-scope veterinary guidance appears in *By region* or *Deadlines*; the deadlines table lists publication dates or tasks; the nitrosamine rule is linked to the pen | Normal run-to-run variation in a long one-page summary | Treat it as a review exercise: the briefing is a draft for leadership, so ask participants to find what is wrong before it is sent. The nitrosamine rule covers tablets and capsules only |
+| Plan shows domain *regulatory submissions* | Older versions of `owners.md` listed submissions as a sixth domain. It now says submissions are recorded under the domain of the change | If an agent still does it, the sign-off tool refuses it: ask for `MODIFY <task #> domain labelling` |
+| A due date is the regulator's own deadline (for example 2027-03-15), or a day off (2027-02-14) | The model skipped or slipped on the subtraction | The Rule column shows the arithmetic: check it before approving and use MODIFY. In our final test runs 3 of 4 plans had every date right |
+| Sign-off refuses a citation such as `EU-SA-2027-004 v1 p2–p3` | The agent cited a range of paragraphs | The instructions ask for one paragraph per citation. MODIFY the task to one paragraph, for example `p2`, or edit the JSON before running the tool |
+| Asked for a plan again, the agent says the tasks are *already captured in the task register* | Correct: the instruction not to repeat existing tasks | Nothing to fix. Use `regintel task` to update progress instead |
+| The agent says "tasks created" | It ignored the instruction "Never claim that tasks were created" | Nothing exists until the sign-off command succeeds |
+| JSON contains extra text or comments | Copied more than the JSON block | Copy only the JSON block; the tool reports invalid JSON clearly |
+| `owner_role must be one of …` | The agent used a role that is not in `owners.md` | MODIFY the task |
+| Progress not visible to the agent: it lists only the three 2026 tasks | The indexer was not re-run after `signoff` or `task`. The lake is correct; the index is stale | Re-run `caldova-lake-indexer`, wait for Success, start a **new** chat. If the row under the answer shows only `message` (no `kb-caldova-regulatory-…` call), the agent answered from the conversation, not the lake |
+| Cloud Shell timed out between steps | Cloud Shell without storage starts empty | Clone again; `--account` makes the tool download the state and the task register first |

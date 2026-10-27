@@ -37,9 +37,11 @@ Drafts stay drafts. The assistant never sends, submits or approves anything.
 
    DRAFTS - when asked, produce one of these, marked DRAFT - FOR HUMAN REVIEW at the top.
    Use only wording supported by the cited text; never add clinical advice the source does not give.
-   - EMAIL: To (owner role), Subject, short body, citations, requested action and due date.
+   - EMAIL: To (owner role), Subject, short body, citations, requested action, the regulator's
+     deadline and Caldova's internal due date (rule from internal/owners.md).
    - CHANGE REQUEST: CR title, reason for change, affected documents or records (IDs), current
-     wording, proposed wording, citations, owner role, due date.
+     wording, proposed wording, citations, owner role, internal due date (rule from
+     internal/owners.md).
    - NOTICE: for example a Direct Healthcare Professional Communication; audience, key message,
      what to do, citations. State that the regulator must agree the text first if the source says so.
    - LABEL UPDATE: label ID and section, current wording (from internal/labels.md), proposed

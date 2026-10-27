@@ -170,20 +170,25 @@ class Lake:
         if decision.get("approver_role") != "Regulatory Affairs Lead":
             raise LakeError("'approver_role' must be 'Regulatory Affairs Lead' (see internal/owners.md).")
         approved_by = str(decision.get("approved_by", "")).strip()
-        if not approved_by or "agent" in approved_by.lower():
+        if not approved_by:
+            raise LakeError("'approved_by' is empty. A decision needs a person: reply APPROVE <your name>.")
+        if "agent" in approved_by.lower():
             raise LakeError("'approved_by' must be the person who made the decision, not an agent.")
-        audit = [json.loads(line) for line in self.audit_path.read_text(encoding="utf-8").splitlines()] if self.audit_path.is_file() else []
-        if any(item.get("event") == "signoff" and item.get("change") == change for item in audit):
-            raise LakeError(f"{change} already has a recorded decision. Update task status with 'regintel task' instead.")
-        register = self.tasks()
         tasks = decision.get("tasks") or []
-        created: List[str] = []
+        prepared: List[dict] = []
         if decision["decision"] == "approved":
             if not tasks:
                 raise LakeError("An approved plan must contain at least one task.")
             if any(task.get("domain") == "manufacturing" for task in tasks) and not str(decision.get("quality_approval_by", "")).strip():
                 raise LakeError("Manufacturing tasks also need 'quality_approval_by' (the Quality Head's sign-off).")
             prepared = [self._validate_task(task, owners) for task in tasks]
+        # Checked after the content checks, so every error in a record is reported even for a change already decided.
+        audit = [json.loads(line) for line in self.audit_path.read_text(encoding="utf-8").splitlines()] if self.audit_path.is_file() else []
+        if any(item.get("event") == "signoff" and item.get("change") == change for item in audit):
+            raise LakeError(f"{change} already has a recorded decision. Update task status with 'regintel task' instead.")
+        register = self.tasks()
+        created: List[str] = []
+        if prepared:
             year = self.as_of()[:4]
             existing = [int(t["id"].rsplit("-", 1)[1]) for t in register["tasks"] if t["id"].startswith(f"TASK-{year}-")]
             next_number = max(existing, default=0) + 1
