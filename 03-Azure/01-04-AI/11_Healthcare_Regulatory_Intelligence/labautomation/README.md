@@ -45,6 +45,10 @@ Register these resource providers before the event: Microsoft.CognitiveServices,
 - Four labs per subscription assumes the chat model quota allows 4 × 200K TPM; check before promising that density.
 - No Microsoft 365 licence is needed (`groups: []`).
 
+## Testing the automation outside the platform
+
+[`dev/run-local.ps1`](../dev/run-local.ps1) runs `deploy-lab.ps1` the way the platform does: it supplies `Get-MhhStableHash`, creates the resource group, passes your Entra object ID and prints the dashboard values. Sign in with both `Connect-AzAccount` and `az login` to the same subscription, then run `./dev/run-local.ps1` from the lab folder (add `-Location <region>` to check another region). It needs the Bicep CLI; if only the Azure CLI's copy is installed, the wrapper uses it. Delete the resource group afterwards.
+
 ## Lifecycle
 
 The platform removes the lab resources when the lab expires. Do not run recursive cleanup or delete shared resources. See the [platform helper contract](https://github.com/microsoft/MicroHack/blob/main/99-MicroHack-Template/labautomation/README.md) for running outside the MicroHack platform; standalone facilitators can deploy `infra/main.bicep` directly after approval.
