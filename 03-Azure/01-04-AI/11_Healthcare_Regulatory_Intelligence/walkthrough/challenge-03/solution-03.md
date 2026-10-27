@@ -4,16 +4,16 @@
 
 **Duration:** 60 minutes
 
-Caldova's due-date rules (`internal/owners.md`): **deadline − 14 days**; otherwise **effective date − 30 days**; otherwise **today + 30 days**. *Today* is the *Status as of* date in `tracking/task-register.md`: **12 January 2027** after Tuesday's crawl, so rule 3 gives **11 February 2027**. A past due date means **at risk**. Label text belongs to the Labelling Lead; preparing and submitting the variation belongs to the Regulatory Affairs Lead.
+Caldova's due-date rules (`internal/owners.md`), first match wins: **an SOP time limit counted from today**; otherwise **deadline − 14 days**; otherwise **effective date − 30 days**; otherwise **today + 30 days**. A deadline set for another organisation (CMO-17's reply) is not a Caldova deadline. *Today* is the *Status as of* date in `tracking/task-register.md`: **12 January 2027** after Tuesday's crawl, so rule 3 gives **11 February 2027**. A past due date means **at risk**. Label text belongs to the Labelling Lead; preparing and submitting the variation belongs to the Regulatory Affairs Lead.
 
 ## EU-SA-2027-004: applies to CDX-TAB and CDX-PEN (EU)
 
 | # | Obligation | Deadline | Domain | Citation | Affected items | Owner | Internal due |
 |---|---|---|---|---|---|---|---|
-| 1a | Update the label text: SmPC 4.4 and 4.8 and the package leaflet | variation by 15 Mar 2027 | labelling | v1 p2, p3 | LBL-EU-TAB v7, LBL-EU-PEN v4, SOP-LAB-001 | Labelling Lead | **1 Mar 2027** (rule 1) |
-| 1b | Prepare and submit the EU variation | 15 Mar 2027 | labelling | v1 p3 | SUB-2026-011 (precedent) | Regulatory Affairs Lead | **1 Mar 2027** (rule 1) |
+| 1a | Update the label text: SmPC 4.4 and 4.8 and the package leaflet | variation by 15 Mar 2027 | labelling | v1 p2, p3 | LBL-EU-TAB v7, LBL-EU-PEN v4, SOP-LAB-001 | Labelling Lead | **1 Mar 2027** (rule 2) |
+| 1b | Prepare and submit the EU variation | 15 Mar 2027 | labelling | v1 p3 | SUB-2026-011 (precedent) | Regulatory Affairs Lead | **1 Mar 2027** (rule 2) |
 | 2 | Agree a DHPC and send it to prescribers | 1 Mar 2027 | vigilance | v1 p4 | SOP-PV-005 | Pharmacovigilance Lead | **15 Feb 2027** |
-| 3 | Add liver injury to the RMP and next PSUR | none stated | vigilance | v1 p5 | SUB-2027-003 (RMP, no date), CAL-401 | Pharmacovigilance Lead | **11 Feb 2027** (rule 3) |
+| 3 | Add liver injury to the RMP and next PSUR | none stated | vigilance | v1 p5 | SUB-2027-003 (RMP, no date), CAL-401 | Pharmacovigilance Lead | **11 Feb 2027** (rule 4) |
 
 **Must be right in every run:** applicability to both products, the two EU labels, `SUB-2027-003`, `SOP-PV-005` and the four internal due dates above with the rule that produced each one. Participants who added the date rule after a first run (as in our test) should see the dates change from missing to correct.
 
@@ -27,7 +27,7 @@ Good answers also notice:
 ## US-EL-2027-007: applies to CDX-PEN through CMO-17
 
 - `quality-records.md`: CMO-17 fills **all** EU and US CDX-PEN supply, there is **no second site**, and deviation **DEV-2026-114** (particles in lot P-2611) is open. The letter's finding 1 is about particles [v1 p2].
-- `SOP-QA-010`: assess a regulator finding within **10 working days**, so by **25 January 2027**. Owner: **Quality Head**.
+- `SOP-QA-010`: assess a regulator finding within **10 working days** of today (12 January), so by **26 January 2027** (rule 1). Owner: **Quality Head**.
 - Existing task **TASK-2026-044** (CMO-17 re-audit, due 15 December 2026) is **at risk**. The agent should escalate it, not duplicate it.
 - The 15-working-day response [v1 p4] is **CMO-17's** obligation, not Caldova's. Good answers keep the two apart.
 

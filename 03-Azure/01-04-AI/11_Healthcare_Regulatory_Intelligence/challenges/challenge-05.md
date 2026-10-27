@@ -80,7 +80,7 @@ Check the briefing:
 - Is it grouped by **region** (UK, EU, US) and by **product** (tablets and pen)?
 - Is the veterinary guidance left out?
 - Is `TASK-2026-044` (re-audit of CMO-17) flagged **at risk**, and is it connected to the warning letter?
-- Are the deadlines in date order, with the CMO-17 impact assessment (25 January 2027) first?
+- Are the deadlines in date order, with the CMO-17 impact assessment (26 January 2027) first?
 
 > 📸 **Screenshot to add:** `images/challenge-05-portfolio-briefing.png`: the one-page portfolio briefing by region and portfolio.
 

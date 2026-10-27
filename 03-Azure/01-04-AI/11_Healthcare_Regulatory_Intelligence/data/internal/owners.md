@@ -23,9 +23,11 @@ The **Regulatory Affairs Lead** approves the action plan for every new regulator
 
 **Today** is the *Status as of* date at the top of `tracking/task-register.md`.
 
-Apply the first rule that fits, using the deadline or date that belongs to **that action**:
+Apply the first rule that fits, using the deadline or date that belongs to **that action**. A deadline set for another organisation, such as a supplier's reply to a regulator, is not a Caldova deadline.
 
-1. If the document gives a deadline for the action, the internal due date is **14 calendar days before** that deadline.
-2. If there is only an effective date, the internal due date is **30 calendar days before** the effective date.
-3. If the document gives neither, the internal due date is **30 calendar days after today**. The approver may change it at sign-off.
-4. If an internal due date is already in the past, flag the task as **at risk** and escalate to the Regulatory Affairs Lead.
+1. If a Caldova SOP sets a time limit for the action (for example *within 10 working days*), the internal due date is that limit counted from today. Working days are Monday to Friday.
+2. If the document gives a deadline for the action, the internal due date is **14 calendar days before** that deadline.
+3. If there is only an effective date, the internal due date is **30 calendar days before** the effective date.
+4. If none of these apply, the internal due date is **30 calendar days after today**. The approver may change it at sign-off.
+
+If an internal due date is already in the past, flag the task as **at risk** and escalate to the Regulatory Affairs Lead.

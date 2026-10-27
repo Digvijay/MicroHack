@@ -62,6 +62,8 @@ def test_normalisation_strips_boilerplate_and_anchors_paragraphs(lake):
     record = lake.version("EU-SA-2027-004", 1)
     assert record["products_named"] == ["CDX-TAB", "CDX-PEN"]
     assert lake.version("EU-GD-2027-019", 1)["products_named"] == []
+    # The warning letter never names Caldivex: the link to the pen must come from the quality records.
+    assert lake.version("US-EL-2027-007", 1)["products_named"] == []
     assert lake.version("US-CD-2027-015", 1)["domains"] == ["market access"]
 
 

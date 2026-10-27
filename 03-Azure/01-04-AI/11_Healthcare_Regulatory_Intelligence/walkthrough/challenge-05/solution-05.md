@@ -12,7 +12,7 @@
 |---|---|---|---|
 | EU | EU-SA-2027-004, EU-GD-2027-011 | Liver warning on both products | RMP and PSUR update 11 Feb 2027 (DHPC 15 Feb) |
 | UK | UK-SA-2027-002, UK-REG-2027-001, UK-PR-2027-001 | Label variation and PSUR procedure | UK forecast 2 Mar 2027 |
-| US | US-EL-2027-007, US-REG-2027-003, US-CD-2027-015 v2 | Pen supply depends on CMO-17 | CMO-17 impact assessment 25 Jan 2027 |
+| US | US-EL-2027-007, US-REG-2027-003, US-CD-2027-015 v2 | Pen supply depends on CMO-17 | CMO-17 impact assessment 26 Jan 2027 |
 
 **By portfolio**: CDX-TAB is affected by seven changes (both safety alerts, nitrosamines, payer, pricing, trial summary and PSUR). CDX-PEN is affected by the EU alert and the warning letter.
 
