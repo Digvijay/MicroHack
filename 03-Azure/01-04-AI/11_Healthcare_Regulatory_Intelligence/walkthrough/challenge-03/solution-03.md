@@ -15,6 +15,10 @@ Caldova's due-date rules (`internal/owners.md`): **deadline − 14 days**; other
 | 2 | Agree a DHPC and send it to prescribers | 1 Mar 2027 | vigilance | v1 p4 | SOP-PV-005 | Pharmacovigilance Lead | **15 Feb 2027** |
 | 3 | Add liver injury to the RMP and next PSUR | none stated | vigilance | v1 p5 | SUB-2027-003 (RMP, no date), CAL-401 | Pharmacovigilance Lead | **11 Feb 2027** (rule 3) |
 
+**Must be right in every run:** applicability to both products, the two EU labels, `SUB-2027-003`, `SOP-PV-005` and the four internal due dates above with the rule that produced each one. Participants who added the date rule after a first run (as in our test) should see the dates change from missing to correct.
+
+**May vary between runs** (normal for a language model; don't fail a run for missing one): `CAL-401`, `SOP-LAB-001`, `SOP-PV-003`, extra actions such as *align medical review*, and the points below. In our test runs `CAL-401` appeared in one run and not the next.
+
 Good answers also notice:
 
 - A label variation normally takes **6 weeks** (`submissions.md`). Starting on 11 January finishes around 22 February, inside the 1 March internal date but with little slack.

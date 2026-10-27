@@ -77,12 +77,13 @@ Ask:
 Assess EU-SA-2027-004 for Caldova.
 ```
 
-Check with your team:
+Check with your team. Every answer should get these right:
 
-- Does it apply to **both** products in the EU, and does it link to `LBL-EU-TAB` and `LBL-EU-PEN`?
-- Did it apply Caldova's due-date rule? The variation deadline of 15 March 2027 should become an internal due date of **1 March 2027**.
-- Did it notice the related **liver safety study** `CAL-401` and the planned risk management plan update `SUB-2027-003`?
-- Did it mention the precedent in `history.md`, where labels in all regions were updated together, as a question for experts rather than a legal requirement?
+- It applies to **both** products in the EU and links to `LBL-EU-TAB` and `LBL-EU-PEN`.
+- Every action has an owner role and a date from Caldova's rules: the label text and the variation **1 March 2027** (15 March minus 14 days), the DHPC **15 February 2027**, and the RMP and PSUR update **11 February 2027** (no deadline given, so today plus 30 days).
+- It names the planned risk management plan update `SUB-2027-003`.
+
+A good answer may also find the liver safety study `CAL-401`, the 6-week label lead time, or the precedent in `history.md`, where labels in all regions were updated together. Run it twice and compare: a language model does not give exactly the same answer every time, which is why a person checks the plan before it is approved.
 
 ![Impact assessment for EU-SA-2027-004: applies to both products in the EU, with cited obligations](../images/challenge-03-impact-eu-safety.png)
 
