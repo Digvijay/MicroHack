@@ -79,15 +79,24 @@ Check the answer **against the document in the lake**, not against your expectat
 - Does it mention the second address where the same alert was published?
 - Does it name both Caldivex products?
 
-Then test the guard rails:
+![The citation card for EU-SA-2027-004 with both deadlines and their paragraph citations](../images/challenge-02-citation-card.png)
+
+You will see two kinds of citation in the answer:
+
+- **Numbered markers** (①, ②…) are Foundry IQ's references to the passage it retrieved. Select one to see that passage.
+- **Paragraph labels** such as `[EU-SA-2027-004 v1 p3]` were written into the lake by the monitor. They point at one paragraph of one version, so they stay valid even after the regulator changes its website. These are the citations Caldova's records and sign-offs use.
+
+Now test the guard rails. Start a new chat (**+** at the top right of the chat) and ask:
 
 ```text
 What does EU-SA-2027-099 say?
 ```
 
-The agent should say that it is **not found**, and it should not make one up.
+The agent should say it cannot find that document in the regulatory lake, and it should not make one up. A good answer also points to the change log it checked.
 
-> 📸 **Screenshot to add:** `images/challenge-02-citation-card.png`: the citation card for EU-SA-2027-004.
+![The agent reports that EU-SA-2027-099 is not in the regulatory lake and cites the change log](../images/challenge-02-not-found.png)
+
+The row under each answer lists the calls the agent made, for example the knowledge base `kb-caldova-regulatory-…`, and has a **Traces** link. You will use it in Part D.
 
 ### Part C: Tuesday's revised payer policy (15 min)
 
@@ -113,7 +122,7 @@ The agent should say that it is **not found**, and it should not make one up.
 
 ### Part D: Look at the trace (5 min)
 
-Open the agent's **Traces** tab and select your last run. Find the **knowledge retrieval** tool call and the documents it returned. Did the agent read both versions?
+Select **Traces** under an answer, or open the agent's **Traces** tab and select your last run. Find the **knowledge retrieval** tool call and the documents it returned. Did the agent read both versions?
 
 > 📸 **Screenshot to add:** `images/challenge-02-trace.png`: trace showing the knowledge-base call and the documents returned.
 
