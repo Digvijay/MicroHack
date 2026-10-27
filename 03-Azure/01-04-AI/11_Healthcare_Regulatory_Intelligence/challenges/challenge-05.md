@@ -129,13 +129,17 @@ The briefing shows the regulators' dates only. Caldova's internal due dates are 
 
 > 📸 **Screenshot to add:** `images/challenge-05-approval-loop.png`: the plan, a MODIFY, the APPROVE and the JSON sign-off record.
 
-> 📸 **Screenshot to add:** `images/challenge-05-signoff-recorded.png`: Cloud Shell showing the sign-off recorded with new task IDs.
+![Cloud Shell: the decision is recorded in the audit trail and four tasks are created](../images/challenge-05-signoff-recorded.png)
 
 > 📸 **Screenshot to add:** `images/challenge-05-progress.png`: the agent reporting task progress and the audit trail.
 
 ### Part D: Try to break it (10 min)
 
 Each of these must be **refused** by the sign-off tool. Try at least two, and read the error message:
+
+- A task whose domain is not one of the five, for example `regulatory submissions`. In our test run the agent produced exactly this, and the tool refused the whole record:
+
+  ![The sign-off tool refuses a task with the unknown domain 'regulatory submissions'](../images/challenge-05-signoff-refused.png)
 
 - Approve a plan for `US-CD-2027-015 v1` (superseded on Tuesday).
 - Change a citation in the JSON to `EU-SA-2027-004 v1 p9`.
