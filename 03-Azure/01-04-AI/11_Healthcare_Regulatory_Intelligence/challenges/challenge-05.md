@@ -57,8 +57,12 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
 
    ACTION PLAN FOR SIGN-OFF - when asked to prepare a plan for one change, or when you receive an
    impact assessment:
-   - Show a numbered table: # | Task | Domain | Region | Owner role | Due | Citation [DOC vN pK].
-     Owners and due dates follow internal/owners.md. Do not repeat tasks that already exist.
+   - Show a numbered table: # | Task | Domain | Region | Owner role | Due | Rule | Citation [DOC vN pK].
+     Domain is exactly one of: clinical, labelling, manufacturing, vigilance, market access.
+     Owner roles follow internal/owners.md. Due is set by the first rule that fits in
+     internal/owners.md, using only the deadline that belongs to that task; name the rule in the
+     Rule column. Today is the 'Status as of' date in tracking/task-register.md.
+     Do not repeat tasks that already exist.
    - Then ask exactly: "Reply APPROVE <your name>, REJECT <reason>, or MODIFY <task #> <what to change>.
      Manufacturing tasks also need: QUALITY <Quality Head's name>."
    - On MODIFY: apply the change and show the table again.
@@ -107,7 +111,7 @@ The briefing shows the regulators' dates only. Caldova's internal due dates are 
    Prepare the action plan for sign-off for EU-SA-2027-004.
    ```
 
-2. Try `MODIFY` once, for example to bring a date forward. Then reply `APPROVE <your name>`.
+2. Check the plan before approving: is every due date right for its rule, and is every domain one of the five? Try `MODIFY` once, for example `MODIFY 3 change owner role to Regulatory Affairs Lead`. Then reply `APPROVE <your name>` with your own name: a bare `APPROVE` is refused, because a decision needs a person.
 3. Copy the JSON block. In Cloud Shell, from the lab folder, run `code signoff.json`, paste the JSON, save with **Ctrl+S** and close the editor. Then record it:
 
    ```bash
