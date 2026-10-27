@@ -48,28 +48,11 @@ Six challenges take one change from a website to a signed-off plan:
 | 5 | **Executive Briefing** + human sign-off | Foundry prompt agent + Foundry IQ + supplied sign-off tool | A briefing by region and portfolio with risks, deadlines and progress, routed for approval; the decision recorded in an audit trail |
 | 6 ⭐ *(stretch)* | **Event-driven Regulatory Intelligence Assistant** | Microsoft Agent Framework in Codespaces: run it as supplied, or write the agent chain yourself from a skeleton | Every change event processed automatically by the agent chain, waiting for human sign-off |
 
-```mermaid
-flowchart LR
-    PORTALS["Regulator and payer portals"] --> MONITOR["1. Regulatory Web &<br/>Change Monitor"]
-    MONITOR --> LAKE[("Regulatory lake<br/>Azure Blob Storage")]
-    MONITOR -- "change events" --> CHAIN
-    INTERNAL["Caldova internal records<br/>products, labels, studies, SOPs,<br/>quality, owners, tasks"] --> LAKE
-    LAKE --> IQ["Foundry IQ<br/>knowledge base"]
-    IQ --> CITE["2. Document &<br/>Citation Agent"]
-    IQ --> IMPACT["3. Obligation &<br/>Impact Extractor"]
-    IQ --> QA["4. Regulatory<br/>Q&A Assistant"]
-    IQ --> BRIEF["5. Executive<br/>Briefing"]
-    subgraph CHAIN["6. Event-driven assistant (stretch)"]
-        CITE --> IMPACT --> BRIEF
-    end
-    BRIEF --> HUMAN{"Human sign-off"}
-    HUMAN -- "approved plan, owners,<br/>due dates" --> AUDIT[("Task register and<br/>audit trail")]
-    AUDIT --> LAKE
-```
+![Caldova scenario: regulators and payers publish changes, the regulatory team has to work out who at Caldova acts and by when, using Caldova's products, contract manufacturer and internal records](images/readme-scenario.png)
 
 ![Regulatory Intelligence architecture: public portals, the change monitor, the regulatory lake, Foundry IQ on Azure AI Search, the four Foundry agents, human sign-off and the optional event-driven assistant](images/readme-architecture.png)
 
-The editable source is [readme-architecture.excalidraw](images/readme-architecture.excalidraw). Open it at <https://excalidraw.com> to change it.
+The editable sources are [readme-scenario.excalidraw](images/readme-scenario.excalidraw) and [readme-architecture.excalidraw](images/readme-architecture.excalidraw). Open them at <https://excalidraw.com> to change them.
 
 ### What each Azure service does here
 
