@@ -58,4 +58,5 @@ Veterinary medicines only [v1 p1, p3]. Caldova has no veterinary products. No ac
 | The agent says the warning letter does not apply | Ask: "Which products does CMO-17 make for Caldova?" If it can, it should find `quality-records.md`. Reinforce the instruction to search **internal records** too |
 | Invented record IDs (for example `SOP-PV-009`) | Compare with `internal/sops.md`; check that the trace retrieved internal files |
 | Dates without the rule | Ask for the "How the date was calculated" column; it must quote the owners.md rule |
+| Warning letter action due 2027-02-11 (today + 30 days) instead of 2027-01-26 | The agent never retrieved `SOP-QA-010`, so it could not apply the SOP time limit | The instructions tell it to search `internal/sops.md` for each action; check they were saved. Ask *Which SOP governs assessing a regulator finding at a contract manufacturer?* to show the retrieval it missed |
 | Proposes a new nitrosamine task | It missed `tracking/task-register.md`; ask it to check existing tasks |
