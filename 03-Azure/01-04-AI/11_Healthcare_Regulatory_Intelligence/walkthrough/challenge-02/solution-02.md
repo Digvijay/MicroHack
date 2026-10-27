@@ -27,7 +27,7 @@ The wording will vary, but the facts and citations must match:
 | Prior authorisation | Two failed preventive treatments [v1 p3] | **One** [v2 p3] |
 | Evidence deadline | 15 February 2027 [v1 p4] | **1 March 2027** [v2 p4] |
 
-The monitor output is: `Updated documents: 1 US-CD-2027-015 v2` and `Duplicates ignored: 9`.
+The monitor output is `run 3`, `Updated documents: 1 US-CD-2027-015 v2`, `Duplicates ignored: 9` and `Change events written: 1`. The indexer run afterwards shows **22** documents succeeded: the monitor re-uploads every file, so all 21 earlier files count again, plus the new version.
 
 ## Teaching points
 

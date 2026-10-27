@@ -100,14 +100,18 @@ The row under each answer lists the calls the agent made, for example the knowle
 
 ### Part C: Tuesday's revised payer policy (15 min)
 
-1. In Cloud Shell, from the lab folder, run Tuesday's crawl:
+1. In Cloud Shell, from the lab folder, run Tuesday's crawl. If Cloud Shell restarted since Challenge 1, clone the lab again first (Challenge 1, Part B, step 2); the monitor continues from the state stored in your lake.
 
    ```bash
    python3 -m regintel --account <StorageAccountName> monitor --day tuesday
    ```
 
-   The monitor should report **1 updated document** (`US-CD-2027-015 v2`) and treat everything else as a duplicate.
-2. Refresh the knowledge base so it picks up the new files. In the Azure portal, open your search service (`SearchServiceName`), then **Search management → Indexers**, select **`caldova-lake-indexer`** and choose **Run**. Wait until the run succeeds.
+   The monitor should report **1 updated document** (`US-CD-2027-015 v2`), 0 new and 9 duplicates, and write **1 change event**. The pages that did not change on Tuesday are recognised as duplicates; only the payer's revised policy is new.
+
+   ![Cloud Shell: the Tuesday crawl finds one updated document, US-CD-2027-015 v2, and writes one change event](../images/challenge-02-monitor-tuesday.png)
+2. Refresh the knowledge base so it picks up the new files. In the Azure portal, search for your search service (`SearchServiceName`) and open it, then **Indexers** in the left menu. Open **`caldova-lake-indexer`**, select **Run**, then **Refresh** after a minute. A new **Success** row appears with **22** docs: the monitor re-uploads all 21 files plus the new `US-CD-2027-015-v2.md`.
+
+   ![caldova-lake-indexer execution history: a new successful run with 22 documents](../images/challenge-02-reindex.png)
 3. Ask the agent:
 
    ```text
@@ -115,8 +119,6 @@ The row under each answer lists the calls the agent made, for example the knowle
    ```
 
    The agent should report that v1 is **superseded** by v2. Its version history should show that the effective date moved from 1 March to 1 April 2027, prior authorisation now needs **one** failed treatment rather than two, and the evidence deadline moved to 1 March 2027.
-
-> 📸 **Screenshot to add:** `images/challenge-02-monitor-tuesday.png`: Cloud Shell showing the Tuesday crawl with one updated document.
 
 > 📸 **Screenshot to add:** `images/challenge-02-version-history.png`: the agent's version history for US-CD-2027-015.
 
