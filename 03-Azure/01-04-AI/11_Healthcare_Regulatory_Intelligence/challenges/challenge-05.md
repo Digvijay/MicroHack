@@ -80,9 +80,12 @@ Check the briefing:
 - Is it grouped by **region** (UK, EU, US) and by **product** (tablets and pen)?
 - Is the veterinary guidance left out?
 - Is `TASK-2026-044` (re-audit of CMO-17) flagged **at risk**, and is it connected to the warning letter?
-- Are the deadlines in date order, with the CMO-17 impact assessment (26 January 2027) first?
+- Are the regulators' deadlines in date order, each with Caldova's internal due date (for example the DHPC: 1 March 2027, internal 15 February)?
+- Does it list the decisions leadership has to take, including what to do about CMO-17?
 
-> 📸 **Screenshot to add:** `images/challenge-05-portfolio-briefing.png`: the one-page portfolio briefing by region and portfolio.
+The CMO-17 warning letter has no regulator deadline for Caldova, so it shows up under risks, progress and decisions rather than in the deadlines table.
+
+![Portfolio briefing: deadlines with internal due dates, task progress, the at-risk CMO-17 re-audit and decisions needed](../images/challenge-05-portfolio-briefing.png)
 
 ### Part C: Approve the plan and record it (20 min)
 

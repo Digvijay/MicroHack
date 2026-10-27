@@ -18,6 +18,8 @@
 
 **Risks**: RED for pen supply (CMO-17 findings, open DEV-2026-114, no second site, re-audit TASK-2026-044 overdue); AMBER for the EU label timeline and the PSUR procedure; GREEN for pricing.
 
+**Deadlines** (as in our test run): DHPC 1 Mar (internal 15 Feb), US payer evidence 1 Mar (15 Feb), EU variation 15 Mar (1 Mar), UK variation 29 Mar (15 Mar), US tier change 1 Apr (2 Mar). The CMO-17 assessment has no regulator deadline, so it appears under risks and decisions; later dates (PSUR rule 1 Jul, nitrosamines 1 Aug) may or may not be listed.
+
 **Progress** (before any sign-off): TASK-2026-041 in progress; TASK-2026-044 **open and at risk**; TASK-2026-047 done.
 
 EU-GD-2027-019 is omitted because it does not apply.
