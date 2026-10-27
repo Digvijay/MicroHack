@@ -61,9 +61,9 @@ An **agent** is a model with instructions, tools and knowledge. Your agent has n
 
    ![Connect to Foundry IQ: your connection and the caldova-regulatory-kb knowledge base](../images/challenge-02-connect-foundry-iq.png)
 
-6. Select **Save** at the top right. The **Version** next to it is your saved version; note it.
+6. Select **Save** at the top right. Creating the agent already saved version 1, so this save becomes **Version 2**; **Save** greys out until you change something again. Every save creates a new version; the Challenge 6 assistant always uses the latest one.
 
-   ![citation-agent with its instructions, no tools and caldova-regulatory-kb under Knowledge](../images/challenge-02-citation-agent-setup.png)
+   ![citation-agent saved as version 2, with no tools and caldova-regulatory-kb under Knowledge](../images/challenge-02-citation-agent-setup.png)
 
 ### Part B: Test the citation card (10 min)
 
