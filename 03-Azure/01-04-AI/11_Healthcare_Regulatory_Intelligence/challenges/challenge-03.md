@@ -100,7 +100,7 @@ Run three more assessments in **new chats**, then compare them with your team:
 
 ### Part D: Check the evidence (10 min)
 
-Pick one proposed action. Open its citation in the lake (`documents/…`) and its internal record (`internal/…`). Both should say what the agent claims. Then open **Traces** and confirm that the agent retrieved **both** the regulatory document and the internal records.
+Pick one proposed action. Open its citation in the lake (`documents/…`) and its internal record (`internal/…`). Both should say what the agent claims. Then select **Traces** under the answer, open the **`knowledge_base_retrieve`** step and check the `blob_url` of each returned document: the agent should have retrieved **both** the regulatory document (`documents/…`) and Caldova's internal records (`internal/…`).
 
 > 📸 **Screenshot to add:** `images/challenge-03-trace.png`: trace showing retrieval of both the regulatory document and internal records.
 

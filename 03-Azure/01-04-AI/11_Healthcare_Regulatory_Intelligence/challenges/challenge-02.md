@@ -128,9 +128,17 @@ The row under each answer lists the calls the agent made, for example the knowle
 
 ### Part D: Look at the trace (5 min)
 
-Select **Traces** under an answer, or open the agent's **Traces** tab and select your last run. Find the **knowledge retrieval** tool call and the documents it returned. Did the agent read both versions?
+A trace shows what the agent actually did, not what it says it did.
 
-> 📸 **Screenshot to add:** `images/challenge-02-trace.png`: trace showing the knowledge-base call and the documents returned.
+1. Under your last answer, select **Traces**. The **Conversation** panel opens with the steps of that run: a **Response**, then **Tool** steps.
+2. Select the step **`kb-caldova-regulatory-…: knowledge_base_retrieve`**. This is the call to your knowledge base.
+3. **Input** shows the `query_variants`: the searches the agent wrote for itself. **Output** shows the `documents` that came back, each with its `blob_url` and a snippet of the text.
+4. Answer for your team: which searches did the agent run? Which lake files came back, and in which snippet does it say that v1 was superseded?
+
+![Trace of the run: the knowledge_base_retrieve step with its query variants and the documents returned](../images/challenge-02-trace.png)
+
+> [!NOTE]
+> The banner offering to **connect Application Insights** is optional. The trace view above comes from the agent's responses and works without it.
 
 ## ✔️ Success criteria
 
@@ -138,7 +146,7 @@ Select **Traces** under an answer, or open the agent's **Traces** tab and select
 - [ ] Its citation card for `EU-SA-2027-004` has correct dates, citations that match the lake, and both addresses.
 - [ ] It refuses to invent `EU-SA-2027-099`.
 - [ ] After Tuesday's crawl, it identifies `US-CD-2027-015 v2` as current and explains what changed.
-- [ ] You can point to the knowledge retrieval call in a trace.
+- [ ] You can show the `knowledge_base_retrieve` step in a trace, with its searches and the documents it returned.
 
 ## 📚 Learning resources
 
