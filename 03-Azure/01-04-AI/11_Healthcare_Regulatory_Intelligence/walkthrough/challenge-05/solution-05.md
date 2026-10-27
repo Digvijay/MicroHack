@@ -10,7 +10,7 @@
 
 | Region | Changes | Biggest risk | Nearest internal due date |
 |---|---|---|---|
-| EU | EU-SA-2027-004, EU-GD-2027-011 | Liver warning on both products | RMP and PSUR update 10 Feb 2027 (DHPC 15 Feb) |
+| EU | EU-SA-2027-004, EU-GD-2027-011 | Liver warning on both products | RMP and PSUR update 11 Feb 2027 (DHPC 15 Feb) |
 | UK | UK-SA-2027-002, UK-REG-2027-001, UK-PR-2027-001 | Label variation and PSUR procedure | UK forecast 2 Mar 2027 |
 | US | US-EL-2027-007, US-REG-2027-003, US-CD-2027-015 v2 | Pen supply depends on CMO-17 | CMO-17 impact assessment 25 Jan 2027 |
 
@@ -32,14 +32,14 @@ EU-GD-2027-019 is omitted because it does not apply.
   "approved_by": "Alex Example",
   "note": "Approved with DHPC brought forward",
   "tasks": [
-    {"title": "Submit EU label variation adding liver-injury warning (4.4, 4.8, leaflet)", "domain": "labelling", "region": "EU", "owner_role": "Labelling Lead", "due": "2027-03-01", "citation": "EU-SA-2027-004 v1 p3"},
+    {"title": "Update EU label text with the liver-injury warning (4.4, 4.8, leaflet)", "domain": "labelling", "region": "EU", "owner_role": "Labelling Lead", "due": "2027-03-01", "citation": "EU-SA-2027-004 v1 p2"},
     {"title": "Agree DHPC with the regulator and send to prescribers", "domain": "vigilance", "region": "EU", "owner_role": "Pharmacovigilance Lead", "due": "2027-02-15", "citation": "EU-SA-2027-004 v1 p4"},
-    {"title": "Add liver injury to the RMP and next PSUR", "domain": "vigilance", "region": "EU", "owner_role": "Pharmacovigilance Lead", "due": "2027-02-10", "citation": "EU-SA-2027-004 v1 p5"}
+    {"title": "Add liver injury to the RMP and next PSUR", "domain": "vigilance", "region": "EU", "owner_role": "Pharmacovigilance Lead", "due": "2027-02-11", "citation": "EU-SA-2027-004 v1 p5"}
   ]
 }
 ```
 
-Recording it prints `Tasks created: TASK-2027-001, TASK-2027-002, TASK-2027-003`, and the decision is written to `lake-raw/tracking/audit-log.jsonl` with a SHA-256 of the exact JSON that was approved.
+Recording it prints `Tasks created: TASK-2027-001, TASK-2027-002, TASK-2027-003, TASK-2027-004`, and the decision is written to `lake-raw/tracking/audit-log.jsonl` with a SHA-256 of the exact JSON that was approved.
 
 ## Expected refusals (Part D)
 

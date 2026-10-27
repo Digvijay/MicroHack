@@ -4,15 +4,16 @@
 
 **Duration:** 60 minutes
 
-Caldova's due-date rules (`internal/owners.md`): **deadline − 14 days**; otherwise **effective date − 30 days**; otherwise **within 30 days of today** (11 January 2027 → 10 February 2027). A past due date means **at risk**.
+Caldova's due-date rules (`internal/owners.md`): **deadline − 14 days**; otherwise **effective date − 30 days**; otherwise **today + 30 days**. *Today* is the *Status as of* date in `tracking/task-register.md`: **12 January 2027** after Tuesday's crawl, so rule 3 gives **11 February 2027**. A past due date means **at risk**. Label text belongs to the Labelling Lead; preparing and submitting the variation belongs to the Regulatory Affairs Lead.
 
 ## EU-SA-2027-004: applies to CDX-TAB and CDX-PEN (EU)
 
 | # | Obligation | Deadline | Domain | Citation | Affected items | Owner | Internal due |
 |---|---|---|---|---|---|---|---|
-| 1 | Update SmPC 4.4 and 4.8 and the package leaflet | variation by 15 Mar 2027 | labelling | v1 p2, p3 | LBL-EU-TAB v7, LBL-EU-PEN v4, SOP-LAB-001 | Labelling Lead | **1 Mar 2027** |
+| 1a | Update the label text: SmPC 4.4 and 4.8 and the package leaflet | variation by 15 Mar 2027 | labelling | v1 p2, p3 | LBL-EU-TAB v7, LBL-EU-PEN v4, SOP-LAB-001 | Labelling Lead | **1 Mar 2027** (rule 1) |
+| 1b | Prepare and submit the EU variation | 15 Mar 2027 | labelling | v1 p3 | SUB-2026-011 (precedent) | Regulatory Affairs Lead | **1 Mar 2027** (rule 1) |
 | 2 | Agree a DHPC and send it to prescribers | 1 Mar 2027 | vigilance | v1 p4 | SOP-PV-005 | Pharmacovigilance Lead | **15 Feb 2027** |
-| 3 | Add liver injury to the RMP and next PSUR | none stated | vigilance | v1 p5 | SUB-2027-003 (RMP, no date), CAL-401 | Pharmacovigilance Lead | **10 Feb 2027** (rule 3) |
+| 3 | Add liver injury to the RMP and next PSUR | none stated | vigilance | v1 p5 | SUB-2027-003 (RMP, no date), CAL-401 | Pharmacovigilance Lead | **11 Feb 2027** (rule 3) |
 
 Good answers also notice:
 

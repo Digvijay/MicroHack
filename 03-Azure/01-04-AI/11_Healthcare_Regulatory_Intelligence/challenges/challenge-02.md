@@ -59,7 +59,7 @@ An **agent** is a model with instructions, tools and knowledge. Your agent has n
 
    ![Removing the default Web search tool](../images/challenge-02-remove-web-search.png)
 
-5. Under **Knowledge**, select **Add**. In **Connect to Foundry IQ**, choose your search service as the **Connection** and `caldova-regulatory-kb` as the **Knowledge base**, then select **Connect**.
+5. Under **Knowledge**, select **Add**, then **Connect to Foundry IQ** (for later agents the knowledge base is listed directly under **Available knowledge bases**). Choose your search service as the **Connection** and `caldova-regulatory-kb` as the **Knowledge base**, then select **Connect**.
 
    ![Connect to Foundry IQ: your connection and the caldova-regulatory-kb knowledge base](../images/challenge-02-connect-foundry-iq.png)
 
