@@ -64,5 +64,5 @@ Ask shortcut participants to explain stop 4 back to you in one sentence: "Each s
 | `FOUNDRY_PROJECT_ENDPOINT must be …` | Copy the endpoint from the dashboard exactly |
 | `DefaultAzureCredential failed` | Run `az login --use-device-code` in the Codespace terminal |
 | Azure Storage permission error | Wrong subscription or account name; check `az account show` |
-| `The workflow returned no briefing` | Open Traces for the three agents; usually a missing knowledge tool on one agent |
+| `The workflow returned no briefing` | Open Traces for the three agents; usually one agent without `caldova-regulatory-kb` under Knowledge, or still with Web search |
 | Codespace setup failed | Rebuild the container; if it fails again, use the local devcontainer and report the log to the facilitator |
