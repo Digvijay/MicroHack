@@ -132,8 +132,6 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
    ![The caldova-lake knowledge source listed under the knowledge base, status Creating](../images/challenge-01-knowledge-source-added.png)
 7. Select **Save knowledge base** and wait until the knowledge source shows that indexing has **succeeded** (a few minutes).
 
-> 📸 **Screenshot to add:** `images/challenge-01-knowledge-source.png`: creating the Azure Blob Storage knowledge source on the `regulatory-knowledge` container.
-
 > 📸 **Screenshot to add:** `images/challenge-01-knowledge-base-ready.png`: the `caldova-regulatory-kb` knowledge base with indexing succeeded.
 
 ### Part E: Discuss (5 min)
