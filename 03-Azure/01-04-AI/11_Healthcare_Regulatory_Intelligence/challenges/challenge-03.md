@@ -109,7 +109,7 @@ Run three more assessments in **new chats**, then compare them with your team:
 | `Assess UK-REG-2027-001 for Caldova.` | It **applies** to Caldova as a UK marketing authorisation holder. `SOP-PV-003` still says 70 or 90 days and must change. The planned PSUR `SUB-2027-002` would breach the new 60-day limit. |
 | `Assess EU-GD-2027-019 for Caldova.` | It **does not apply**: veterinary medicines only. No actions are proposed. |
 
-![Warning letter assessment: applies through CMO-17 although Caldivex is not named; actions under SOP-QA-010 for the Quality Head, due 2027-01-26](../images/challenge-03-impact-warning-letter.png)
+![Warning letter assessment: applies through CMO-17 although Caldivex is not named. Each action shows its rule and arithmetic before the date: the SOP-QA-010 impact assessment is due 2027-01-26 (rule 1), the follow-ups 2027-02-11 (rule 4)](../images/challenge-03-impact-warning-letter.png)
 
 ### Part D: Check the evidence (10 min)
 
