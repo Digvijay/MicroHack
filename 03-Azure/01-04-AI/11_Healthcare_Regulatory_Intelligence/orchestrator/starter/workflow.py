@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Dict
 
-from agent_framework import AgentExecutor, WorkflowBuilder  # noqa: F401 (you need these below)
+from agent_framework import AgentExecutor, Message, WorkflowBuilder  # noqa: F401 (you need these below)
 from agent_framework.foundry import FoundryAgent  # noqa: F401
 from azure.ai.projects import AIProjectClient
 
@@ -34,6 +34,19 @@ def resolve_versions(config: Configuration, credential) -> Dict[str, str]:
     return resolved
 
 
+# Done for you: each agent gets the same kind of request you gave it in the playground.
+REQUESTS = {
+    "CITATION": "",
+    "IMPACT": "Assess this change for Caldova. The Document & Citation Agent found:\n\n",
+    "BRIEFING": "Prepare the action plan for sign-off for this change. The Obligation & Impact Extractor found:\n\n",
+}
+
+
+def handover(role: str):
+    """Done for you: turn the previous agent's answer into the request this agent was built for."""
+    return lambda conversation: [Message(role="user", contents=[REQUESTS[role] + conversation[-1].text])]
+
+
 def build_workflow(config: Configuration, credential, versions: Dict[str, str]):
     """Return the chain citation -> impact -> briefing as one agent.
 
@@ -43,9 +56,10 @@ def build_workflow(config: Configuration, credential, versions: Dict[str, str]):
     """
 
     # TODO 1: build a dictionary `executors` with one entry per role in config.names.
-    #   Each value is AgentExecutor(<agent>, context_mode="last_agent"), where <agent> is
+    #   Each value is AgentExecutor(<agent>, context_mode="custom", context_filter=handover(role)),
+    #   where <agent> is
     #   FoundryAgent(project_endpoint=..., credential=..., agent_name=..., agent_version=...).
-    #   "last_agent" means each agent receives only the previous agent's answer.
+    #   handover(role) gives each agent only the previous agent's answer, phrased as its request.
     executors = None
     if executors is None:
         raise NotImplementedError("TODO 1: create one AgentExecutor per saved agent")

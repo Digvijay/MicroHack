@@ -29,7 +29,9 @@ def _az(*arguments: str) -> None:
     if completed.returncode != 0:
         detail = (completed.stderr or completed.stdout).strip()
         raise LakeError(f"Azure Storage command failed: az {' '.join(arguments[:3])}\n{detail}\n"
-                        "Check that you are signed in (az login) to the lab subscription and that the storage account name is correct.")
+                        "Check that you are signed in (az login) to the lab subscription and that the storage account name is correct. "
+                        "If the error mentions permissions and your lab was deployed in the last few minutes, wait 5 minutes "
+                        "and run the command again: new role assignments take a few minutes to apply.")
 
 
 def download(lake: Lake, account: str) -> None:

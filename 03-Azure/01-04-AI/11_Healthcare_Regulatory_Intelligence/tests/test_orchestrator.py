@@ -101,12 +101,36 @@ def test_checker_spots_a_wrong_chain(tmp_path):
     wrong = (LAB / "orchestrator" / "workflow.py").read_text(encoding="utf-8")
     wrong = wrong.replace('builder.add_edge(executors["IMPACT"], executors["BRIEFING"])',
                           'builder.add_edge(executors["CITATION"], executors["BRIEFING"])')
-    wrong = wrong.replace('context_mode="last_agent"', 'context_mode="full"')
+    wrong = wrong.replace('context_mode="custom", context_filter=handover(role)', 'context_mode="full"')
     path = tmp_path / "wrong" / "workflow.py"
     path.parent.mkdir()
     path.write_text(wrong, encoding="utf-8")
     problems = " ".join(check_starter.check(check_starter.load(path)))
-    assert "Expected the edges" in problems and "context_mode='last_agent'" in problems
+    assert "Expected the edges" in problems and "context_mode='custom'" in problems
+
+
+def test_checker_spots_the_wrong_handover(tmp_path):
+    pytest.importorskip("agent_framework", reason="uv sync --all-extras installs the orchestrator SDK")
+    import check_starter
+
+    wrong = (LAB / "orchestrator" / "workflow.py").read_text(encoding="utf-8")
+    wrong = wrong.replace("context_filter=handover(role)", 'context_filter=handover("IMPACT")')
+    path = tmp_path / "wrong" / "workflow.py"
+    path.parent.mkdir()
+    path.write_text(wrong, encoding="utf-8")
+    problems = " ".join(check_starter.check(check_starter.load(path)))
+    assert "handover('BRIEFING')" in problems and "handover('IMPACT')" not in problems
+
+
+def test_handover_phrases_the_previous_answer_as_a_request():
+    pytest.importorskip("agent_framework", reason="uv sync --all-extras installs the orchestrator SDK")
+    from agent_framework import Message
+    from workflow import handover
+
+    conversation = [Message(role="user", contents=["event"]), Message(role="assistant", contents=["Does not apply."])]
+    handed = handover("BRIEFING")(conversation)
+    assert len(handed) == 1 and handed[0].role == "user"
+    assert handed[0].text.startswith("Prepare the action plan for sign-off") and handed[0].text.endswith("Does not apply.")
 
 
 def test_unfinished_starter_is_refused_before_any_azure_call(capsys):

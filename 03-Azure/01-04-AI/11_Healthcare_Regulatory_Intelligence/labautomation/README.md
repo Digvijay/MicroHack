@@ -30,7 +30,7 @@ Attendees create the knowledge base, the four agents and all data themselves dur
 
 ## Platform contract
 
-The platform sets the Az context and passes `DeploymentType`, `SubscriptionId`, `ResourceGroupName`, `PreferredLocation` and `AllowedEntraUserIds`. The default mode is `resourcegroup`. Only `subscription` mode creates a resource group, named with `Get-MhhStableHash -Length 24`. The script never signs in, switches subscription, deletes resources or silently changes region. One region is accepted (default `swedencentral`); a quota or capacity failure is reported, not worked around.
+The platform sets the Az context and passes `DeploymentType`, `SubscriptionId`, `ResourceGroupName`, `PreferredLocation` and `AllowedEntraUserIds`. The default mode is `resourcegroup`. Only `subscription` mode creates a resource group, named with `Get-MhhStableHash -Length 24`. The script never signs in, switches subscription, deletes resources or silently changes region. One region is accepted (default `uksouth`); a quota or capacity failure is reported, not worked around.
 
 Dashboard outputs (not secrets): `ResourceGroupName`, `EffectiveLocation`, `FoundryProjectEndpoint`, `FoundryAccountName`, `ModelDeploymentName`, `EmbeddingDeploymentName`, `StorageAccountName`, `SearchServiceName`, `SearchEndpoint`, `ApplicationInsightsName`.
 
@@ -39,6 +39,8 @@ Register these resource providers before the event: Microsoft.CognitiveServices,
 ## Capacity and cost
 
 - Confirm `gpt-5.4-mini`, `text-embedding-3-small` and Foundry IQ (agentic retrieval) availability and quota in the chosen region before the event. Model processing with GlobalStandard is not a data-residency guarantee.
+- **Azure AI Search capacity varies by region.** In October 2026 test deployments, `uksouth` worked; `swedencentral` failed with `InsufficientResourcesAvailable` for the search service only, and `westeurope` refused new Storage and Search services. Do one test deployment in the event subscription and region a few days before the event.
+- Role assignments take a few minutes to apply. Give participants their lab at least 10 minutes after deployment, or the first monitor run may report a storage permission error.
 - `$8/day/lab` is a **planning estimate**, not a quote: Azure AI Search Basic is the largest fixed cost; token usage across about 60 agent calls is small. Codespaces used in Challenge 6 are billed by GitHub separately.
 - Four labs per subscription assumes the chat model quota allows 4 × 200K TPM; check before promising that density.
 - No Microsoft 365 licence is needed (`groups: []`).

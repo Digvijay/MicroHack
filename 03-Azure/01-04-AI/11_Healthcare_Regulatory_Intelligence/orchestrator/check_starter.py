@@ -65,9 +65,23 @@ def check(module) -> List[str]:
     expected = {(names["CITATION"], names["IMPACT"]), (names["IMPACT"], names["BRIEFING"])}
     if edges != expected:
         problems.append(f"Expected the edges {sorted(expected)}; found {sorted(edges)}.")
-    for executor in workflow.get_executors_list():
-        if getattr(executor, "_context_mode", None) != "last_agent":
-            problems.append(f"{executor.id} should use context_mode='last_agent' so it receives only the previous answer.")
+    from agent_framework import Message
+
+    by_id = {executor.id: executor for executor in workflow.get_executors_list()}
+    sample = [Message(role="user", contents=["change event"]), Message(role="assistant", contents=["previous answer"])]
+    for role, name in names.items():
+        executor = by_id.get(name)
+        context_filter = getattr(executor, "_context_filter", None)
+        if executor is None:
+            continue
+        if getattr(executor, "_context_mode", None) != "custom" or context_filter is None:
+            problems.append(f"{name} should use context_mode='custom', context_filter=handover('{role}') "
+                            "so it receives the previous answer as a request.")
+            continue
+        handed = context_filter(sample)
+        expected = getattr(module, "REQUESTS", {}).get(role, "") + "previous answer"
+        if len(handed) != 1 or handed[0].text != expected:
+            problems.append(f"{name} should use context_filter=handover('{role}'), the filter for its own role.")
     return problems
 
 

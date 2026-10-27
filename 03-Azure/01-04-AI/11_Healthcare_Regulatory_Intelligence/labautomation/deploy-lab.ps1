@@ -31,7 +31,7 @@ foreach ($userId in $AllowedEntraUserIds) {
 if ($PreferredLocation.Count -gt 1) {
     throw 'Choose one approved Azure region. This lab does not silently fall back across regions.'
 }
-$location = if ($PreferredLocation.Count -eq 1) { $PreferredLocation[0].Trim() } else { 'swedencentral' }
+$location = if ($PreferredLocation.Count -eq 1) { $PreferredLocation[0].Trim() } else { 'uksouth' }
 if ([string]::IsNullOrWhiteSpace($location)) {
     throw 'PreferredLocation must not be blank.'
 }

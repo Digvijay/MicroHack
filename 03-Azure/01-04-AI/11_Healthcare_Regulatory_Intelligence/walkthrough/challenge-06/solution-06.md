@@ -16,7 +16,7 @@ executors = {
     role: AgentExecutor(
         FoundryAgent(project_endpoint=config.endpoint, credential=credential,
                      agent_name=name, agent_version=versions[role]),
-        context_mode="last_agent",
+        context_mode="custom", context_filter=handover(role),
     )
     for role, name in config.names.items()
 }
@@ -37,10 +37,11 @@ A plain `for` loop instead of the dictionary comprehension is fine. The finished
 | TODO 1 done | `NOT YET … TODO 2: create the WorkflowBuilder with a start and an output` |
 | TODOs 1 and 2 done | `NOT YET … TODO 3: add the two edges` |
 | An edge goes to the wrong agent | `Expected the edges [...]; found [...]` |
-| `context_mode` left out (defaults to `full`) | `… should use context_mode='last_agent' so it receives only the previous answer.` |
+| `context_mode` or `context_filter` left out | `… should use context_mode='custom', context_filter=handover('IMPACT') so it receives the previous answer as a request.` |
+| The same `handover("IMPACT")` used for every agent | `… should use context_filter=handover('BRIEFING'), the filter for its own role.` |
 | Correct | `PASS: orchestrator/starter/workflow.py chains citation -> impact -> briefing correctly.` |
 
-Why `last_agent`? With `full`, every agent receives the whole conversation so far. The briefing agent would then re-read the citation card as well as the impact assessment, which costs more tokens and can lead it to repeat the citation agent instead of summarising the assessment.
+Why `handover`? We tested the three options on the same events. With `full`, every agent receives the whole conversation; the briefing agent sometimes repeated the citation card, and once returned nothing. With `last_agent`, it receives only the impact assessment, which is an answer rather than a request; for the veterinary guidance (*does not apply*) it replied "I don't have a current user request" in one run of three. `handover(role)` passes only the previous answer, with the request the agent was built and tested with in front of it. With it, the veterinary event gave the expected one-line *does not apply* in every run. `handover` is written for participants in the starter, so the TODOs stay the same size.
 
 ## Shortcut: the code tour
 
@@ -48,15 +49,19 @@ Ask shortcut participants to explain stop 4 back to you in one sentence: "Each s
 
 ## Expected results (both paths)
 
-- Codespace setup ends with all tests passing (for example `43 passed`). This proves the pinned SDK installs and both the finished chain and the checker work, without calling Azure.
+- Codespace setup ends with all tests passing (for example `48 passed`). This proves the pinned SDK installs and both the finished chain and the checker work, without calling Azure.
 - `--event EVT-US-EL-2027-007-v1` prints `Processing EVT-US-EL-2027-007-v1 ...` and `Briefing written: briefings/EVT-US-EL-2027-007-v1.md`, then uploads it.
 - Ten events exist after Monday and Tuesday (nine new, one update). With `--limit 3`, run the processor until it prints `No change events are waiting for a briefing.`
 - Each briefing starts with a table: **PENDING HUMAN SIGN-OFF**, the event, the region, the time and the agent versions (for example `citation-agent v1, impact-agent v2, briefing-agent v1`).
-- In Traces, the `briefing-agent` run receives the impact assessment as its input.
+- In Traces, the `briefing-agent` run receives *Prepare the action plan for sign-off for this change. The Obligation & Impact Extractor found:* followed by the impact assessment.
+- `EVT-EU-GD-2027-019-v1` (veterinary guidance) produces one line: *EU-GD-2027-019 v1 does not apply to Caldova: …*
+- Events for changes already signed off in Challenge 5 (for example `EVT-EU-SA-2027-004-v1`) say that the tasks already exist instead of proposing them again.
 
-## What our test run produced
+## What our test runs produced
 
-The warning-letter event took about a minute and produced a briefing marked **PENDING HUMAN SIGN-OFF** with `citation-agent v3, impact-agent v6, briefing-agent v6`. The reasoning was right: it applies through CMO-17, with `DEV-2026-114`, no second site and the at-risk `TASK-2026-044`. Two things were wrong, and they make a good closing discussion:
+On a fresh deployment, after the fixes in this version, the warning-letter event produced a plan with `SOP-QA-010`, the Quality Head and **2027-01-26**, and `UK-REG-2027-001` produced 1 June 2027 for `SOP-PV-003` and 15 September 2027 for `SUB-2027-002`.
+
+An earlier run, before `internal/sops.md` was made easier to find, shows what review is for. The warning-letter event took about a minute and produced a briefing marked **PENDING HUMAN SIGN-OFF** with `citation-agent v3, impact-agent v6, briefing-agent v6`. The reasoning was right: it applies through CMO-17, with `DEV-2026-114`, no second site and the at-risk `TASK-2026-044`. Two things were wrong, and they make a good closing discussion:
 
 - It did not retrieve `SOP-QA-010` this time, so every action fell back to today + 30 days (2027-02-11) instead of 2027-01-26. The same agent got it right when asked directly in Challenge 3: retrieval varies between runs.
 - It proposed a *Supply Chain Lead*, a role that is not in `owners.md`. The sign-off tool would refuse that task, so the error cannot reach the task register.

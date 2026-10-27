@@ -43,7 +43,7 @@ Both paths share Parts A, B and D. Only Part C differs.
 
    ![The Codespace opens in the lab folder on the lab's custom image](../images/challenge-06-codespace-ready.png)
 
-4. Check that everything works. Run this in the terminal; it should end with **`45 passed`**:
+4. Check that everything works. Run this in the terminal; it should end with a line such as **`48 passed`** and no failures:
 
    ```bash
    uv run --frozen --all-extras pytest -q
@@ -78,7 +78,7 @@ Open `orchestrator/.env` and set `FOUNDRY_PROJECT_ENDPOINT` to the value from yo
    | 1 | `orchestrator/process_events.py` → `pending_events()` | Reads the change events from the lake and skips any that already have a briefing. That is why the assistant can run on a schedule. |
    | 2 | `orchestrator/process_events.py` → `prompt_for()` | The whole event becomes the first message. The agents get the document ID and version, nothing else. |
    | 3 | `orchestrator/workflow.py` → `resolve_versions()` | Looks up the **latest saved version** of each agent in Foundry, so your portal changes are used automatically. |
-   | 4 | `orchestrator/workflow.py` → `build_workflow()` | The heart of it. Step 1 wraps each saved agent in an `AgentExecutor`; Step 2 says where the chain starts and which agent's answer is the result; Step 3 connects them. `context_mode="last_agent"` means each agent sees only the previous agent's answer. |
+   | 4 | `orchestrator/workflow.py` → `build_workflow()` | The heart of it. Step 1 wraps each saved agent in an `AgentExecutor`; Step 2 says where the chain starts and which agent's answer is the result; Step 3 connects them. `handover(role)` gives each agent only the previous agent's answer, phrased as the request it was built for (*Assess this change for Caldova*, *Prepare the action plan for sign-off*). |
    | 5 | `orchestrator/process_events.py` → `write_briefing()` | Writes the answer with the status **PENDING HUMAN SIGN-OFF** and the agent versions used. Nothing here approves anything. |
 
 ### Part C, 🛠️ Write it: build the chain yourself (30 min)

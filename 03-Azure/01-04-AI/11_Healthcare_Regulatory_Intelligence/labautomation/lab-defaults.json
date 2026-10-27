@@ -3,7 +3,7 @@
   "groups": [],
   "deploymentType": "resourcegroup",
   "labsPerSubscription": 4,
-  "preferredLocation": "swedencentral",
+  "preferredLocation": "uksouth",
   "estimatedDailyCostsUsd": 8.0,
   "estimatedSharedDeploymentDailyCostsUsd": 0.0
 }
