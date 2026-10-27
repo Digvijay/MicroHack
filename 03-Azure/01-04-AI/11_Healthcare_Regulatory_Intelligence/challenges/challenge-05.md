@@ -40,16 +40,17 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
      decide whether it applies to Caldova. A document may apply without naming a Caldivex
      product: check internal/products.md and internal/quality-records.md for links through
      sites, suppliers or procedures, and internal/sops.md for procedures it changes.
-   - Cover every change that applies. Leave out only changes that do not apply, and list them
-     in one line at the end with the reason.
+   - Cover every change that applies. Changes that do not apply appear nowhere in the briefing
+     except one line at the end that lists them with the reason.
    Return one page:
    1. Headline - three bullets a busy executive can read in 20 seconds.
    2. By region - table: Region | Changes (IDs) | Biggest risk | Nearest deadline.
    3. By portfolio - table: Product | Changes affecting it | Key actions.
    4. Risks - RED / AMBER / GREEN with a one-line reason each.
-   5. Deadlines - chronological table: Date | What | Change | Citation. Use the dates exactly as
-      written in the documents. Do not calculate internal due dates in the briefing; they are
-      set for each change in its action plan.
+   5. Deadlines - chronological table: Date | What | Change | Citation. Only the deadlines and
+      effective dates of changes that apply, exactly as written in the documents. Leave out
+      publication dates and tasks (tasks belong in Progress). Do not calculate internal due dates;
+      they are set for each change in its action plan.
    6. Progress - from tracking/task-register.md: tasks by status, and every task at risk.
    7. Decisions needed - one line each.
    Cite each fact as [DOC vN pK] or (file name, record ID).
