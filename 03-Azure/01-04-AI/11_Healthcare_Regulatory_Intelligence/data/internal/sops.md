@@ -8,7 +8,7 @@ Fictional training record. Owner: Quality Head. Last reviewed: 2 January 2027.
 | SOP-PV-003 | Periodic safety update reports (PSURs) | Pharmacovigilance Lead | Submit UK PSURs within **70 or 90 days** of the data lock point. |
 | SOP-PV-005 | Direct Healthcare Professional Communications (DHPCs) | Pharmacovigilance Lead | The regulator approves the DHPC text; Medical Affairs sends it to prescribers. |
 | SOP-CT-002 | Clinical trial results disclosure | Clinical Disclosure Lead | Publish a **technical** results summary within 12 months of the end of a trial. No plain-language summary step. |
-| SOP-QA-010 | Contract manufacturer oversight | Quality Head | Audit each contract manufacturer every 2 years. Assess the impact of any regulator finding within 10 working days. |
+| SOP-QA-010 | Contract manufacturer oversight | Quality Head | Audit each contract manufacturer every 2 years. Assess the impact of any regulator finding within 14 calendar days. |
 | SOP-QA-014 | Impurity risk assessment | Quality Head | Assess nitrosamine risk for each product and record results in a CAPA. |
 | SOP-MA-004 | Payer coverage and evidence dossiers | Market Access Lead | Update the payer evidence dossier when a payer changes coverage for a Caldova product. |
 | SOP-MA-006 | Pricing scheme reporting | Market Access Lead | Report quarterly UK sales to the pricing scheme and update the forecast when the payment rate changes. |

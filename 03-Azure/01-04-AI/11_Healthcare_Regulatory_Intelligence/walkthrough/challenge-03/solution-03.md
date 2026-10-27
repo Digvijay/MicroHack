@@ -27,7 +27,7 @@ Good answers also notice:
 ## US-EL-2027-007: applies to CDX-PEN through CMO-17
 
 - `quality-records.md`: CMO-17 fills **all** EU and US CDX-PEN supply, there is **no second site**, and deviation **DEV-2026-114** (particles in lot P-2611) is open. The letter's finding 1 is about particles [v1 p2].
-- `SOP-QA-010`: assess a regulator finding within **10 working days** of today (12 January), so by **26 January 2027** (rule 1). Owner: **Quality Head**.
+- `SOP-QA-010`: assess a regulator finding within **14 calendar days**: 12 January + 14 = **26 January 2027** (rule 1). Owner: **Quality Head**. Check the arithmetic in the answer: models often slip on date calculations, which is one reason a person reviews every date at sign-off. Caldova's rules use calendar days to keep the calculation simple.
 - Existing task **TASK-2026-044** (CMO-17 re-audit, due 15 December 2026) is **at risk**. The agent should escalate it, not duplicate it.
 - The 15-working-day response [v1 p4] is **CMO-17's** obligation, not Caldova's. Good answers keep the two apart.
 
@@ -58,5 +58,5 @@ Veterinary medicines only [v1 p1, p3]. Caldova has no veterinary products. No ac
 | The agent says the warning letter does not apply | Ask: "Which products does CMO-17 make for Caldova?" If it can, it should find `quality-records.md`. Reinforce the instruction to search **internal records** too |
 | Invented record IDs (for example `SOP-PV-009`) | Compare with `internal/sops.md`; check that the trace retrieved internal files |
 | Dates without the rule | Ask for the "How the date was calculated" column; it must quote the owners.md rule |
-| Warning letter action due 2027-02-11 (today + 30 days) instead of 2027-01-26 | The agent never retrieved `SOP-QA-010`, so it could not apply the SOP time limit | The instructions tell it to search `internal/sops.md` for each action; check they were saved. Ask *Which SOP governs assessing a regulator finding at a contract manufacturer?* to show the retrieval it missed |
+| Warning letter action due 2027-02-11 (today + 30 days), or another date, instead of 2027-01-26 | The agent never retrieved `SOP-QA-010`, so it could not apply the SOP time limit | The instructions tell it to search `internal/sops.md` for each action; check they were saved. Ask *Which SOP governs assessing a regulator finding at a contract manufacturer?* to show the retrieval it missed |
 | Proposes a new nitrosamine task | It missed `tracking/task-register.md`; ask it to check existing tasks |

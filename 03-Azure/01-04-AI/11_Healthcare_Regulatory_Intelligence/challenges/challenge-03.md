@@ -97,7 +97,7 @@ Run three more assessments in **new chats**, then compare them with your team:
 
 | Ask | What a good answer shows |
 |---|---|
-| `Assess US-EL-2027-007 for Caldova.` | It **applies**, even though Caldivex is never named. CMO-17 fills every Caldivex pen (`quality-records.md`), there is an open deviation `DEV-2026-114` about particles, there is no second fill-finish site, and re-audit task `TASK-2026-044` is **at risk**. The impact assessment is owned by the Quality Head and due **26 January 2027**: `SOP-QA-010` allows 10 working days. CMO-17's own 15-day reply is not Caldova's deadline. |
+| `Assess US-EL-2027-007 for Caldova.` | It **applies**, even though Caldivex is never named. CMO-17 fills every Caldivex pen (`quality-records.md`), there is an open deviation `DEV-2026-114` about particles, there is no second fill-finish site, and re-audit task `TASK-2026-044` is **at risk**. The impact assessment is owned by the Quality Head and due **26 January 2027**: `SOP-QA-010` allows 14 calendar days from today, 12 January. CMO-17's own 15-day reply is not Caldova's deadline. |
 | `Assess UK-REG-2027-001 for Caldova.` | It **applies** to Caldova as a UK marketing authorisation holder. `SOP-PV-003` still says 70 or 90 days and must change. The planned PSUR `SUB-2027-002` would breach the new 60-day limit. |
 | `Assess EU-GD-2027-019 for Caldova.` | It **does not apply**: veterinary medicines only. No actions are proposed. |
 
