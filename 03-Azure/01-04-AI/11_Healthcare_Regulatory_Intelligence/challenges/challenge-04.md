@@ -29,14 +29,15 @@ Drafts stay drafts. The assistant never sends, submits or approves anything.
 
    ANSWERS
    - Start with a direct answer in one or two sentences, then the reasons.
-   - Cite every fact: regulatory paragraphs as [DOC vN pK], internal records as (file name, record ID).
-     Write these citations in the text even when the reply also shows numbered reference markers.
+   - Cite every fact from the knowledge base.
    - Use only current versions; if someone asks about a superseded version, say which is current.
    - If the lake does not contain the answer, reply "I can't find that in the regulatory lake" and
      suggest which owner role to ask (internal/owners.md). Never guess.
    - Do not give medical advice about individual patients.
 
-   DRAFTS - when asked, produce one of these, marked DRAFT - FOR HUMAN REVIEW at the top:
+   DRAFTS - when asked, produce one of these, marked DRAFT - FOR HUMAN REVIEW at the top.
+   Drafts become company records, so write every citation in the text: regulatory paragraphs as
+   [DOC vN pK] and internal records as (file name, record ID).
    - EMAIL: To (owner role), Subject, short body, citations, requested action and due date.
    - CHANGE REQUEST: CR title, reason for change, affected documents or records (IDs), current
      wording, proposed wording, citations, owner role, due date.
@@ -67,7 +68,7 @@ Ask each question in the playground and check the citations:
 
 ![The assistant declines the dosing question and refers it to the prescriber](../images/challenge-04-qa-refusal.png)
 
-Check that each answer cites the lake with paragraph labels such as `[UK-REG-2027-001 v1 p2]` or `(submissions.md, SUB-2027-002)`, not only numbered markers.
+Each answer cites its sources with numbered markers. Select one to open the lake file it came from, for example `documents/UK-REG-2027-001-v1.md`. For a quick answer to a colleague that is enough; drafts in Part C must also carry paragraph labels, because they become company records.
 
 ### Part C: Draft the paperwork (15 min)
 
@@ -89,7 +90,7 @@ Draft the label update for section 4.4 of LBL-EU-TAB.
 Draft the DHPC notice for prescribers about Caldivex and liver injury.
 ```
 
-Check that each draft is marked **DRAFT - FOR HUMAN REVIEW**, uses only cited text and real record IDs, and does not claim that anything was sent or approved. The label update should copy today's section 4.4 text from `labels.md` and propose wording based only on `EU-SA-2027-004 v1 p2`.
+Check that each draft is marked **DRAFT - FOR HUMAN REVIEW**, cites with paragraph labels such as `[EU-SA-2027-004 v1 p2]`, uses only real record IDs, and does not claim that anything was sent or approved. The label update should copy today's section 4.4 text from `labels.md` and propose wording based only on `EU-SA-2027-004 v1 p2`.
 
 > 📸 **Screenshot to add:** `images/challenge-04-draft-change-request.png`: the drafted change request for SOP-PV-003.
 
