@@ -105,9 +105,11 @@ Run three more assessments in **new chats**, then compare them with your team:
 
 ### Part D: Check the evidence (10 min)
 
-Pick one proposed action. Open its citation in the lake (`documents/…`) and its internal record (`internal/…`). Both should say what the agent claims. Then select **Traces** under the answer, open the **`knowledge_base_retrieve`** step and check the `blob_url` of each returned document: the agent should have retrieved **both** the regulatory document (`documents/…`) and Caldova's internal records (`internal/…`).
+1. Pick one proposed action. Open its citation in the lake (`documents/…`) and its internal record (`internal/…`) in the Storage browser. Both should say what the agent claims.
+2. Under the answer, select **Traces**. You will usually see **more than one** `knowledge_base_retrieve` step: the agent searches once for the regulatory document and again for Caldova's records.
+3. In each step's **Output**, check the `url` of every returned document. Between them, the steps should return **both** the regulatory document (`documents/…`) and Caldova's internal records (`internal/…`, for example `sops.md` and `quality-records.md` for the warning letter).
 
-> 📸 **Screenshot to add:** `images/challenge-03-trace.png`: trace showing retrieval of both the regulatory document and internal records.
+![Trace: the second knowledge_base_retrieve step returns internal/sops.md and internal/quality-records.md](../images/challenge-03-trace.png)
 
 ## ✔️ Success criteria
 
