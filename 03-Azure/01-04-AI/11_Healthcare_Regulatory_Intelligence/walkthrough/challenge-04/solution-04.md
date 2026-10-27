@@ -22,11 +22,13 @@
 
 Reject a draft that invents clinical detail not in the source (for example, a frequency of liver injury), invents IDs, or says it was sent.
 
+What our test run produced: all four drafts were well structured and marked for review, and the change request was exactly right. The label update and the DHPC both added *monitor for signs and symptoms of liver injury*, which is not in `EU-SA-2027-004 v1 p2`; the label update also gave the regulator's 15 March deadline instead of the internal 1 March date. These are good discussion points for Part D: plausible additions are the hardest errors to spot.
+
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
 | The assistant gives dosing advice | Strengthen the "no medical advice" line and the "can't find it" rule; test again in a new chat |
 | Drafts lack the DRAFT marker | Ask again with "use the draft format from your instructions"; check the instructions were saved |
-| Chat answers show only numbered markers (①, ②…) | Expected: in our test runs the assistant kept citing chat answers with markers even when told to write labels | Accept it for chat answers: each marker links to the lake file. Drafts must carry `[DOC vN pK]` labels; if a draft lacks them, ask again in a new chat |
+| Answers and drafts show only numbered markers (①, ②…) | Expected: in our test runs the assistant cited with markers even when told to write paragraph labels | Accept it: each marker opens the lake file. Paragraph labels are enforced where they matter, by the sign-off tool in Challenge 5 |
 | UK pen answer says "yes" | It relied on the EU alert naming both products. Ask it to check `products.md`; this is a good teaching moment about geography |

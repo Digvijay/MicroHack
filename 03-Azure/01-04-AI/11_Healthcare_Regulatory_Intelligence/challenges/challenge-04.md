@@ -36,8 +36,7 @@ Drafts stay drafts. The assistant never sends, submits or approves anything.
    - Do not give medical advice about individual patients.
 
    DRAFTS - when asked, produce one of these, marked DRAFT - FOR HUMAN REVIEW at the top.
-   Drafts become company records, so write every citation in the text: regulatory paragraphs as
-   [DOC vN pK] and internal records as (file name, record ID).
+   Use only wording supported by the cited text; never add clinical advice the source does not give.
    - EMAIL: To (owner role), Subject, short body, citations, requested action and due date.
    - CHANGE REQUEST: CR title, reason for change, affected documents or records (IDs), current
      wording, proposed wording, citations, owner role, due date.
@@ -68,7 +67,7 @@ Ask each question in the playground and check the citations:
 
 ![The assistant declines the dosing question and refers it to the prescriber](../images/challenge-04-qa-refusal.png)
 
-Each answer cites its sources with numbered markers. Select one to open the lake file it came from, for example `documents/UK-REG-2027-001-v1.md`. For a quick answer to a colleague that is enough; drafts in Part C must also carry paragraph labels, because they become company records.
+Each answer cites its sources with numbered markers. Select one to open the lake file it came from, for example `documents/UK-REG-2027-001-v1.md`. Use the markers to check any statement you are about to rely on.
 
 ### Part C: Draft the paperwork (15 min)
 
@@ -90,11 +89,17 @@ Draft the label update for section 4.4 of LBL-EU-TAB.
 Draft the DHPC notice for prescribers about Caldivex and liver injury.
 ```
 
-Check that each draft is marked **DRAFT - FOR HUMAN REVIEW**, cites with paragraph labels such as `[EU-SA-2027-004 v1 p2]`, uses only real record IDs, and does not claim that anything was sent or approved. The label update should copy today's section 4.4 text from `labels.md` and propose wording based only on `EU-SA-2027-004 v1 p2`.
+Review each draft as its owner would, using the numbered markers to open the sources:
 
-> 📸 **Screenshot to add:** `images/challenge-04-draft-change-request.png`: the drafted change request for SOP-PV-003.
+- It is marked **DRAFT - FOR HUMAN REVIEW**, uses only real record IDs, and does not claim that anything was sent or approved.
+- The change request quotes today's `SOP-PV-003` wording (70 or 90 days), proposes 60 days, and is due **2027-06-01**.
+- The label update copies today's section 4.4 text from `labels.md` (*Hypersensitivity; pregnancy*) and proposes wording based only on `EU-SA-2027-004 v1 p2`.
 
-> 📸 **Screenshot to add:** `images/challenge-04-draft-label-update.png`: the drafted label update for LBL-EU-TAB section 4.4.
+**Find the invented sentence.** Compare the proposed label wording with `documents/EU-SA-2027-004-v1.md` paragraph p2, sentence by sentence. In our test run the draft added *Patients should be monitored for signs and symptoms of liver injury*, which the regulator never said. That is exactly why every draft goes to a medical and regulatory reviewer.
+
+![Drafted change request for SOP-PV-003: current 70 or 90 days, proposed 60 days, due 2027-06-01](../images/challenge-04-draft-change-request.png)
+
+![Drafted label update for LBL-EU-TAB section 4.4, marked Requires medical and regulatory review](../images/challenge-04-draft-label-update.png)
 
 ### Part D: Discuss (5 min)
 
@@ -105,6 +110,6 @@ Which of these drafts would you trust a colleague to send after a quick check, a
 - [ ] `qa-agent` answers the first three questions correctly with citations to both regulatory and internal sources.
 - [ ] It declines the dosing question instead of guessing.
 - [ ] It produces an email, a change request, a notice and a label update, each marked as a draft for human review.
-- [ ] No draft invents record IDs or claims that it was sent.
+- [ ] No draft invents record IDs or claims that it was sent, and you found any sentence in a draft that its source does not support.
 
 [Coach solution and expected answers](../walkthrough/challenge-04/solution-04.md)
