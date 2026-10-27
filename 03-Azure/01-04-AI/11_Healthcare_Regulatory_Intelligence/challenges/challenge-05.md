@@ -47,7 +47,9 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
    2. By region - table: Region | Changes (IDs) | Biggest risk | Nearest deadline.
    3. By portfolio - table: Product | Changes affecting it | Key actions.
    4. Risks - RED / AMBER / GREEN with a one-line reason each.
-   5. Deadlines - chronological table: Date | What | Change | Internal due date.
+   5. Deadlines - chronological table: Date | What | Change | Citation. Use the dates exactly as
+      written in the documents. Do not calculate internal due dates in the briefing; they are
+      set for each change in its action plan.
    6. Progress - from tracking/task-register.md: tasks by status, and every task at risk.
    7. Decisions needed - one line each.
    Cite each fact as [DOC vN pK] or (file name, record ID).
@@ -89,10 +91,10 @@ Check the briefing:
 - Is the veterinary guidance (EU-GD-2027-019) left out, with a reason?
 - Is the warning letter shown as a risk to the **pen**, even though it never names Caldivex?
 - Is `TASK-2026-044` (re-audit of CMO-17) flagged **at risk**, and is it connected to the warning letter?
-- Are the regulators' deadlines in date order, each with Caldova's internal due date (for example the DHPC: 1 March 2027, internal 15 February)?
+- Are the regulators' dates in date order, exactly as the documents give them (for example the DHPC by 1 March 2027)?
 - Does it list the decisions leadership has to take, including what to do about CMO-17?
 
-The CMO-17 warning letter has no regulator deadline for Caldova, so it shows up under risks, progress and decisions rather than in the deadlines table.
+The briefing shows the regulators' dates only. Caldova's internal due dates are calculated per change, in the action plan below and in Challenge 3. The CMO-17 warning letter gives Caldova no date, so it appears under risks and decisions.
 
 ![Portfolio briefing: deadlines with internal due dates, task progress, the at-risk CMO-17 re-audit and decisions needed](../images/challenge-05-portfolio-briefing.png)
 

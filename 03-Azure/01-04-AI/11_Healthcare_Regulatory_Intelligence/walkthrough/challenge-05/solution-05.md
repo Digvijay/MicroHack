@@ -8,17 +8,19 @@
 
 **By region**
 
-| Region | Changes | Biggest risk | Nearest internal due date |
+| Region | Changes | Biggest risk | Nearest regulator date |
 |---|---|---|---|
-| EU | EU-SA-2027-004, EU-GD-2027-011 | Liver warning on both products | RMP and PSUR update 11 Feb 2027 (DHPC 15 Feb) |
-| UK | UK-SA-2027-002, UK-REG-2027-001, UK-PR-2027-001 | Label variation and PSUR procedure | UK forecast 2 Mar 2027 |
-| US | US-EL-2027-007, US-REG-2027-003, US-CD-2027-015 v2 | Pen supply depends on CMO-17 | CMO-17 impact assessment 26 Jan 2027 |
+| EU | EU-SA-2027-004, EU-GD-2027-011 | Liver warning on both products | DHPC 1 Mar 2027 |
+| UK | UK-SA-2027-002, UK-REG-2027-001, UK-PR-2027-001 | Label variation and PSUR procedure | UK variation 29 Mar 2027 |
+| US | US-EL-2027-007, US-REG-2027-003, US-CD-2027-015 v2 | Pen supply depends on CMO-17 | Payer evidence 1 Mar 2027 |
 
 **By portfolio**: CDX-TAB is affected by seven changes (both safety alerts, nitrosamines, payer, pricing, trial summary and PSUR). CDX-PEN is affected by the EU alert and the warning letter.
 
-**Risks**: RED for pen supply (CMO-17 findings, open DEV-2026-114, no second site, re-audit TASK-2026-044 overdue); AMBER for the EU label timeline and the PSUR procedure; GREEN for pricing.
+**Risks**: pen supply (CMO-17 findings, open DEV-2026-114, no second site, overdue re-audit) and the liver-injury label and DHPC timeline should both be RED or AMBER; pricing GREEN or AMBER. Which risk gets RED varies between runs and is a good discussion point.
 
-**Deadlines** (as in our test run): DHPC 1 Mar (internal 15 Feb), US payer evidence 1 Mar (15 Feb), EU variation 15 Mar (1 Mar), UK variation 29 Mar (15 Mar), US tier change 1 Apr (2 Mar). The CMO-17 assessment has no regulator deadline, so it appears under risks and decisions; later dates (PSUR rule 1 Jul, nitrosamines 1 Aug) may or may not be listed.
+**Deadlines** (regulators' dates only): DHPC 1 Mar, US payer evidence 1 Mar, EU guidance on trial summaries applies 1 Mar, EU variation 15 Mar, UK variation 29 Mar, UK payment rate and US tier change 1 Apr, UK PSUR rule 1 Jul, nitrosamines 1 Aug. **Coverage:** all eight applicable changes, with EU-GD-2027-019 listed as out of scope.
+
+Why no internal dates here: in our test run the briefing agent recalculated internal dates for ten rows at once and got several wrong (for example the DHPC internal date as 1 March and the UK forecast as 30 January). The impact agent calculates them per change, and the sign-off tool records them.
 
 **Progress** (before any sign-off): TASK-2026-041 in progress; TASK-2026-044 **open and at risk**; TASK-2026-047 done.
 
