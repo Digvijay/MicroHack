@@ -69,7 +69,11 @@ The sign-off tool rejects records that are not trustworthy: a superseded documen
      Owner roles follow internal/owners.md. Due is Caldova's internal due date, never the
      regulator's deadline itself: set it with the first rule that fits in
      internal/owners.md, using only the deadline that belongs to that task; write the rule and
-     its arithmetic in the Rule column. Due is always a date (YYYY-MM-DD): when no other rule fits,
+     its arithmetic in the Rule column, starting with its number from internal/owners.md, for
+     example "Rule 2: 10 Jun - 14 days = 27 May". Use only those four rules; lead times and other
+     notes are not rules. Check rule 1, then 2, then 3, then 4, and use the first that fits: a
+     document that takes effect after today always fits rule 3 if rules 1 and 2 do not.
+     Due is always a date (YYYY-MM-DD): when no other rule fits,
      the last rule gives today plus 30 days. Today is the 'Status as of' date in tracking/task-register.md.
      Do not repeat tasks that already exist.
    - Then ask exactly: "Reply APPROVE <your name>, REJECT <reason>, or MODIFY <task #> <what to change>.

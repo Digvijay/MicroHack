@@ -46,8 +46,8 @@ Veterinary medicines only [v1 p1, p3]. Caldova has no veterinary products. No ac
 | Change | Expected result |
 |---|---|
 | UK-SA-2027-002 | CDX-TAB only (`LBL-UK-TAB`); variation by 29 Mar 2027, internal due 15 Mar 2027; serious cases reported within 15 days |
-| EU-GD-2027-011 | CAL-301 ended 30 Jun 2026; plain-language summary **not started**; due 30 Jun 2027, internal due 16 Jun 2027; update SOP-CT-002; owner: Clinical Disclosure Lead |
-| US-REG-2027-003 | CDX-TAB; confirm by 1 Aug 2027, internal due 18 Jul 2027; CAPA-2026-031 in progress; **existing TASK-2026-041**; owner: Quality Head |
+| EU-GD-2027-011 | CAL-301 ended 30 Jun 2026; plain-language summary **not started**; due 30 Jun 2027 (12 months after the trial ended), internal due 16 Jun 2027 (rule 2); update SOP-CT-002; owner: Clinical Disclosure Lead. Agents often use the guidance's 1 March effective date instead (rule 3, 30 Jan 2027), because the deadline has to be worked out from `studies.md`. Accept it only if the Rule column says so and the approver agrees; it is a good review point |
+| US-REG-2027-003 | CDX-TAB; confirm by 1 Aug 2027, internal due 18 Jul 2027 (rule 2: *by 1 August* is a deadline). The rule also takes effect on 1 August, so some runs apply rule 3 and give 2 Jul 2027; the Rule column shows which. CAPA-2026-031 in progress; **existing TASK-2026-041**; owner: Quality Head |
 | US-CD-2027-015 v2 | CDX-TAB; evidence by 1 Mar 2027, internal due 15 Feb 2027; update MA-US-DOSSIER v3; tier 3 from 1 Apr 2027; owner: Market Access Lead |
 | UK-PR-2027-001 | CDX-TAB; MA-UK-FORECAST assumes 15.3%, now 18.5% from 1 Apr 2027; internal due 2 Mar 2027; owner: Market Access Lead |
 
