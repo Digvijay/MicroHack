@@ -96,14 +96,26 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
    ![Knowledge (Foundry IQ): select your search service under Foundry IQ resource, then Connect](../images/challenge-01-connect-search.png)
 
    ![Auth Type set to Project Managed Identity](../images/challenge-01-connect-search-auth.png)
-4. **Create a knowledge base** named `caldova-regulatory-kb`, adding one knowledge source as follows.
-5. **Knowledge source** of type **Azure Blob Storage**:
+
+4. The **Knowledge bases** tab now shows your search service under **Connection**. Select **Create a knowledge base**.
+
+   ![Knowledge bases tab connected to your search service, with Create a knowledge base](../images/challenge-01-knowledge-connected.png)
+
+5. Fill in the basic configuration:
+   - **Name:** `caldova-regulatory-kb`; **Description:** for example *Caldova regulatory lake*.
+   - **Chat completions model:** your `ModelDeploymentName` (`gpt-5.4-mini`).
+   - **Retrieval reasoning effort:** **Minimal**.
+   - **Output mode:** **Extractive data**, so the knowledge base returns the raw passages and your agents do the reasoning.
+   - Leave **Retrieval instructions** empty.
+
+   ![Create a new knowledge base: name, chat completions model, Minimal reasoning effort and Extractive data output](../images/challenge-01-knowledge-base-form.png)
+
+6. Under **Knowledge sources**, select **Add sources** and choose **Azure Blob Storage**:
    - Storage account: `StorageAccountName`; container: **`regulatory-knowledge`** (not `lake-raw`).
    - Authentication: **managed identity** (the system identity of your search service). It already has read access.
    - Embedding model: `EmbeddingDeploymentName`.
    - Name it `caldova-lake`.
-6. Knowledge base settings: **retrieval reasoning effort: Minimal** and **output: extractive data** (the raw passages). Your agents do the reasoning. If a chat model is requested, choose `ModelDeploymentName`.
-7. **Save** and wait until the knowledge source shows that indexing has **succeeded** (a few minutes). The portal labels can differ slightly; the settings above are what matter.
+7. Select **Save knowledge base** and wait until the knowledge source shows that indexing has **succeeded** (a few minutes).
 
 > 📸 **Screenshot to add:** `images/challenge-01-knowledge-source.png`: creating the Azure Blob Storage knowledge source on the `regulatory-knowledge` container.
 
