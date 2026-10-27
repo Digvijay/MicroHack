@@ -65,9 +65,14 @@ if ($result.ProvisioningState -ne 'Succeeded') {
 }
 @{ HackboxCredential = @{ name = 'ResourceGroupName'; value = $ResourceGroupName; note = 'Your lab resource group' } }
 @{ HackboxCredential = @{ name = 'EffectiveLocation'; value = $location; note = 'Azure region of your lab resources' } }
+# ARM returns output names in camelCase and Outputs is case-sensitive; a PowerShell hashtable is not.
+$outputs = @{}
+foreach ($key in $result.Outputs.Keys) {
+    $outputs[$key] = [string]$result.Outputs[$key].Value
+}
 foreach ($name in @('FoundryProjectEndpoint', 'FoundryAccountName', 'ModelDeploymentName', 'EmbeddingDeploymentName', 'StorageAccountName', 'SearchServiceName', 'SearchEndpoint', 'ApplicationInsightsName')) {
-    if (-not $result.Outputs.ContainsKey($name) -or [string]::IsNullOrWhiteSpace([string]$result.Outputs[$name].Value)) {
+    if ([string]::IsNullOrWhiteSpace($outputs[$name])) {
         throw "Required template output missing: $name"
     }
-    @{ HackboxCredential = @{ name = $name; value = [string]$result.Outputs[$name].Value; note = 'Lab resource name or endpoint; not a secret' } }
+    @{ HackboxCredential = @{ name = $name; value = $outputs[$name]; note = 'Lab resource name or endpoint; not a secret' } }
 }
