@@ -28,7 +28,7 @@ var blobContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
 var blobReader = '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
 var searchWriter = '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
 var searchReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f'
-var searchManager = '7ca78c08-252a-4471-8644-bb5ff32d4dd0'
+var searchManager = '7ca78c08-252a-4471-8644-bb5ff32d4ba0'
 var foundryUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d'
 var foundryProjectManager = 'eadc314b-1a2d-4efa-be10-5d325db5065e'
 var modelUser = '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
@@ -78,9 +78,11 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
   }
 }
 
+// Foundry accepts one change per account at a time: create the project, then each model.
 resource chat 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
   parent: foundry
   name: chatDeploymentName
+  dependsOn: [project]
   sku: { name: modelSku, capacity: chatCapacity }
   properties: {
     model: { format: 'OpenAI', name: chatModelName, version: chatModelVersion }

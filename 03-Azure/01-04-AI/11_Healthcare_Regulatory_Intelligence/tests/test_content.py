@@ -100,3 +100,20 @@ def test_containers_and_dependencies_are_reproducible():
     assert local["postCreateCommand"] == "uv sync --frozen --all-extras && uv run --frozen --all-extras pytest -q"
     assert all(port["visibility"] == "private" for port in local["portsAttributes"].values())
     assert "out/" in (LAB / ".gitignore").read_text(encoding="utf-8").splitlines()
+
+
+def test_template_role_ids_are_real_built_in_roles():
+    # Deployment validation does not check role IDs; a typo only fails at deployment time.
+    known = {
+        "ba92f5b4-2d11-453d-a403-e96b0029c9fe": "Storage Blob Data Contributor",
+        "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1": "Storage Blob Data Reader",
+        "8ebe5a00-799e-43f5-93ac-243d3dce84a7": "Search Index Data Contributor",
+        "1407120a-92aa-4202-b7e9-c0e197c71c8f": "Search Index Data Reader",
+        "7ca78c08-252a-4471-8644-bb5ff32d4ba0": "Search Service Contributor",
+        "53ca6127-db72-4b80-b1b0-d745d6d5456d": "Foundry User",
+        "eadc314b-1a2d-4efa-be10-5d325db5065e": "Foundry Project Manager",
+        "5e0bd9bd-7b93-4f28-af87-19fc36ad61bd": "Cognitive Services OpenAI User",
+    }
+    template = (LAB / "infra" / "main.bicep").read_text(encoding="utf-8")
+    used = set(re.findall(r"'([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'", template))
+    assert used == set(known), sorted(used ^ set(known))
