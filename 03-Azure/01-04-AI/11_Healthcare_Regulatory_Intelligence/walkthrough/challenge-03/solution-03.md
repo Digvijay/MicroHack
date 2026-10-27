@@ -51,6 +51,23 @@ Veterinary medicines only [v1 p1, p3]. Caldova has no veterinary products. No ac
 | US-CD-2027-015 v2 | CDX-TAB; evidence by 1 Mar 2027, internal due 15 Feb 2027; update MA-US-DOSSIER v3; tier 3 from 1 Apr 2027; owner: Market Access Lead |
 | UK-PR-2027-001 | CDX-TAB; MA-UK-FORECAST assumes 15.3%, now 18.5% from 1 Apr 2027; internal due 2 Mar 2027; owner: Market Access Lead |
 
+## Model settings: why medium reasoning
+
+`gpt-5.4-mini` is a reasoning model. The agent's **Parameters** panel offers **Reasoning Effort** but not **temperature**: the model accepts a temperature only when reasoning effort is `none`, so the portal hides it. We compared settings on the same fresh lab, asking `impact-agent` to assess EU-SA-2027-004 (3 runs), US-EL-2027-007 (2) and UK-REG-2027-001 (2):
+
+| Setting | Runs with every due date right | Output tokens per answer |
+|---|---|---|
+| Reasoning `none`, temperature 0 | 3 of 7 (missed SOP-QA-010 twice, wrong subtractions) | about 1,600 |
+| Reasoning `low` (portal default) | 6 of 7 | about 2,300 |
+| Reasoning `low`, tools set to *Required* | 7 of 7, but every EU-SA run left out the variation task | about 2,100 |
+| Reasoning `medium` | **7 of 7**, complete | about 9,500 |
+
+For `briefing-agent`, medium covered all eight changes in 2 of 2 briefings (low: 1 of 2) and takes about 70 seconds instead of 20.
+
+Teaching point: temperature 0 makes an answer **repeatable**, not **right**. A model that does not reason gives the same wrong date every time. What reduced the errors was letting the model think (reasoning effort) and giving it clear rules and findable records, not removing randomness.
+
+If participants left an agent on low, answers are still mostly right; ask them to switch to medium when they see a date that does not match its rule. A Standard deployment of 200K tokens per minute is plenty for one participant. Running several medium agents at once, as in Challenge 6, can hit the limit: wait a minute and run again.
+
 ## Troubleshooting
 
 | Symptom | Fix |

@@ -62,6 +62,10 @@ The tool checks the content of the record before it checks for an earlier decisi
 
 Discussion answer: instructions guide a model, but they can be ignored or misread. **Code enforces the rules every time**, and an auditor can read and test it (see `tests/test_signoff.py`).
 
+## Model settings
+
+`briefing-agent` uses **Reasoning Effort: medium**, like `impact-agent`. See [Challenge 3 solution](../challenge-03/solution-03.md#model-settings-why-medium-reasoning) for the comparison and why temperature is not offered.
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |

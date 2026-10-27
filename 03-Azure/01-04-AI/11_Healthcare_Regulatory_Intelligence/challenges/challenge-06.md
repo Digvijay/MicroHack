@@ -71,7 +71,7 @@ Open `orchestrator/.env` and set `FOUNDRY_PROJECT_ENDPOINT` to the value from yo
    uv run python orchestrator/process_events.py --account <StorageAccountName> --event EVT-US-EL-2027-007-v1
    ```
 
-2. While it runs (about a minute), take the code tour. Open each file in the Codespace editor and find the function:
+2. While it runs (two to three minutes: three agents, two of them on medium reasoning), take the code tour. Open each file in the Codespace editor and find the function:
 
    | Stop | File and function | What to notice |
    |---|---|---|
