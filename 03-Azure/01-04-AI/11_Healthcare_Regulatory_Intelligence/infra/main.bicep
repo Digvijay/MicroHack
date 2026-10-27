@@ -206,6 +206,19 @@ resource projectSearch 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   properties: { principalId: project.identity.principalId, principalType: 'ServicePrincipal', roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', searchReader) }
 }
 
+// Foundry IQ connects to Search with the project managed identity (API keys are disabled),
+// and creates the knowledge source, index and knowledge base through that connection.
+resource projectSearchManager 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(search.id, project.id, searchManager)
+  scope: search
+  properties: { principalId: project.identity.principalId, principalType: 'ServicePrincipal', roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', searchManager) }
+}
+
+resource projectSearchWriter 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(search.id, project.id, searchWriter)
+  scope: search
+  properties: { principalId: project.identity.principalId, principalType: 'ServicePrincipal', roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', searchWriter) }
+}
 resource projectModel 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(foundry.id, project.id, modelUser)
   scope: foundry

@@ -90,15 +90,20 @@ Foundry IQ then turns the lake into a **knowledge base**: a search index that re
 ### Part D: Build the Foundry IQ knowledge base (25 min)
 
 1. In the Foundry portal, select **Build** in the top menu, then **Knowledge** in the left menu.
-2. When asked, **connect your existing Azure AI Search service** (`SearchServiceName` from the dashboard). Do not create a new one.
-3. **Create a knowledge base** named `caldova-regulatory-kb`, adding one knowledge source as follows.
-4. **Knowledge source** of type **Azure Blob Storage**:
+2. Connect Foundry IQ to your search service. Under **Foundry IQ resource**, select your existing service (`SearchServiceName` from the dashboard, for example `search-regintel-…`). Do not create a new one.
+3. Set **Auth Type** to **Project Managed Identity**, then select **Connect**. The search service does not accept API keys; your project's identity already has the roles it needs.
+
+   ![Knowledge (Foundry IQ): select your search service under Foundry IQ resource, then Connect](../images/challenge-01-connect-search.png)
+
+   ![Auth Type set to Project Managed Identity](../images/challenge-01-connect-search-auth.png)
+4. **Create a knowledge base** named `caldova-regulatory-kb`, adding one knowledge source as follows.
+5. **Knowledge source** of type **Azure Blob Storage**:
    - Storage account: `StorageAccountName`; container: **`regulatory-knowledge`** (not `lake-raw`).
    - Authentication: **managed identity** (the system identity of your search service). It already has read access.
    - Embedding model: `EmbeddingDeploymentName`.
    - Name it `caldova-lake`.
-5. Knowledge base settings: **retrieval reasoning effort: Minimal** and **output: extractive data** (the raw passages). Your agents do the reasoning. If a chat model is requested, choose `ModelDeploymentName`.
-6. **Save** and wait until the knowledge source shows that indexing has **succeeded** (a few minutes). The portal labels can differ slightly; the settings above are what matter.
+6. Knowledge base settings: **retrieval reasoning effort: Minimal** and **output: extractive data** (the raw passages). Your agents do the reasoning. If a chat model is requested, choose `ModelDeploymentName`.
+7. **Save** and wait until the knowledge source shows that indexing has **succeeded** (a few minutes). The portal labels can differ slightly; the settings above are what matter.
 
 > 📸 **Screenshot to add:** `images/challenge-01-knowledge-source.png`: creating the Azure Blob Storage knowledge source on the `regulatory-knowledge` container.
 

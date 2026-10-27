@@ -24,7 +24,7 @@ Role assignments, all scoped to the attendee's own resources:
 | Attendee | Storage Blob Data Contributor | Storage account |
 | Attendee | Search Service Contributor, Search Index Data Contributor | Search service |
 | Search identity | Storage Blob Data Reader; Cognitive Services OpenAI User | Storage account; Foundry account |
-| Project identity | Search Index Data Reader; Cognitive Services OpenAI User | Search service; Foundry account |
+| Project identity | Search Index Data Reader, Search Index Data Contributor, Search Service Contributor; Cognitive Services OpenAI User | Search service (Foundry IQ connects with the project managed identity because Search API keys are disabled); Foundry account |
 
 Attendees create the knowledge base, the four agents and all data themselves during the hack.
 
