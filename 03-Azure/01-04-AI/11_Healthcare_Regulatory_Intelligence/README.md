@@ -135,7 +135,7 @@ By the end of the day you can:
 |---|---|---|
 | [Challenge 1](challenges/challenge-01.md) | Monitor the portals and build the regulatory lake | 60 min |
 | [Challenge 2](challenges/challenge-02.md) | Document & Citation Agent | 45 min |
-| [Challenge 3](challenges/challenge-03.md) | Obligation & Impact Extractor | 60 min |
+| [Challenge 3](challenges/challenge-03.md) | Obligation & Impact Extractor | 75 min |
 | [Challenge 4](challenges/challenge-04.md) | Regulatory Q&A Assistant | 45 min |
 | [Challenge 5](challenges/challenge-05.md) | Executive Briefing and human sign-off | 60 min |
 | [Challenge 6 ⭐](challenges/challenge-06.md) | Event-driven Regulatory Intelligence Assistant (stretch) | 30 min (shortcut) or 50 min (write it) |

@@ -2,7 +2,7 @@
 
 **[← Previous Solution](../challenge-02/solution-02.md)** - [Home](../../README.md) - [Challenge](../../challenges/challenge-03.md) - [Next Solution →](../challenge-04/solution-04.md)
 
-**Duration:** 60 minutes
+**Duration:** 75 minutes
 
 Caldova's due-date rules (`internal/owners.md`), first match wins: **an SOP time limit counted from today**; otherwise **deadline − 14 days**; otherwise **effective date − 30 days**, only for an effective date after today; otherwise **today + 30 days**. A deadline set for another organisation (CMO-17's reply) is not a Caldova deadline. *Today* is the *Status as of* date in `tracking/task-register.md`: **12 January 2027** after Tuesday's crawl, so rule 4 gives **11 February 2027**. The safety alert took effect on 11 January, before today, so rule 3 does not apply to its RMP action. A past due date means **at risk**. Label text belongs to the Labelling Lead; preparing and submitting the variation belongs to the Regulatory Affairs Lead.
 
@@ -50,6 +50,21 @@ Veterinary medicines only [v1 p1, p3]. Caldova has no veterinary products. No ac
 | US-REG-2027-003 | CDX-TAB; confirm by 1 Aug 2027, internal due 18 Jul 2027 (rule 2: *by 1 August* is a deadline). The rule also takes effect on 1 August, so some runs apply rule 3 and give 2 Jul 2027; the Rule column shows which. CAPA-2026-031 in progress; **existing TASK-2026-041**; owner: Quality Head |
 | US-CD-2027-015 v2 | CDX-TAB; evidence by 1 Mar 2027, internal due 15 Feb 2027; update MA-US-DOSSIER v3; tier 3 from 1 Apr 2027; owner: Market Access Lead |
 | UK-PR-2027-001 | CDX-TAB; MA-UK-FORECAST assumes 15.3%, now 18.5% from 1 Apr 2027; internal due 2 Mar 2027; owner: Market Access Lead |
+
+## Part E: measuring the agent
+
+Expected results with the current data and instructions, from our test runs:
+
+| Setting | Warning letter, fully right | Notes |
+|---|---|---|
+| medium | almost always 3 of 3 | Our 7-run comparison across three changes: 7 of 7 with every date right |
+| low | usually 2 or 3 of 3 | Same comparison: 6 of 7. Misses are a wrong or missing SOP-QA-010 date, or 2027-02-11 (today + 30) instead of 2027-01-26 |
+
+With only three runs each, teams may see no difference, or even low ahead of medium. That is the point of the discussion: a handful of runs cannot prove much, so real evaluation needs a fixed set of questions with expected answers, run many times. The coach tables in this walkthrough are such a set, and Foundry evaluations can run it automatically.
+
+If a team's medium runs miss check 4, look at the trace: `internal/sops.md` was not retrieved. Point back to Part D.
+
+Make sure every team sets **Reasoning Effort** back to **medium** and saves before Challenge 5.
 
 ## Model settings: why medium reasoning
 

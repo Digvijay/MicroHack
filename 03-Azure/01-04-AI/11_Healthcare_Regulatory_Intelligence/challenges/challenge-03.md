@@ -95,7 +95,7 @@ Check with your team. Every answer should get these right:
 - Every action has an owner role and a date from Caldova's rules: the label text and the variation **1 March 2027** (15 March minus 14 days), the DHPC **15 February 2027**, and the RMP and PSUR update **11 February 2027** (no deadline given, so today plus 30 days).
 - It names the planned risk management plan update `SUB-2027-003`.
 
-A good answer may also find the liver safety study `CAL-401`, the 6-week label lead time, or the precedent in `history.md`, where labels in all regions were updated together. Run it twice and compare: a language model does not give exactly the same answer every time, which is why a person checks the plan before it is approved.
+A good answer may also find the liver safety study `CAL-401`, the 6-week label lead time, or the precedent in `history.md`, where labels in all regions were updated together. A language model does not give exactly the same answer every time, which is why a person checks the plan before it is approved. In Part E you measure how often it is fully right.
 
 ![Impact assessment for EU-SA-2027-004: applies to both products in the EU, with cited obligations](../images/challenge-03-impact-eu-safety.png)
 
@@ -119,6 +119,33 @@ Run three more assessments in **new chats**, then compare them with your team:
 
 ![Trace: the second knowledge_base_retrieve step returns internal/sops.md and internal/quality-records.md](../images/challenge-03-trace.png)
 
+### Part E: Measure the agent, not one answer (15 min)
+
+One good answer does not tell you how far you can trust an agent. Run the same question several times and count how often it is fully right. Split the runs across your team so that it takes a few minutes.
+
+1. In a **new chat** each time, ask `Assess US-EL-2027-007 for Caldova.` three times. Medium answers take about a minute.
+2. Score each run with this checklist. A run is **fully right** only if all five are true:
+
+   | # | Check |
+   |---|---|
+   | 1 | It **applies**, through CMO-17, although Caldivex is not named |
+   | 2 | It names the open deviation `DEV-2026-114` and the at-risk task `TASK-2026-044` |
+   | 3 | The impact-assessment action names `SOP-QA-010` and the **Quality Head** |
+   | 4 | That action is due **2027-01-26** (rule 1: today plus 14 days) |
+   | 5 | No action treats CMO-17's 15-working-day reply as Caldova's deadline |
+
+3. Now change one setting and measure again. Open the parameters icon next to **Model**, set **Reasoning Effort** to **low**, select **Save**, and run the question three more times in new chats.
+4. Fill in your team's table:
+
+   | Setting | Runs | Fully right | Checks missed |
+   |---|---|---|---|
+   | medium | 3 | | |
+   | low | 3 | | |
+
+5. Set **Reasoning Effort** back to **medium** and select **Save**. Challenge 6 uses the latest saved version.
+
+Discuss: with six runs, how sure are you of the difference? What would you measure before letting this agent's plans go to the Regulatory Affairs Lead every week, and how many runs would you want? Why might **temperature 0** (only available with reasoning switched off) make answers repeatable without making them right?
+
 ## ✔️ Success criteria
 
 - [ ] `impact-agent` is saved with no tools and `caldova-regulatory-kb` under **Knowledge**.
@@ -126,5 +153,6 @@ Run three more assessments in **new chats**, then compare them with your team:
 - [ ] It links the warning letter to the pen through `CMO-17`, finds the outdated PSUR procedure, and rejects the veterinary guidance.
 - [ ] It flags existing and at-risk tasks instead of duplicating them.
 - [ ] You verified at least one action against the source documents.
+- [ ] You scored repeated runs against a checklist and can say how often the agent was fully right with each setting.
 
 [Coach solution and expected answers](../walkthrough/challenge-03/solution-03.md)
