@@ -36,11 +36,20 @@ Both paths share Parts A, B and D. Only Part C differs.
 
 1. On GitHub, open the repository that your facilitator names (`microsoft/MicroHack` or a fork), then select **Code → Codespaces → … → New with options**.
 2. Under **Dev container configuration**, choose **Azure / AI / Regulatory Intelligence**, then **Create codespace**. If the terminal greets you with *You are on our default image*, you picked the wrong configuration: delete that codespace and create a new one with this option.
-3. Wait until the setup finishes. It installs the pinned Python packages and runs every lab test. The terminal must end with **`passed`** and no failures.
+
+   ![Create codespace: your branch and the Azure / AI / Regulatory Intelligence configuration](../images/challenge-06-new-codespace.png)
+
+3. Wait until the setup finishes (5–10 minutes the first time). It builds the lab's container, installs the pinned Python packages and runs every lab test. The terminal opens in the lab folder and says *You are on a custom image defined in your devcontainer.json file*.
+
+   ![The Codespace opens in the lab folder on the lab's custom image](../images/challenge-06-codespace-ready.png)
+
+4. Check that everything works. Run this in the terminal; it should end with **`45 passed`**:
+
+   ```bash
+   uv run --frozen --all-extras pytest -q
+   ```
 
    Prefer your own machine? Use the lab's [devcontainer](../environment/README.md) in VS Code; the experience is identical.
-
-> 📸 **Screenshot to add:** `images/challenge-06-codespace-ready.png`: the Codespace terminal after setup, showing all tests passed.
 
 ### Part B: Connect to your lab (5 min)
 
