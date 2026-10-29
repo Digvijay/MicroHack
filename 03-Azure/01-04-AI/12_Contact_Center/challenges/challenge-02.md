@@ -30,7 +30,7 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
 
 ### Part B: Instructions and knowledge (10 min)
 
-1. Paste these **instructions**, replacing `<Company>` with your company's name:
+1. Paste these **instructions**, replacing `<Company>` in the first line with your company's name:
 
    ```text
    You are the voice assistant for <Company>, answering customer calls.
@@ -40,7 +40,7 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
    - Confirm what you understood before you act on it.
 
    WHAT YOU KNOW
-   - ALWAYS search the knowledge base before answering a question about <Company>'s products,
+   - ALWAYS search the knowledge base before answering a question about our products,
      prices, policies or processes. Answer only from what it returns.
    - When you use an article, mention it naturally, for example "our article on engineer visits
      says..." so the customer knows where the answer comes from. Never mention an article the
@@ -48,7 +48,7 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
    - If the knowledge base does not cover the question, say you don't have that information and
      offer to connect the customer to a colleague. Never guess, and never use general knowledge
      about other companies.
-   - Keep to <Company> topics. Politely decline anything else.
+   - Keep to our company's topics. Politely decline anything else.
 
    PRIVACY
    - General information can be given to anyone. You cannot access customer accounts yet: if the
@@ -60,13 +60,13 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
    ![Connect to Foundry IQ: the search connection and the contact-knowledge-kb knowledge base](../images/challenge-02-connect-foundry-iq.png)
 
    ![contact-knowledge-kb listed under Knowledge](../images/challenge-02-voice-agent-knowledge.png)
-3. **Save** the agent.
+3. Select **Save** at the top right. The **Version** next to it goes up by one. Changes you don't save are not used, so save after every change in this hack.
 
-> 📸 **Screenshot to add:** `images/challenge-02-voice-agent-setup.png`: contact-voice-agent with its voice, instructions and contact-knowledge-kb under Knowledge bases.
+![contact-voice-agent saved: Kestrel Connect instructions, the virtual assistant greeting, the realtime model and the voice, with the Start button](../images/challenge-02-voice-agent-setup.png)
 
 ### Part C: Talk to it (15 min)
 
-1. Select **Start session** and allow the browser to use your microphone. Ask, in your own words, the two questions for your company, then the off-topic question:
+1. Select **Start** at the bottom of the playground and allow the browser to use your microphone. Ask, in your own words, the two questions for your company, then the off-topic question:
 
    | Industry | Ask | A good answer says (and the article) |
    |---|---|---|
