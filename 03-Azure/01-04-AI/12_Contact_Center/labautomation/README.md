@@ -14,7 +14,7 @@ The Bicep template lives in [infra](../infra/main.bicep). This folder holds the 
 | Storage account with private containers `knowledge`, `insights`, `calls`, `evaluation`, `crm-state` and `crm-package` | The industry pack, the CRM's state and the CRM's deployment package. Shared keys and public blob access are disabled; access is by Entra ID only. Tagged `SecurityControl: Ignore` so that tenant automation in managed subscriptions does not disable public network access, which Cloud Shell and the Search indexer need |
 | Azure AI Search (Basic) with a system-assigned identity | Foundry IQ knowledge bases |
 | Azure Functions app on **Flex Consumption** (FC1, Python 3.12) with a system-assigned identity | The mock CRM (`CrmUrl`). Basic publishing credentials are disabled; `deploy-lab.ps1` publishes the code with an Entra token |
-| Log Analytics and Application Insights | Monitoring |
+| Log Analytics and Application Insights, connected to the project (connection `appinsights`) | Agent traces for the **Traces** tab, and the CRM's own telemetry |
 
 Role assignments, all scoped to the attendee's own resources:
 
@@ -23,6 +23,7 @@ Role assignments, all scoped to the attendee's own resources:
 | Attendee | Foundry User, **Foundry Project Manager** (to add knowledge and tool connections) | Project |
 | Attendee | Cognitive Services OpenAI User, **Cognitive Services User** (Content Understanding, PII detection and voice sessions) | Foundry account |
 | Attendee | Storage Blob Data Contributor | Storage account |
+| Attendee | Log Analytics Reader (to read agent traces) | Application Insights and its Log Analytics workspace |
 | Attendee | Search Service Contributor, Search Index Data Contributor | Search service |
 | Search identity | Storage Blob Data Reader; Cognitive Services OpenAI User | Storage account; Foundry account |
 | Project identity | Search Index Data Reader, Search Index Data Contributor, Search Service Contributor; Cognitive Services OpenAI User | Search service; Foundry account |

@@ -103,7 +103,7 @@ Start a **new session** for each scenario and play the customer. Use your compan
 
 After each scenario, refresh your **CrmUrl** home page. It lists every **identity check** the agent made, with the postcode it heard and the result, and the appointments and cases it created. If a check says *not verified*, the row tells you why: no account with that number, or the postcode does not match. Speech recognition sometimes mishears letters and numbers; say them slowly, or spell them out (*K C, one zero zero two one zero*).
 
-> 📸 **Screenshot to add:** `images/challenge-03-crm-activity.png`: the CRM home page listing an appointment and a case created by the voice agent.
+![The CRM home page: two identity checks (verified) and the engineer visit KC-APT-0101 booked by the voice agent](../images/challenge-03-crm-activity.png)
 
 ### Part D: Check what the agent actually did (10 min)
 
