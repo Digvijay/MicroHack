@@ -90,7 +90,7 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
 2. Try to interrupt the agent while it is speaking. A good voice agent stops and listens.
 3. Ask about your own account (*What's my balance?*). It should say it can't access accounts yet: you'll fix that in Challenge 3.
 
-> 📸 **Screenshot to add:** `images/challenge-02-voice-session.png`: a voice session transcript answering the bill question and naming the knowledge article.
+![A voice session transcript: the agent names the article on bills and payment arrangements, gives the missed-visit charge and declines a weather question](../images/challenge-02-voice-session.png)
 
 ### Part D: The chat twin (10 min)
 
