@@ -23,6 +23,8 @@ A good run always calls `verifyCaller` **first**, then uses the `customer_id` it
 
 Each booking and case shows up on the CRM home page within seconds.
 
+In our telco voice test the booking scenario ran `getServiceNotices` (ZZ5, none), gave the restart steps from `KB-KC-005`, then `verifyCaller` → `listAppointmentSlots` → `bookAppointment`, and booked `KC-APT-0101`. Asking for the postcode first to check notices, then for identity before booking, is fine.
+
 In our telco test the chat agent verified `KC100201`, found the ZZ4 notice and did not offer an engineer. For the booking scenario it offered two slots, booked the chosen one and read back `KC-APT-0103`.
 
 ## Identity checks
