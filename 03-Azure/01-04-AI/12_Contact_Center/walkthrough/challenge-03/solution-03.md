@@ -42,7 +42,9 @@ Answers about the account should sound like *our records show…*. The agent mus
 
 | Symptom | Cause and fix |
 |---|---|
-| The OpenAPI tool won't save | Paste the JSON from `<CrmUrl>/openapi.json` (not the URL), and choose **Anonymous** authentication. |
+| The OpenAPI tool won't save | It needs a **Connection** even with **Anonymous** authentication: create one named `crm` with your `CrmUrl`. Paste the JSON from `<CrmUrl>/openapi.json`, not the URL. |
+| No **Add** option for an OpenAPI tool on the voice agent | Voice agents take tools from a toolbox. Create `CRMTools` under **Build**, then **Tools**, and use **Add a toolbox** on the agent. |
+| The toolbox still has `web_search`, `code_interpreter` or `FoundryMCPServerpreview` | They are added by default. Remove them so the agent can only reach the CRM, then save the toolbox as a new version and select that version on the agent. |
 | Tool calls fail with 409 | No industry pack is selected in the CRM. Run the Challenge 1 `setup` command again. |
 | Tool calls fail with 500 or time out on the first call | The CRM is cold-starting on Flex Consumption. Wait 30 seconds and ask again. |
 | `bookAppointment` returns 409 *That slot has just been taken* | Another participant in the same lab booked it. The agent should offer another slot; ask it to. |

@@ -85,7 +85,7 @@ HANDOFF TO A PERSON
    ALWAYS search the knowledge base before recommending an action. Never invent policies.
    ```
 
-3. Under **Tools**, remove **Web search** and add the same `crm` OpenAPI tool (paste `<CrmUrl>/openapi.json` again, Anonymous). Under **Knowledge**, add `contact-knowledge-kb`. **Save**.
+3. Under **Tools**, remove **Web search** and add the `CRMTools` toolbox from Challenge 3. Under **Knowledge**, add `contact-knowledge-kb`. **Save**.
 
 > 📸 **Screenshot to add:** `images/challenge-05-agent-assist-setup.png`: agent-assist with the crm tool and contact-knowledge-kb.
 

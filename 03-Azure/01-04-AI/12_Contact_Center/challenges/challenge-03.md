@@ -19,15 +19,37 @@ The CRM does the parts that must be exact: it checks the account number and post
 1. Open `<CrmUrl>/openapi.json` in your browser. Find the operations: `verifyCaller`, `getCustomer`, `getServiceNotices`, `listAppointmentSlots`, `bookAppointment`, `openCase`, `escalateToHuman` and a few more.
 2. Notice what `getCustomer` returns: a **masked** account number, never the full one. Privacy is built into the system, not left to the model.
 
-### Part B: Add the OpenAPI tool to the voice agent (15 min)
+### Part B: Add the CRM to the voice agent (15 min)
 
-1. Open `contact-voice-agent`. Under **Tools**, select **Add**, then the **OpenAPI** tool (in the **Custom** tab if the tool list has tabs).
-2. Fill in:
+Voice agents take tools from a **toolbox**: a named, versioned set of tools in your project that several agents can share. You'll put the CRM's OpenAPI tool in a toolbox, then give the toolbox to your agents.
+
+1. Select **Build**, then **Tools** in the left menu, and create a toolbox:
+   - **Name:** `CRMTools`
+   - **Description:** *The company's CRM: identity checks, service notices, appointments, cases and handoffs.*
+   - Under **Included**, remove the default tools (`web_search`, `code_interpreter` and `FoundryMCPServerpreview`): this agent must only reach your CRM. Leave **Tool search** on and **Guardrail** at **None** for now.
+
+   ![Create toolbox: CRMTools with the default tools still included, before removing them](../images/challenge-03-create-toolbox.png)
+
+2. Select **Add**, then the **Custom** tab, then **OpenAPI tool**, and **Create**.
+
+   ![Select a tool, Custom tab: OpenAPI tool, Model Context Protocol (MCP) and Agent2agent (A2A)](../images/challenge-03-select-openapi-tool.png)
+
+3. Fill in the OpenAPI tool:
    - **Name:** `crm`
-   - **Description:** *Customer records, identity checks, service notices, appointments, cases and handoffs for our company.*
-   - **OpenAPI specification:** paste the whole content of `<CrmUrl>/openapi.json`.
-   - **Authentication:** **Anonymous**. The CRM holds only fictional training data.
-3. Replace the PRIVACY section of the instructions with:
+   - **Description:** *Customer records, identity checks, service notices, appointments, cases and handoffs for our company.* The model reads this to decide when to use the tool, so make it specific.
+   - **Authentication method:** **Anonymous**. The CRM holds only fictional training data.
+   - **Connection:** select **Create a new connection**, name it `crm` and use your `CrmUrl` as the endpoint.
+   - **OpenAPI 3.0+ schema:** paste the whole content of `<CrmUrl>/openapi.json`. Its `servers` entry already points at your CRM.
+
+   Select **Create tool**, then **Create** to save the toolbox.
+
+   ![Create an OpenAPI tool: name crm, Anonymous authentication, the crm connection and the pasted schema](../images/challenge-03-openapi-tool.png)
+
+4. Open `contact-voice-agent`. Under **Tools**, select **Add a toolbox** and choose `CRMTools`. The agent now lists `toolbox_search` and `crm`.
+
+   ![contact-voice-agent with the CRMTools toolbox (toolbox_search and crm) and contact-knowledge-kb](../images/challenge-03-voice-agent-toolbox.png)
+
+5. Replace the PRIVACY section of the instructions with:
 
    ```text
    IDENTITY AND ACCOUNTS
@@ -50,9 +72,7 @@ The CRM does the parts that must be exact: it checks the account number and post
      article for them. Never mention internal IDs such as customer_id or slot_id to the customer.
    ```
 
-4. **Save** the agent.
-
-> 📸 **Screenshot to add:** `images/challenge-03-openapi-tool.png`: the OpenAPI tool form with name crm, the pasted specification and Anonymous authentication.
+6. **Save** the agent.
 
 ### Part C: Test the scenarios by voice (20 min)
 
@@ -80,13 +100,13 @@ After each scenario, refresh your **CrmUrl** home page: appointments and cases y
 
 1. Open the agent's **Traces** and select your last session. Find the tool calls: `verifyCaller` first, then the others.
 2. Check the **inputs** the agent sent. Did it use the `customer_id` from `verifyCaller`? Did it book the slot you chose?
-3. Add the same `crm` tool and instruction changes to `contact-chat-agent`, so both channels behave the same. Try one scenario by chat.
+3. Give `contact-chat-agent` the same `CRMTools` toolbox (under **Tools**) and the same instruction changes, so both channels behave the same. **Save**, then try one scenario by chat.
 
 > 📸 **Screenshot to add:** `images/challenge-03-trace.png`: a trace with verifyCaller, getServiceNotices and bookAppointment tool calls and their inputs.
 
 ## ✔️ Success criteria
 
-- [ ] Both agents have the `crm` OpenAPI tool and the IDENTITY AND ACCOUNTS and ACTIONS instructions.
+- [ ] Both agents use the `CRMTools` toolbox with the `crm` OpenAPI tool, and have the IDENTITY AND ACCOUNTS and ACTIONS instructions.
 - [ ] The agent always calls `verifyCaller` before sharing or changing anything, and shares nothing when the postcode is wrong.
 - [ ] Your company's two scenarios work by voice, and the results appear on the CRM home page.
 - [ ] In a trace, you can show each tool call and its inputs.
