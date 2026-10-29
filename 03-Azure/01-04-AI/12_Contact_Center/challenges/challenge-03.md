@@ -1,0 +1,99 @@
+# Challenge 3: Take action with the CRM
+
+**[← Previous](challenge-02.md)** - [Home](../README.md) - [Next Challenge →](challenge-04.md)
+
+## 🎯 Objective
+
+Connect your agents to the **CRM** with an **OpenAPI tool**, so they can check who is calling, look up the account, check for known problems, book appointments and open cases. The agent must never share or change anything until the caller's identity is confirmed.
+
+## 🧭 Context
+
+Answering questions is useful. **Doing something** is what customers called for: booking the engineer, logging the complaint, explaining what is wrong with *their* account. Your lab's mock CRM exposes these actions as a small web API, described by an **OpenAPI** document. Foundry reads that document and lets the agent call the operations as tools.
+
+The CRM does the parts that must be exact: it checks the account number and postcode, refuses a slot that is already taken, and creates cases with reference numbers. The agent decides **when** to call it and explains the result.
+
+## ✅ Tasks
+
+### Part A: Look at the API (5 min)
+
+1. Open `<CrmUrl>/openapi.json` in your browser. Find the operations: `verifyCaller`, `getCustomer`, `getServiceNotices`, `listAppointmentSlots`, `bookAppointment`, `openCase`, `escalateToHuman` and a few more.
+2. Notice what `getCustomer` returns: a **masked** account number, never the full one. Privacy is built into the system, not left to the model.
+
+### Part B: Add the OpenAPI tool to the voice agent (15 min)
+
+1. Open `contact-voice-agent`. Under **Tools**, select **Add**, then the **OpenAPI** tool (in the **Custom** tab if the tool list has tabs).
+2. Fill in:
+   - **Name:** `crm`
+   - **Description:** *Customer records, identity checks, service notices, appointments, cases and handoffs for our company.*
+   - **OpenAPI specification:** paste the whole content of `<CrmUrl>/openapi.json`.
+   - **Authentication:** **Anonymous**. The CRM holds only fictional training data.
+3. Replace the PRIVACY section of the instructions with:
+
+   ```text
+   IDENTITY AND ACCOUNTS
+   - Before sharing or changing anything on an account, ask for the account number and the
+     postcode, then call verifyCaller. Continue only if verified is true, and use the customer_id
+     it returns for every other call. If it is false, say the details don't match, don't say which
+     one, and offer general help instead.
+   - Never read out a full account number, date of birth or card number.
+
+   ACTIONS (crm tool)
+   - Before troubleshooting a fault or delay, call getServiceNotices with the customer's postcode.
+     If there is a notice, explain it and its estimated fix instead of booking a visit.
+   - To book, call listAppointmentSlots for the customer's postcode, offer no more than two slots,
+     book only the slot the customer chooses, then confirm the date and time.
+   - Open a case for complaints and anything you cannot fix during the call. Use a clear summary
+     and priority high if the customer is vulnerable, has no service, or has called before about
+     the same issue.
+   - Never say an action succeeded unless the tool confirmed it. Read back the reference number.
+   - Facts from the CRM come from the customer's records: say "our records show", don't cite an
+     article for them. Never mention internal IDs such as customer_id or slot_id to the customer.
+   ```
+
+4. **Save** the agent.
+
+> 📸 **Screenshot to add:** `images/challenge-03-openapi-tool.png`: the OpenAPI tool form with name crm, the pasted specification and Anonymous authentication.
+
+### Part C: Test the scenarios by voice (20 min)
+
+Start a **new session** for each scenario and play the customer. Use your company's rows:
+
+| Industry | Scenario | Say | A good agent |
+|---|---|---|---|
+| telco | Known outage | Broadband down; account `KC100201`, postcode `ZZ4 2BT` | Verifies, finds the ZZ4 outage and its fix time, explains automatic compensation, does **not** book an engineer |
+| telco | Book a visit | Router light still red after a restart; `KC100210`, `ZZ5 4DJ` | Verifies, finds no notice, offers two slots, books the one you choose, reads back the reference |
+| energy | Estimated bill | Bill far too high; `LE300101`, `ZZ2 4KT` | Verifies, finds the ZZ2 estimated-bills notice, asks for a reading, opens a case if you want one |
+| energy | Book a smart meter | Wants a smart meter; `LE300102`, `ZZ1 8BB` | Verifies, offers slots, books one, mentions someone over 18 must be home |
+| bank | Dispute status | Asks about a disputed payment; `HB500305`, `ZZ4 4EP` | Verifies, finds open case `HB-CASE-1207`, explains up to 30 days |
+| bank | Book an adviser | Fixed rate ending; `HB500304`, `ZZ2 2JR` | Verifies, books a mortgage adviser call, mentions payslips and statements |
+| insurance | Storm damage | Roof tiles off; `NI700401`, `ZZ3 8DF` | Verifies, checks safety, finds the ZZ3 storm notice, explains temporary repairs, opens a claim case |
+| insurance | Assessor visit | Asks for an assessor visit; `NI700401`, `ZZ3 8DF` | Verifies, offers slots and books one |
+| retail | Late order | Next-day order six days late; `PP900501`, `ZZ5 3QF` | Verifies, finds the ZZ5 courier notice, offers refund or redelivery, opens a case for the delivery fee |
+| retail | Return collection | Return a sofa; `PP900502`, `ZZ2 7AL` | Verifies, books a returns collection, explains the refund timing |
+| all | Wrong postcode | Your first test customer's account number with postcode `ZZ9 9ZZ` | Says the details don't match, shares **nothing** about the account, doesn't say which detail was wrong |
+
+After each scenario, refresh your **CrmUrl** home page: appointments and cases your agent created appear there, with the time they were made.
+
+> 📸 **Screenshot to add:** `images/challenge-03-crm-activity.png`: the CRM home page listing an appointment and a case created by the voice agent.
+
+### Part D: Check what the agent actually did (10 min)
+
+1. Open the agent's **Traces** and select your last session. Find the tool calls: `verifyCaller` first, then the others.
+2. Check the **inputs** the agent sent. Did it use the `customer_id` from `verifyCaller`? Did it book the slot you chose?
+3. Add the same `crm` tool and instruction changes to `contact-chat-agent`, so both channels behave the same. Try one scenario by chat.
+
+> 📸 **Screenshot to add:** `images/challenge-03-trace.png`: a trace with verifyCaller, getServiceNotices and bookAppointment tool calls and their inputs.
+
+## ✔️ Success criteria
+
+- [ ] Both agents have the `crm` OpenAPI tool and the IDENTITY AND ACCOUNTS and ACTIONS instructions.
+- [ ] The agent always calls `verifyCaller` before sharing or changing anything, and shares nothing when the postcode is wrong.
+- [ ] Your company's two scenarios work by voice, and the results appear on the CRM home page.
+- [ ] In a trace, you can show each tool call and its inputs.
+
+## 📚 Learning resources
+
+- [OpenAPI tool for Foundry agents](https://learn.microsoft.com/azure/foundry/agents/how-to/tools/openapi)
+- [Agent tracing in Foundry](https://learn.microsoft.com/azure/foundry/observability/concepts/trace-agent-concept)
+
+[Coach solution and expected answers](../walkthrough/challenge-03/solution-03.md)
