@@ -4,7 +4,7 @@
   "company": "Lumora Energy",
   "prefix": "LE",
   "tagline": "Gas and electricity supplier for homes across the fictional Zedshire region",
-  "greeting": "Thanks for calling Lumora Energy. How can I help today?",
+  "greeting": "Thanks for calling Lumora Energy. I'm the virtual assistant, and you can ask for a person at any time. How can I help today?",
   "products": [
     "Standard variable tariff",
     "Fixed 12-month tariff",

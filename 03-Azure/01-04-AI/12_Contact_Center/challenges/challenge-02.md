@@ -17,11 +17,16 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
 ### Part A: Create the voice agent (10 min)
 
 1. In the Foundry portal, select **Build**, then **Agents**, then **Create agent**.
-2. Enter **Agent name** `contact-voice-agent`, set **Interaction mode** to **Voice**, and create the agent.
+2. Enter **Agent name** `contact-voice-agent` and set **Interaction mode** to **Voice**. It can't be changed later. Leave **Voice agent goal** empty: you'll paste full instructions in Part B. Select **Create agent and open playground**.
 
-   > 📸 **Screenshot to add:** `images/challenge-02-create-voice-agent.png`: Create an agent: name contact-voice-agent, interaction mode Voice.
+   ![Create an agent: name contact-voice-agent, interaction mode Voice, voice agent goal empty](../images/challenge-02-create-voice-agent.png)
 
-3. The agent opens with a managed voice configuration. Check the **AI model** (a realtime voice model) and choose a **voice** that suits your company: each pack's `pack.json` suggests a style, for example *friendly, calm and practical* for Kestrel Connect. Set the **language** to English (United Kingdom) if it is offered.
+3. The playground opens with a generic setup: a **Greeting** for an assistant called Riley, a realtime **AI model** (for example `gpt-realtime-2.1`) and a default **Voice**. Keep the model. Change the rest so it sounds like your company:
+   - **Greeting:** keep **Fixed message** and replace the greeting text with `Thanks for calling <Company>. I'm the virtual assistant, and you can ask for a person at any time. How can I help today?` Callers must know they are talking to an AI.
+   - **Voice:** pick one that suits your company. Each pack's `pack.json` suggests a style, for example *friendly, calm and practical* for Kestrel Connect. Select the play icon to hear a voice before you choose it.
+   - **Avatar:** leave it off. It isn't available in every region.
+
+   ![The voice agent playground before changes: instructions, the default greeting, the realtime model and the voice](../images/challenge-02-voice-agent-defaults.png)
 
 ### Part B: Instructions and knowledge (10 min)
 
@@ -50,7 +55,11 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
      caller asks about their own account, say a colleague can help with that.
    ```
 
-2. Under **Knowledge bases**, add `contact-knowledge-kb`. Remove any **Web search** tool if one is attached: the agent must answer from your company's articles, not from the web.
+2. Under **Knowledge**, select **Add**, then **Foundry IQ**. Choose the connection `search-contact-…` (your `SearchServiceName`) and the knowledge base `contact-knowledge-kb`, then **Connect**. Remove any **Web search** tool if one is attached: the agent must answer from your company's articles, not from the web.
+
+   ![Connect to Foundry IQ: the search connection and the contact-knowledge-kb knowledge base](../images/challenge-02-connect-foundry-iq.png)
+
+   ![contact-knowledge-kb listed under Knowledge](../images/challenge-02-voice-agent-knowledge.png)
 3. **Save** the agent.
 
 > 📸 **Screenshot to add:** `images/challenge-02-voice-agent-setup.png`: contact-voice-agent with its voice, instructions and contact-knowledge-kb under Knowledge bases.

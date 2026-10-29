@@ -4,7 +4,7 @@
   "company": "Northmere Insurance",
   "prefix": "NI",
   "tagline": "Home and motor insurance for customers across the fictional Zedshire region",
-  "greeting": "Thanks for calling Northmere Insurance. How can I help today?",
+  "greeting": "Thanks for calling Northmere Insurance. I'm the virtual assistant, and you can ask for a person at any time. How can I help today?",
   "products": [
     "Home buildings and contents",
     "Contents only",

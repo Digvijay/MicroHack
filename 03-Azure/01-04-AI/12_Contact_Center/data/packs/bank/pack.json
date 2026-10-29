@@ -4,7 +4,7 @@
   "company": "Harbourline Bank",
   "prefix": "HB",
   "tagline": "Current accounts, cards, savings and mortgages for customers across the fictional Zedshire region",
-  "greeting": "Thanks for calling Harbourline Bank. How can I help today?",
+  "greeting": "Thanks for calling Harbourline Bank. I'm the virtual assistant, and you can ask for a person at any time. How can I help today?",
   "products": [
     "Everyday current account",
     "Premier current account",
