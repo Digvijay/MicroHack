@@ -23,7 +23,10 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
 
 3. The playground opens with a generic setup: a **Greeting** for an assistant called Riley, a realtime **AI model** (for example `gpt-realtime-2.1`) and a default **Voice**. Keep the model. Change the rest so it sounds like your company:
    - **Greeting:** keep **Fixed message** and replace the greeting text with `Thanks for calling <Company>. I'm the virtual assistant, and you can ask for a person at any time. How can I help today?` Callers must know they are talking to an AI.
-   - **Voice:** pick one that suits your company. Each pack's `pack.json` suggests a style, for example *friendly, calm and practical* for Kestrel Connect. Select the play icon to hear a voice before you choose it.
+   - **Voice:** pick one that suits your company. Each pack's `pack.json` suggests a style, for example *friendly, calm and practical* for Kestrel Connect. The list shows a few realtime voices (Alloy, Ash, Ballad, Coral, Echo). For a British voice, select **Browse all voices** and filter on English (United Kingdom), for example Sonia or Ryan. Select the play icon to hear a voice before you choose it.
+
+     ![The voice list: realtime voices, Browse all voices and New custom voice](../images/challenge-02-voice-picker.png)
+
    - **Avatar:** leave it off. It isn't available in every region.
 
    ![The voice agent playground before changes: instructions, the default greeting, the realtime model and the voice](../images/challenge-02-voice-agent-defaults.png)
