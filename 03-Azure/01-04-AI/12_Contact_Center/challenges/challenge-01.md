@@ -92,10 +92,13 @@ Your lab already has a **mock CRM** with the customers, appointment slots and ca
    | Authentication type | **System assigned identity** |
    | Content extraction mode | **Minimal** |
    | Embedding model | `EmbeddingDeploymentName` |
+   | Chat completions model | leave empty |
+
+   ![Create a knowledge source: contact-knowledge on the knowledge container with System assigned identity, Minimal extraction and text-embedding-3-large](../images/challenge-01-knowledge-source.png)
 
    Select **Create**, then **Save knowledge base**. Within a few minutes the source changes from **Creating** to **Active**.
 
-> 📸 **Screenshot to add:** `images/challenge-01-knowledge-base.png`: the saved contact-knowledge-kb knowledge base with the contact-knowledge source Active.
+![The saved contact-knowledge-kb knowledge base with gpt-5.4-mini, Minimal reasoning effort, Extractive data and the contact-knowledge source Active](../images/challenge-01-knowledge-base.png)
 
 > [!IMPORTANT]
 > Use only the `knowledge` container here. The `insights` container holds internal contact records for the supervisor; customers must never hear them. You will give the supervisor its own knowledge base in Challenge 6.
