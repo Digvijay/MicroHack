@@ -23,7 +23,7 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
 
 3. The playground opens with a generic setup: a **Greeting** for an assistant called Riley, a realtime **AI model** (for example `gpt-realtime-2.1`) and a default **Voice**. Keep the model. Change the rest so it sounds like your company:
    - **Greeting:** keep **Fixed message** and replace the greeting text with `Thanks for calling <Company>. I'm the virtual assistant, and you can ask for a person at any time. How can I help today?` Callers must know they are talking to an AI.
-   - **Voice:** pick one that suits your company. Each pack's `pack.json` suggests a style, for example *friendly, calm and practical* for Kestrel Connect. The list shows a few realtime voices (Alloy, Ash, Ballad, Coral, Echo). For a British voice, select **Browse all voices**, stay on the **Azure standard** tab, select the filter icon and tick **English (United Kingdom)**, then choose a voice such as Sonia, Ryan or Libby. Select the play icon to hear a voice before you choose it.
+   - **Voice:** pick one that suits your company. Each pack's `pack.json` suggests a style, for example *friendly, calm and practical* for Kestrel Connect. The list shows a few realtime voices (Alloy, Ash, Ballad, Coral, Echo). For a British voice, select **Browse all voices**, stay on the **Azure standard** tab, select the filter icon and tick **English (United Kingdom)**, then choose a voice such as Sonia, Ryan or Libby and select **Select voice**. Use the play icon to hear a voice first.
 
      ![The voice list: realtime voices, Browse all voices and New custom voice](../images/challenge-02-voice-picker.png)
 
@@ -67,7 +67,7 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
    ![contact-knowledge-kb listed under Knowledge](../images/challenge-02-voice-agent-knowledge.png)
 3. Select **Save** at the top right. The **Version** next to it goes up by one. Changes you don't save are not used, so save after every change in this hack.
 
-![contact-voice-agent saved: Kestrel Connect instructions, the virtual assistant greeting, the realtime model and the voice, with the Start button](../images/challenge-02-voice-agent-setup.png)
+![contact-voice-agent saved: Kestrel Connect instructions, the virtual assistant greeting, the realtime model and the Ryan voice, with the Start button](../images/challenge-02-voice-agent-setup.png)
 
 ### Part C: Talk to it (15 min)
 
