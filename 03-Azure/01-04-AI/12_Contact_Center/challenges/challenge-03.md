@@ -99,7 +99,7 @@ Start a **new session** for each scenario and play the customer. Use your compan
 
 ![The known-outage scenario by voice: the agent checks the ZZ4 service notice, gives the estimated fix time and does not book an engineer](../images/challenge-03-voice-outage.png)
 
-![The book-a-visit scenario by voice: no service notice, the troubleshooting article, then identity check before offering slots](../images/challenge-03-voice-booking.png)
+![The book-a-visit scenario by voice: no service notice, the troubleshooting article, identity check, two slots offered, the chosen one booked and reference KC-APT-0101 read back](../images/challenge-03-voice-booking.png)
 
 After each scenario, refresh your **CrmUrl** home page. It lists every **identity check** the agent made, with the postcode it heard and the result, and the appointments and cases it created. If a check says *not verified*, the row tells you why: no account with that number, or the postcode does not match. Speech recognition sometimes mishears letters and numbers; say them slowly, or spell them out (*K C, one zero zero two one zero*).
 
