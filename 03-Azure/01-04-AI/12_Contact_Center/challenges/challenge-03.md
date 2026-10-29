@@ -48,7 +48,7 @@ Voice agents take tools from a **toolbox**: a named, versioned set of tools in y
 
    ![The OpenAPI tool: name crm, a specific description, Anonymous authentication, the crm connection and the pasted schema](../images/challenge-03-openapi-tool.png)
 
-   To change the tool later, open the toolbox, select the tool and use **Update tool**. Saving the toolbox creates a new version: select that version on each agent that uses it.
+   To change the tool later, open the toolbox, select the tool, use **Update tool**, then save the toolbox. **Update tool** on its own doesn't save anything.
 
 4. Open `contact-voice-agent`. Under **Tools**, select **Add a toolbox** and choose `CRMTools`. The agent now lists `toolbox_search` and `crm`.
 
