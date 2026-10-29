@@ -96,15 +96,23 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
 
 Some customers prefer to type. Create a **text** agent with the same knowledge.
 
-1. **Agents**, then **Create agent**: name `contact-chat-agent`, **Interaction mode** **Text**.
+1. **Agents**, then **Create agent**: name `contact-chat-agent`, **Interaction mode** **Text**. Leave **Use the Microsoft Copilot harness** unticked, then select **Create agent and open playground**. The model is already your `ModelDeploymentName`.
+
+   ![Create an agent: contact-chat-agent with interaction mode Text](../images/challenge-02-create-chat-agent.png)
+
 2. Paste the same instructions, with three changes for chat:
    - in the first line, replace *voice assistant* with *chat assistant* and *calls* with *messages*;
-   - replace the HOW YOU SPEAK section with: `Write short paragraphs. End every fact from the knowledge base with its paragraph label in square brackets, for example [KB-KC-005 p2].`
+   - replace the HOW YOU SPEAK section with a HOW YOU WRITE section: `Write short paragraphs. End every fact from the knowledge base with its paragraph label in square brackets, for example [KB-KC-005 p2].`
    - replace the *When you use an article…* bullet with: `Cite only paragraph labels that appear in what the knowledge base returned. Never make one up.`
-3. Under **Tools**, remove the default **Web search** (**⋮ → Remove**). Under **Knowledge**, add `contact-knowledge-kb`. **Save**.
-4. Ask the same questions in the chat. Check that each fact ends with a paragraph label, and open one citation marker to see the passage it came from.
+3. Under **Tools**, remove the default **Web search** (**⋮ → Remove**). Its notice explains why: it uses Grounding with Bing, and customer data would leave the Azure compliance boundary. Under **Knowledge**, select **Add**, then **Foundry IQ**, and connect `contact-knowledge-kb` as you did for the voice agent. **Save**.
 
-> 📸 **Screenshot to add:** `images/challenge-02-chat-agent.png`: contact-chat-agent answering with paragraph labels such as [KB-KC-007 p1].
+   ![Before: Web search is attached by default, with its notice about Grounding with Bing](../images/challenge-02-chat-agent-web-search.png)
+
+   ![After: no tools, contact-knowledge-kb under Knowledge](../images/challenge-02-chat-agent-setup.png)
+
+4. Ask the same questions in the chat. Check that each fact ends with a paragraph label, and that the knowledge base appears under the answers that used it. Select **Traces** under one answer to see the passages the knowledge base returned.
+
+![contact-chat-agent answering with paragraph labels [KB-KC-007 p1] and [KB-KC-006 p3], and declining the weather question](../images/challenge-02-chat-agent.png)
 
 ## ✔️ Success criteria
 
