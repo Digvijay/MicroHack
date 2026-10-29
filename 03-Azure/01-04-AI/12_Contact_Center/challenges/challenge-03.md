@@ -38,12 +38,17 @@ Voice agents take tools from a **toolbox**: a named, versioned set of tools in y
    - **Name:** `crm`
    - **Description:** *Customer records, identity checks, service notices, appointments, cases and handoffs for our company.* The model reads this to decide when to use the tool, so make it specific.
    - **Authentication method:** **Anonymous**. The CRM holds only fictional training data.
-   - **Connection:** select **Create a new connection**, name it `crm` and use your `CrmUrl` as the endpoint.
+   - **Connection:** select **Create a new connection**. Set **Connection name** `crm`, **Authentication type** **Anonymous** and **Target URL** your `CrmUrl`, then **Create connection**.
+
+     ![Create OpenAPI connection: name crm, Anonymous, Target URL set to the CRM](../images/challenge-03-crm-connection.png)
+
    - **OpenAPI 3.0+ schema:** paste the whole content of `<CrmUrl>/openapi.json`. Its `servers` entry already points at your CRM.
 
    Select **Create tool**, then **Create** to save the toolbox.
 
-   ![Create an OpenAPI tool: name crm, Anonymous authentication, the crm connection and the pasted schema](../images/challenge-03-openapi-tool.png)
+   ![The OpenAPI tool: name crm, a specific description, Anonymous authentication, the crm connection and the pasted schema](../images/challenge-03-openapi-tool.png)
+
+   To change the tool later, open the toolbox, select the tool and use **Update tool**. Saving the toolbox creates a new version: select that version on each agent that uses it.
 
 4. Open `contact-voice-agent`. Under **Tools**, select **Add a toolbox** and choose `CRMTools`. The agent now lists `toolbox_search` and `crm`.
 
