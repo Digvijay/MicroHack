@@ -167,11 +167,32 @@ def mask(account_number: str) -> str:
 
 
 def normalise(value) -> str:
-    return re.sub(r"\s+", "", str(value or "")).upper()
+    return re.sub(r"[^A-Z0-9]", "", str(value or "").upper())
+
+
+DIGIT_LOOKALIKES = str.maketrans({"O": "0", "I": "1", "L": "1"})
+
+
+def normalise_account(value) -> str:
+    """Account numbers are two letters then digits. Speech-to-text often writes a spoken zero as the letter O."""
+    text = normalise(value)
+    return text[:2] + text[2:].translate(DIGIT_LOOKALIKES)
+
+
+def normalise_postcode(value) -> str:
+    """UK-style postcodes (ZZ5 4DJ): the third and the fourth-from-last characters are digits."""
+    text = normalise(value)
+    if len(text) >= 5:
+        chars = list(text)
+        for i in (2, len(chars) - 3):
+            chars[i] = chars[i].translate(DIGIT_LOOKALIKES)
+        text = "".join(chars)
+    return text
 
 
 def area_of(value) -> str:
-    return normalise(value)[:3]
+    text = normalise(value)[:3]
+    return text[:2] + text[2:].translate(DIGIT_LOOKALIKES)
 
 
 def public_customer(customer: dict) -> dict:
@@ -209,14 +230,29 @@ def op_company(st, query, body):
 
 def op_verify(st, query, body):
     require(body, "account_number", "postcode")
-    state, _ = load_state(st, active_pack(st))
-    number = normalise(body["account_number"])
-    customer = next((c for c in state["customers"] if c["account_number"] == number), None)
-    if not customer or normalise(customer["postcode"]) != normalise(body["postcode"]):
-        return {"verified": False,
-                "message": "The account number and postcode do not match our records. Do not share any account information."}
-    return {"verified": True, "customer_id": customer["customer_id"], "first_name": customer["name"].split()[0],
-            "account_number_masked": mask(customer["account_number"])}
+    pack = active_pack(st)
+    number = normalise_account(body["account_number"])
+    postcode = normalise_postcode(body["postcode"])
+
+    def change(state):
+        customer = next((c for c in state["customers"] if c["account_number"] == number), None)
+        if not customer:
+            outcome = "not verified: no account with that number"
+        elif normalise_postcode(customer["postcode"]) != postcode:
+            outcome = "not verified: postcode does not match"
+        else:
+            outcome = "verified"
+        # Shown on the activity page so you can see what the agent heard. Account numbers stay masked.
+        state.setdefault("verifications", []).append(
+            {"at": now(), "account": mask(number) if number else "(empty)", "postcode": postcode, "outcome": outcome})
+        state["verifications"] = state["verifications"][-20:]
+        if outcome != "verified":
+            return {"verified": False,
+                    "message": "The account number and postcode do not match our records. Do not share any account information."}
+        return {"verified": True, "customer_id": customer["customer_id"], "first_name": customer["name"].split()[0],
+                "account_number_masked": mask(customer["account_number"])}
+
+    return mutate(st, pack, change)
 
 
 def op_customer(st, query, body, customer_id):
@@ -438,6 +474,8 @@ def status_page(st) -> str:
         pack = active_pack(st)
         state, _ = load_state(st, pack)
         rows = []
+        for v in state.get("verifications", [])[-10:]:
+            rows.append((v["at"], "identity check", v["account"], f"postcode {v['postcode']}: {v['outcome']}"))
         for h in state["handoffs"][-10:]:
             flag = " (vulnerable)" if h.get("vulnerability") else ""
             rows.append((h["created"], "handoff", h["handoff_id"], f"{h.get('priority', 'normal').upper()} priority{flag}: {h['reason']}"))

@@ -97,7 +97,9 @@ Start a **new session** for each scenario and play the customer. Use your compan
 | retail | Return collection | Return a sofa; `PP900502`, `ZZ2 7AL` | Verifies, books a returns collection, explains the refund timing |
 | all | Wrong postcode | Your first test customer's account number with postcode `ZZ9 9ZZ` | Says the details don't match, shares **nothing** about the account, doesn't say which detail was wrong |
 
-After each scenario, refresh your **CrmUrl** home page: appointments and cases your agent created appear there, with the time they were made.
+![The known-outage scenario by voice: the agent checks the ZZ4 service notice, gives the estimated fix time and does not book an engineer](../images/challenge-03-voice-outage.png)
+
+After each scenario, refresh your **CrmUrl** home page. It lists every **identity check** the agent made, with the postcode it heard and the result, and the appointments and cases it created. If a check says *not verified*, the row tells you why: no account with that number, or the postcode does not match. Speech recognition sometimes mishears letters and numbers; say them slowly, or spell them out (*K C, one zero zero two one zero*).
 
 > 📸 **Screenshot to add:** `images/challenge-03-crm-activity.png`: the CRM home page listing an appointment and a case created by the voice agent.
 

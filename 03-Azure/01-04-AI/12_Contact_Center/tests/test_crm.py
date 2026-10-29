@@ -104,3 +104,19 @@ def test_status_page_shows_agent_activity(client):
     code, page = client("GET", "/")
     assert code == 200 and "Kestrel Connect" in page and "Router red light" in page
     assert "HIGH priority (vulnerable): Telecare alarm offline" in page
+
+
+def test_verify_accepts_what_speech_to_text_writes(client):
+    for account, postcode in [("KC100210", "ZZ5 4DJ"), ("kc 100 210", "zz54dj"), ("KC1OO21O", "ZZ5 4DJ"),
+                              ("K-C-1-0-0-2-1-0", "Z.Z.5 4.D.J.")]:
+        code, body = client("POST", "/verify-caller", {"account_number": account, "postcode": postcode})
+        assert code == 200 and body["verified"] and body["customer_id"] == "KC-C10", (account, postcode)
+
+
+def test_failed_identity_checks_show_why_on_the_activity_page(client):
+    client("POST", "/verify-caller", {"account_number": "KC100210", "postcode": "ZZ9 9ZZ"})
+    client("POST", "/verify-caller", {"account_number": "KC999999", "postcode": "ZZ5 4DJ"})
+    code, page = client("GET", "/")
+    assert "postcode ZZ99ZZ: not verified: postcode does not match" in page
+    assert "not verified: no account with that number" in page
+    assert "KC100210" not in page and "******10" in page
