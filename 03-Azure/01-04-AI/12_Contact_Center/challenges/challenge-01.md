@@ -20,7 +20,7 @@ Your lab already has a **mock CRM** with the customers, appointment slots and ca
 2. Select **your** project from the project picker next to *Microsoft Foundry* at the top left. Its name is the last part of `FoundryProjectEndpoint` on your lab dashboard (`contact-center`).
 3. Select **Build**, then **Models** in the left menu. On the **Deployments** tab, check that the chat model (`ModelDeploymentName`, default `gpt-5.4-mini`) and the embedding model (`EmbeddingDeploymentName`, default `text-embedding-3-large`) show **Succeeded**.
 
-> 📸 **Screenshot to add:** `images/challenge-01-model-deployments.png`: Build, then Models, Deployments tab: gpt-5.4-mini and text-embedding-3-large with deployment status Succeeded.
+![Build, then Models, Deployments tab: gpt-5.4-mini and text-embedding-3-large with deployment status Succeeded](../images/challenge-01-model-deployments.png)
 
 ### Part B: Choose your company (10 min)
 
@@ -35,6 +35,9 @@ Your lab already has a **mock CRM** with the customers, appointment slots and ca
    | `retail` | Parcelpine | Retail, e-commerce, logistics |
 
 2. In a private browser window, sign in to the [Azure portal](https://portal.azure.com) with your lab account. Select the **Cloud Shell** icon (`>_`) in the top bar and choose **Bash**. If you are asked about storage, choose the option without storage.
+
+   ![The Cloud Shell icon in the Azure portal top bar](../images/challenge-01-open-cloud-shell.png)
+
 3. Copy only this lab from GitHub and move into it:
 
    ```bash
@@ -55,7 +58,7 @@ Your lab already has a **mock CRM** with the customers, appointment slots and ca
 
    The command replaces the contents of three storage containers with your company's files and switches the CRM to your company. It ends with a few **test customers**: keep them, you will use them to test your agents.
 
-> 📸 **Screenshot to add:** `images/challenge-01-setup.png`: Cloud Shell: the setup command loads 8 knowledge articles, 1 supervisor insights file and 3 recorded calls, the CRM check says OK, and test customers are listed.
+![Cloud Shell: the setup command loads 8 knowledge articles, 1 supervisor insights file and 3 recorded calls, the CRM check says OK, and test customers are listed](../images/challenge-01-setup.png)
 
 > [!NOTE]
 > Cloud Shell without storage starts empty every session. If it restarts, repeat step 3 to clone again. Your company's data is safe in your storage account.

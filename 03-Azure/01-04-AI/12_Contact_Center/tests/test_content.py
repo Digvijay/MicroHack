@@ -46,8 +46,10 @@ def test_screenshot_placeholders_are_named_and_unique():
         names += re.findall(r"Screenshot to add:\*\* `(images/[a-z0-9-]+\.png)`: \S", text)
         assert "Screenshot to add" not in text or text.count("Screenshot to add") == len(
             re.findall(r"Screenshot to add:\*\* `images/[a-z0-9-]+\.png`: \S", text)), f"Malformed placeholder in {path.name}"
-    assert len(names) >= 12
-    assert len(names) == len(set(names)), "Each screenshot needs its own file name"
+    images = [m for path in MARKDOWN for m in re.findall(r"!\[[^\]]*\]\((?:\.\./)?(images/[a-z0-9-]+\.png)\)", path.read_text(encoding="utf-8"))
+              if not m.startswith("images/readme-")]
+    assert len(names) + len(images) >= 17, "Every planned screenshot needs a placeholder or an image"
+    assert len(names + images) == len(set(names + images)), "Each screenshot needs its own file name"
     already_taken = [name for name in names if (LAB / name).is_file()]
     assert not already_taken, f"Replace these placeholders with the image: {already_taken}"
 
