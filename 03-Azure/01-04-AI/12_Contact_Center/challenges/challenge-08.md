@@ -17,14 +17,21 @@ The page is deliberately small: about 100 lines of Python with no extra packages
 ### Part A: Share the voice agent (no code, 10 min)
 
 1. In the Foundry portal, open your voice agent, `contact-voice-agent`, and make sure the version you tested in Challenges 4 and 5 is saved.
-2. Open the **Channels** tab. In **Preview web app**, select **Open web app**.
-3. Allow the microphone and replay one of your industry's scenarios from Challenge 3. Check the greeting, the transcript and that the agent still checks identity before sharing account details.
-4. Select **Copy web app link** and send it to a teammate. If **Grant access** is offered, add them first. They sign in with their own lab account; the link alone doesn't give access.
+2. Open the **Channels** tab. It has three cards: **Phone numbers**, **Teams & Microsoft 365** and **Preview web app**. The web app is already **Active**, for *people with Azure RBAC permissions*. Select the globe icon (**Open web app**).
 
-> 📸 **Screenshot to add:** `images/challenge-08-voice-web-app.png`: the voice agent's preview web app in a browser tab, mid-conversation with the transcript visible.
+   ![The Channels tab: Phone numbers, Teams and Microsoft 365, and the Preview web app with Open web app and Copy web app link](../images/challenge-08-channels.png)
+
+3. In the new tab, select **Start**, allow the microphone and replay one of your industry's scenarios from Challenge 3. Check the greeting, the transcript and that the agent still behaves as in the playground: it checks identity before account details, and uses only the postcode for an area-wide service notice.
+
+   ![The voice agent's preview web app mid-conversation: greeting, service notice for ZZ4 and the outage article](../images/challenge-08-voice-web-app.png)
+
+4. Select the link icon (**Copy web app link**) and send it to a teammate. They sign in with their own lab account; the link alone doesn't give access, and the card's **⋯** menu manages who can open it.
+5. Open **Code** at the top right of the web app: **View sample app code** links to the ready-made sample app behind this page, if you want a full front end to start from.
+
+   ![The web app's Code menu: View sample app code](../images/challenge-08-sample-code.png)
 
 > [!NOTE]
-> The **Channels** tab also has **Phone numbers**, which connects a real phone line through Microsoft Teams Phone or Twilio. That needs a telephony account, so it's not part of this lab, but it's the step a real contact center takes next.
+> **Phone numbers** connects a real phone line through Microsoft Teams Phone or Twilio, and **Teams & Microsoft 365** publishes the agent into Teams. Both need extra accounts or admin approval, so they're not part of this lab, but they're the steps a real contact center takes next.
 
 ### Part B: Open the lab in Codespaces (10 min)
 
