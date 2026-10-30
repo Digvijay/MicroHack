@@ -58,7 +58,9 @@ The page is deliberately small: about 100 lines of Python with no extra packages
 3. Ask a question from your knowledge base, then verify as a test customer and ask about their account. The answers come from the same `contact-chat-agent` you built, with the same knowledge, CRM tool and guardrails.
 4. Open **Traces** for `contact-chat-agent` in the Foundry portal. Your web conversations appear there next to the playground ones.
 
-> 📸 **Screenshot to add:** `images/challenge-08-chat-page.png`: the chat page running in Codespaces with a cited answer and an account answer after verification.
+![Your own chat page: the agent verifies the caller, explains the ZZ4 outage from the records and hands over when asked](../images/challenge-08-chat-page.png)
+
+![The CRM home page after a day of testing: identity checks, appointments and handoffs, including the one made from the chat page](../images/challenge-08-crm-log.png)
 
 ### Part D: Make it yours (optional, 10 min)
 
