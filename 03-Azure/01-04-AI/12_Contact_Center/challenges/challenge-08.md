@@ -26,7 +26,7 @@ The page is deliberately small: about 100 lines of Python with no extra packages
    ![The voice agent's preview web app mid-conversation: greeting, service notice for ZZ4 and the outage article](../images/challenge-08-voice-web-app.png)
 
 4. Select the link icon (**Copy web app link**) and send it to a teammate. They sign in with their own lab account; the link alone doesn't give access, and the card's **⋯** menu manages who can open it.
-5. Open **Code** at the top right of the web app: **View sample app code** links to the ready-made sample app behind this page, if you want a full front end to start from.
+5. Open **Code** at the top right of the web app and select **View sample app code**. The dialog links to the ready-made sample app on GitHub and gives you a `.env` block, already filled in with your agent, project and region, to paste after you clone it or open it in a codespace. That's the route to a full front end; Part C builds a much smaller page so you can see every line.
 
    ![The web app's Code menu: View sample app code](../images/challenge-08-sample-code.png)
 

@@ -40,5 +40,6 @@ The browser never holds a token. For real customers you would add: a managed ide
 | *Could not get a token. Run az login* | Run `az login --use-device-code` in the codespace terminal with the lab account. |
 | `Foundry returned 401` or `403` | Signed in to the wrong tenant or subscription. `az account show`, then `az login --tenant <lab tenant>`. |
 | `Foundry returned 404` | `FOUNDRY_PROJECT_ENDPOINT` is wrong (it must end in `/api/projects/contact-center`), or the agent name is misspelt. |
+| Codespaces shows *Single sign-on required for microsoft* | The codespace would be billed to the Microsoft organisation, which needs SSO for members. Select the message to authorise, or open the codespace from your own fork. Check you are on the right repository and branch first. |
 | Port 8000 doesn't open | Open the **Ports** tab and select the globe icon next to 8000. Keep its visibility **Private**. |
 | **Channels** tab missing | The agent was created as a text agent. Only voice agents get the preview web app. |
