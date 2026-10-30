@@ -109,13 +109,15 @@ After each scenario, refresh your **CrmUrl** home page. It lists every **identit
 
 1. Open the agent's **Traces** tab and select your last session (wait a minute or two after it ends). Each tool call is an **Execute Tool** row named `tools/call crm___<operation>`, followed by an `http_app_func` row: that is the CRM itself answering, in the same trace. Find `verifyCaller` first, then the others.
 2. Select a tool call and read **Input + Output**. Did it use the `customer_id` from `verifyCaller`? Did `bookAppointment` get the slot you chose? The voice rows also show the realtime model (`chat gpt-realtime-…`) and the voice (`text_to_speech`).
-3. Give `contact-chat-agent` the same `CRMTools` toolbox (under **Tools**) and the same instruction changes, so both channels behave the same. **Save**, then try one scenario by chat.
+3. Give `contact-chat-agent` the CRM and the same instruction changes, so both channels behave the same. Text agents can take the OpenAPI tool directly: under **Tools**, select **Add**, then the `crm` OpenAPI tool with the same connection and schema. Adding the `CRMTools` toolbox works too. **Save**, then try one scenario by chat, for example *My broadband is down. Account KC100201, postcode ZZ4 2BT.*
+
+   ![contact-chat-agent with the crm tool and contact-knowledge-kb, answering the outage scenario from the customer's records](../images/challenge-03-chat-agent-crm.png)
 
 ![A voice conversation trace: getServiceNotices, verifyCaller, listAppointmentSlots and bookAppointment tool calls, each followed by the CRM request, with the bookAppointment input](../images/challenge-03-trace.png)
 
 ## ✔️ Success criteria
 
-- [ ] Both agents use the `CRMTools` toolbox with the `crm` OpenAPI tool, and have the IDENTITY AND ACCOUNTS and ACTIONS instructions.
+- [ ] Both agents can call the `crm` OpenAPI tool (the voice agent through the `CRMTools` toolbox), and have the IDENTITY AND ACCOUNTS and ACTIONS instructions.
 - [ ] The agent always calls `verifyCaller` before sharing or changing anything, and shares nothing when the postcode is wrong.
 - [ ] Your company's two scenarios work by voice, and the results appear on the CRM home page.
 - [ ] In a trace, you can show each tool call and its inputs.
