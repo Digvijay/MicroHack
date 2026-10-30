@@ -46,7 +46,8 @@ var foundryProjectManager = 'eadc314b-1a2d-4efa-be10-5d325db5065e'
 var modelUser = '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
 var cognitiveServicesUser = 'a97b65f3-24c7-4388-baec-2e87135dc908'
 var logAnalyticsReader = '73c42c96-874c-492b-b04d-ab87d138a893'
-var containers = ['knowledge', 'insights', 'calls', 'evaluation', 'crm-state', 'crm-package']
+// cu-projects holds the Content Understanding Studio project files (Challenge 6).
+var containers = ['knowledge', 'insights', 'calls', 'evaluation', 'crm-state', 'crm-package', 'cu-projects']
 
 resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'log-contact-${resourceSuffix}'

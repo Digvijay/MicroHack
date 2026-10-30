@@ -127,3 +127,11 @@ def test_codespaces_config_points_at_this_lab():
     data = json.loads(config.read_text(encoding="utf-8"))
     assert data["workspaceFolder"].endswith("03-Azure/01-04-AI/12_Contact_Center")
     assert 8000 in data["forwardPorts"]
+
+
+def test_template_creates_every_container_the_lab_uses():
+    template = (LAB / "infra" / "main.bicep").read_text(encoding="utf-8")
+    declared = set(re.findall(r"'([a-z-]+)'", re.search(r"var containers = \[(.*?)\]", template).group(1)))
+    assert {"knowledge", "insights", "calls", "evaluation", "crm-state", "crm-package", "cu-projects"} <= declared
+    readme = (LAB / "labautomation" / "README.md").read_text(encoding="utf-8")
+    assert all(f"`{name}`" in readme for name in declared)

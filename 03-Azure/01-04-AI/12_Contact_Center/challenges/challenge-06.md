@@ -46,7 +46,26 @@ Your lab has two kinds of material for this:
 
 ### Part B: Design your quality scorecard (15 min)
 
-A summary is nice; a **scorecard** changes coaching. In the Call center playground, select **Customize in CU Studio** to make your own analyzer based on it, name it `contactCallScorecard` (letters, numbers, dots and underscores only), and add these fields (method **generate**). Save, then run it on all three calls:
+A summary is nice; a **scorecard** changes coaching. You'll build your own analyzer on top of the Call center one.
+
+1. In the Call center playground, select **Customize in CU Studio**. It opens Content Understanding Studio in a new tab.
+2. The first time, **Set up your default resource** opens. Choose your lab's resource group (`ResourceGroupName`) and Foundry resource (`FoundryAccountName`); make sure the resource name does **not** say *(new)*. Select **Next**, check that the review lists your three deployments, and **Save**.
+
+   ![Set up your default resource: the lab's resource group and Foundry resource](../images/challenge-06-studio-resource.png)
+
+   ![Review configuration: gpt-5.4 for the prebuilt default scenario, gpt-5.4-mini for search, text-embedding-3-large for embeddings](../images/challenge-06-studio-review.png)
+
+3. Select **Create** and fill in the project:
+   - **Project name:** `contact-call-scorecard`; **Workflow kind:** **Extract content and field with custom schema**.
+   - Under **Advanced settings**: your lab's resource group, storage account `StorageAccountName` and blob container **`cu-projects`** (the lab creates it for Studio projects; don't use `azure-webjobs-hosts` or the pack containers). **Chat completion model:** `gpt-5.4`.
+
+   ![Create a new project: contact-call-scorecard on the lab's storage account and the cu-projects container](../images/challenge-06-studio-project.png)
+
+4. Upload `<PREFIX>-CALL-02.mp3`. In **Choose a template**, select **Call Center** and **Save**. Its six fields (Summary, Topics, Companies, People, Sentiment, Categories) become your starting schema.
+
+   ![Choose a template: Call Center with its six fields](../images/challenge-06-studio-template.png)
+
+5. On the **Schema** tab, add these fields:
 
 | Field | Type | Description to give the model |
 |---|---|---|
