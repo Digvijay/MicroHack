@@ -37,6 +37,8 @@ The page is deliberately small: about 100 lines of Python with no extra packages
 
 1. Open the MicroHack repository on GitHub, select **Code**, **Codespaces**, then **...** and **New with options**.
 2. Under **Dev container configuration**, choose **Azure / AI / Contact Center** and create the codespace. It installs Python and the Azure CLI, and runs the lab's tests.
+   No Codespaces? The page needs only Python 3 and the Azure CLI, so you can run Part C on your own machine or in Cloud Shell's editor instead.
+
 3. In the terminal, sign in with your lab account:
 
    ```bash
