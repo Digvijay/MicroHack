@@ -22,6 +22,9 @@ Your lab has two kinds of material for this:
 ### Part A: Analyse a recorded call (15 min)
 
 1. In the Azure portal, open your storage account, then **Storage browser**, then the `calls` container, and **download** your company's three MP3 files. Play one: it is a short call between a customer and an adviser.
+
+   ![Storage browser: the calls container with the three MP3 files and Download on the selected blob](../images/challenge-06-download-call.png)
+
 2. In the Foundry portal, open **Content Understanding** (search for it in the portal, or find it under **Build**). If asked to set default models, select your `ModelDeploymentName` for completions and your `EmbeddingDeploymentName` for embeddings.
 3. Create a **custom analyzer** for **audio** and name it `contactCallAnalyzer`. Analyzer names can only use letters, numbers, dots and underscores, so no hyphens. If you are asked for a model, choose your `ModelDeploymentName`.
 
