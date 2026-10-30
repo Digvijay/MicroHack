@@ -51,7 +51,9 @@ HANDOFF TO A PERSON
 2. In a second session, verify as any test customer and then simply say *I'd like to speak to a real person, please.*
 3. Refresh your **CrmUrl** home page: both handoffs are listed. The vulnerable one is **high** priority.
 
-> 📸 **Screenshot to add:** `images/challenge-05-handoff.png`: the CRM home page listing the two handoffs, the vulnerable one marked high priority.
+![A verified caller asks for a person: the agent connects them and says the colleague has a summary](../images/challenge-05-ask-for-person.png)
+
+![The CRM home page: a NORMAL priority handoff for the customer who asked for a person and a HIGH priority (vulnerable) handoff for the telecare alarm](../images/challenge-05-handoff.png)
 
 ### Part C: Build agent assist (15 min)
 
