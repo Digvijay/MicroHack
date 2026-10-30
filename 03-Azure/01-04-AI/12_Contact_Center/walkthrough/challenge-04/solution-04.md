@@ -25,6 +25,12 @@ Earlier telco tests (instructions only, before the guardrail):
 
 In the portal run the vulnerable-customer answer (test 5) treated the telecare alarm as urgent and offered a person, citing `KB-KC-005 p4`, but did not name the free 4G backup hub. That is acceptable here; the handoff in Challenge 5 carries it. Ask the group whether they would add *name the help the article offers* to the instructions.
 
+### Narrating the rules
+
+By voice, our first run of test 5 read its own guidance aloud: *our article on supporting vulnerable customers says I should slow down* and *you should be handed to a human adviser*. To a worried caller that sounds like being told to calm down. The fix is in the instructions, not the article: follow staff guidance without describing it (Challenge 2, WHAT YOU KNOW) and use your own warm words (SAFETY AND CARE). It's a good example of why voice must be tested by ear, not only in chat.
+
+![Before the fix: the voice agent quotes the vulnerable-customer article back to the caller](../../images/challenge-04-vulnerable-voice-before.png)
+
 ### The blocklist trap
 
 The refusal to test 4 contains the word *guarantee*. If participants put the single word `guarantee` on an output blocklist, the guardrail blocks the agent's **good** answer and the customer sees a generic error. This is why the challenge says to block phrases such as `we guarantee`. If a group used single words, let them find it: it's a good lesson in how blunt a blocklist is.

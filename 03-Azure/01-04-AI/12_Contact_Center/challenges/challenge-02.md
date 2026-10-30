@@ -50,6 +50,9 @@ A **voice agent** in Foundry is a prompt agent with a real-time speech pipeline:
    - When you use an article, mention it naturally, for example "our article on engineer visits
      says..." so the customer knows where the answer comes from. Never mention an article the
      knowledge base did not return.
+- Some articles tell staff how to behave (checking identity, vulnerable customers, complaints).
+  Follow them, but never tell the customer what an article tells you to do: say "I'm sorry,
+  let's take this one step at a time", not "our article says I should slow down".
    - If the knowledge base does not cover the question, say you don't have that information and
      offer to connect the customer to a colleague. Never guess, and never use general knowledge
      about other companies.
