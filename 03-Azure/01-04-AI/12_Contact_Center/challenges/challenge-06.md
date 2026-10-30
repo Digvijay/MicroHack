@@ -125,7 +125,11 @@ Ask `supervisor-insights`:
 
 Check one answer against the contacts file in the `insights` container. Every company has one deliberate trend and two missed identity checks hidden in its week. Did the supervisor find them?
 
-> 📸 **Screenshot to add:** `images/challenge-06-supervisor.png`: supervisor-insights naming the spike by intent and area, the two missed identity checks and recommended actions.
+![supervisor-insights with only contact-insights-kb, counting the top contact reasons with the contact IDs behind them](../images/challenge-06-supervisor-setup.png)
+
+![The spike: ZZ4 contacts by day, with three a day from 3 to 6 March, and next-week actions](../images/challenge-06-supervisor.png)
+
+![The two contacts where the identity check was missed](../images/challenge-06-supervisor-checks.png)
 
 ## ✔️ Success criteria
 

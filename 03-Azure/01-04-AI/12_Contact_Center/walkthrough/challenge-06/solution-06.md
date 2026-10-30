@@ -43,6 +43,8 @@ The same pattern works for every industry: CALL-01 is a routine request, CALL-02
 
 In our telco run `supervisor-insights` listed the reasons with counts (outage/fault 12, moving home 7, billing and payment 6, engineer appointments 3, complaints 2). It identified the ZZ4 spike from 3 to 6 March and named `KC-C1008` and `KC-C1023`. Its recommended actions were tied to that evidence: review the ZZ4 outage communications and coach verification.
 
+In our portal run the answers matched, with one slip worth showing: asked for the spike by day, it listed every ZZ4 contact, including four that were not outages (KC-C1003, KC-C1019, KC-C1023, KC-C1028), then said the cluster was "mainly" outages. The 3 to 6 March numbers were right. That is what *Check one answer against the contacts file* is for.
+
 Ask groups to connect the dots: the trend in the supervisor's week matches the service notice the voice agent found in Challenge 3, and the call they analysed in Part A.
 
 ## Troubleshooting
