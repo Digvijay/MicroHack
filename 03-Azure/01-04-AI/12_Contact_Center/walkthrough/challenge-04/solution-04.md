@@ -53,9 +53,23 @@ In Challenge 5 the agent learns to actually hand over. Here it only needs to **o
 
 ## Part D: PII detection
 
-On `KC-CALL-02.txt` the PII playground finds the customer's first name (*Priya*, confidence 1.0) and the time references. It does **not** find the account number or the postcode, because in a transcript they are spoken: *K C one zero zero two zero one*, *Z Z four, two B T*.
+On `KC-CALL-02.txt` the **Conversational PII redaction** model finds and masks:
 
-This is the point to discuss: off-the-shelf detection is tuned for written data. For call transcripts you'd add custom patterns, or better, avoid storing what you don't need. It's also why the CRM masks account numbers before the model ever sees them.
+| Text | Type | Confidence |
+|---|---|---|
+| Kestrel Connect | Organization | 100% |
+| K C one zero zero two zero one | Address | 97% |
+| Postcode Z Z four, two B T | Address | 94% |
+| Priya (twice) | Person | 100% |
+| husband | PersonType | 97% |
+| Z Z four | Address | 84% |
+
+Points to discuss:
+
+- It caught the **spoken** account number and postcode, which a model tuned for written text can miss (in our API test the plain text PII model found only the name). Use the model that matches the data.
+- It labels the account number **Address**. The redaction is right, but the label is wrong; don't build reports on the labels without checking them.
+- It also masks the company name and the outage area. For quality review you would probably keep both. Redaction is a policy decision, not just a model output; the model can be told which categories to redact.
+- The safest data is data you never store. The CRM never returns full account numbers, and the agent instructions forbid repeating card numbers.
 
 ## Points to discuss
 

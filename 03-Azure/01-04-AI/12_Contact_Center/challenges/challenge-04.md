@@ -98,11 +98,14 @@ The row under each answer shows which layer acted: `openapi_call` means the CRM 
 
 Transcripts and summaries are stored and read by many people. Personal data in them must be minimised.
 
-1. In the Foundry portal, open the **PII detection** playground (under **Build**, then the Language or Foundry Tools playgrounds).
-2. Paste the text of one of your company's recorded calls from `data/packs/<industry>/calls/` (for example `KC-CALL-02.txt`) and run detection.
-3. Which items does it find (names, account numbers, postcodes)? Which would you redact before storing a transcript for quality review?
+1. In the Foundry portal, type `pii` in the search bar at the top and select **Azure-Language-Conversational-PII-redaction**: the model built for transcripts with speaker turns. Select **Open in playground**.
 
-> 📸 **Screenshot to add:** `images/challenge-04-pii.png`: PII detection on a call transcript: the name it found, and the spoken account number and postcode it missed.
+   ![The Conversational PII redaction model page with Open in playground](../images/challenge-04-pii-model.png)
+
+2. Paste the text of one of your company's recorded calls from `data/packs/<industry>/calls/` (for example `KC-CALL-02.txt`, from the first `Agent:` line) and select **Detect**.
+3. Read the **Response**. Which items did it find, and what type did it give them? Did it catch the account number and the postcode even though they are spoken (*K C one zero zero…*)? Which items would you redact before storing a transcript for quality review, and is there anything it redacted that you would keep?
+
+![Conversational PII redaction on a call transcript: the company, the spoken account number and postcode, the name and the area are detected and masked](../images/challenge-04-pii.png)
 
 ## ✔️ Success criteria
 
