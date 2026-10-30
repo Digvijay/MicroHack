@@ -113,6 +113,10 @@ After each scenario, refresh your **CrmUrl** home page. It lists every **identit
 
    ![contact-chat-agent with the crm tool and contact-knowledge-kb, answering the outage scenario from the customer's records](../images/challenge-03-chat-agent-crm.png)
 
+   Select **Traces** under the answer. When the tool is on the agent directly, the rows are named `execute_tool remote_openapi.crm_<operation>`; select one to see what went in and what the CRM sent back.
+
+   ![The chat agent trace: verifyCaller then getServiceNotices, with the area ZZ4 as input and the outage notice as output](../images/challenge-03-chat-trace.png)
+
 ![A voice conversation trace: getServiceNotices, verifyCaller, listAppointmentSlots and bookAppointment tool calls, each followed by the CRM request, with the bookAppointment input](../images/challenge-03-trace.png)
 
 ## ✔️ Success criteria
