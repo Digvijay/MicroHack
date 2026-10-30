@@ -31,6 +31,10 @@ By voice, our first run of test 5 read its own guidance aloud: *our article on s
 
 ![Before the fix: the voice agent quotes the vulnerable-customer article back to the caller](../../images/challenge-04-vulnerable-voice-before.png)
 
+After the fix the same call is gentle and practical: it checks the caller is comfortable, finds the ZZ4 outage, names the free 4G backup hub, verifies the account and hands over at high priority with a reference to read back. It may hand over even before Challenge 5, because the CRM's `escalateToHuman` operation describes itself; Challenge 5 makes that behaviour deliberate.
+
+![After the fix: warm wording, the outage and the backup hub, verification and a high-priority handoff with reference KC-HO-0103](../../images/challenge-04-vulnerable-voice-after.png)
+
 ### The blocklist trap
 
 The refusal to test 4 contains the word *guarantee*. If participants put the single word `guarantee` on an output blocklist, the guardrail blocks the agent's **good** answer and the customer sees a generic error. This is why the challenge says to block phrases such as `we guarantee`. If a group used single words, let them find it: it's a good lesson in how blunt a blocklist is.
