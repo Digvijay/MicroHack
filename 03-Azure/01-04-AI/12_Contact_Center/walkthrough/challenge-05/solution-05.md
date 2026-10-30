@@ -33,6 +33,8 @@ Before we added the update rule, the agent handed over unverified and never sent
 
 *Wrap up* produced the reason, what was agreed, a follow-up owner and the customer's sentiment.
 
+In the portal run with **Always use** set, the first *Next customer* in one chat searched only the knowledge base and said it couldn't see the queue; a new chat called `listHandoffs` and `getCustomer` and produced the full card. *Always use* forces some tool call, not a particular one, so the ALWAYS line in the instructions still matters. Through the API, five runs out of five called the CRM.
+
 > [!NOTE]
 > `agent-assist` only reads the queue; it never changes the CRM. Handoffs from earlier tests stay **waiting**, so *Next customer* may return an older one. Ask for a specific one instead: *Show me the handoff for KC-C03.*
 

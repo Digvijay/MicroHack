@@ -62,7 +62,8 @@ HANDOFF TO A PERSON
 
    ```text
    You are agent assist for <Company>'s human advisers. You help the adviser; you never talk to
-   the customer and you never change anything in the CRM. The adviser decides.
+   the customer and you never change anything in the CRM. The adviser decides. The adviser is the
+   person the customer has been handed to, so never suggest handing the customer to a person.
 
    WHEN THE ADVISER ASKS FOR THE NEXT CUSTOMER
    - ALWAYS call listHandoffs from the crm tool first; never say you can't see the queue without
@@ -89,19 +90,28 @@ HANDOFF TO A PERSON
    ```
 
 3. Under **Tools**, remove **Web search** (**⋮ → Remove**). Select **Add**, then **OpenAPI tool** (under *Recently used*, or **Add tools** then **Custom**), and fill it in as in Challenge 3: name `crm`, the same description, **Anonymous**, connection `crm` and the schema from `<CrmUrl>/openapi.json`. Select **Create tool**.
-4. Under **Knowledge**, select **Add** and pick `contact-knowledge-kb` from the list. **Save**, and check the version number went up: a tool you added but didn't save is not used. Start a **new chat** after saving.
 
-> 📸 **Screenshot to add:** `images/challenge-05-agent-assist-setup.png`: agent-assist with the crm tool and contact-knowledge-kb.
+   ![The Tools Add menu on a text agent: OpenAPI tool under Recently used, and Add tools for the full catalogue](../images/challenge-05-add-openapi-tool.png)
+
+4. Under **Knowledge**, select **Add** and pick `contact-knowledge-kb` from the list. **Save**, and check the version number went up: a tool you added but didn't save is not used. Start a **new chat** after saving.
+5. Select the parameters icon next to **Model** and set **Choose when to use tools** to **Always use**, then **Save**. Agent assist should never answer from memory: every reply must come from the CRM or the knowledge base. Don't do this for the customer agents; a greeting needs no tool.
+
+   ![Parameters: Choose when to use tools set to Always use](../images/challenge-05-tool-choice.png)
+
 
 ### Part D: Be the human adviser (10 min)
 
 In the `agent-assist` chat:
 
-1. Ask *Next customer, please.* You should get a whisper card for the vulnerable customer from Part B, with their support needs, what the voice agent already did and a suggested opening line.
+1. Ask *Next customer, please.* You should get a whisper card for the vulnerable customer from Part B, with their support needs, what the voice agent already did and a suggested opening line. Check that `openapi_call` appears under the answer. If only the knowledge base appears and the agent says it can't see the queue, it skipped the CRM: ask again in a new chat.
 2. Paste something the customer might say next, for example *I just need to know my alarm will work tonight.* Check that the suggested reply is short and kind, and that the next best action cites an article.
 3. Say *wrap up* and read the after-call summary. Would you be happy to store it on the customer's record?
 
-> 📸 **Screenshot to add:** `images/challenge-05-whisper-card.png`: the whisper card for the vulnerable customer, with a suggested opening line and a cited next best action.
+![The whisper card for Margaret Ellis: support needs, what happened, no open cases, an opening line using her name, the free 4G backup hub as next best action, and watch-outs](../images/challenge-05-whisper-card.png)
+
+![During the call: a short honest reply for the adviser and the next best action, citing the broadband faults article](../images/challenge-05-during-call.png)
+
+![Wrap up: reason, what was agreed, follow-ups with owner and date, and sentiment at the end](../images/challenge-05-wrap-up.png)
 
 ## ✔️ Success criteria
 
