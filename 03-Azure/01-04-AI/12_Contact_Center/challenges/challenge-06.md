@@ -65,21 +65,25 @@ A summary is nice; a **scorecard** changes coaching. You'll build your own analy
 
    ![Choose a template: Call Center with its six fields](../images/challenge-06-studio-template.png)
 
-5. On the **Schema** tab, add these fields:
+5. On the **Schema** tab, select **Add new field** (or **Click to add new field**) for each row below. Field names can use only letters, numbers and underscores. Set **Value Type** from its dropdown, keep **Method** on **Generate**, and select **Save** at the bottom when all seven are in.
 
-| Field | Type | Description to give the model |
-|---|---|---|
-| `intent` | string | The main reason for the contact, in two or three words |
-| `identity_checked` | boolean | True if the adviser confirmed the account number and postcode before discussing the account |
-| `resolved` | boolean | True if the customer's need was met during the call |
-| `escalated` | boolean | True if the customer was passed to another person or team |
-| `vulnerability_signs` | string | Any sign the customer may be vulnerable, or "none" |
-| `empathy_score` | integer | 1 to 5: how well the adviser acknowledged the customer's feelings |
-| `next_action` | string | What should happen next, if anything |
+   | Field Name | Field Description | Value Type |
+   |---|---|---|
+   | `intent` | The main reason for the contact, in two or three words | String |
+   | `identity_checked` | True if the adviser confirmed the account number and postcode before discussing the account | Boolean |
+   | `resolved` | True if the customer's need was met during the call | Boolean |
+   | `escalated` | True if the customer was passed to another person or team | Boolean |
+   | `vulnerability_signs` | Any sign the customer may be vulnerable, or "none" | String |
+   | `empathy_score` | 1 to 5: how well the adviser acknowledged the customer's feelings | Integer |
+   | `next_action` | What should happen next, if anything | String |
 
-Compare the three results with your team. Do the scores match what you heard? Which field would you trust least, and why?
+   ![The Call Center template's six fields on the Schema tab, with Add new field](../images/challenge-06-studio-schema.png)
 
-> 📸 **Screenshot to add:** `images/challenge-06-scorecard.png`: the scorecard fields for one call: intent, identity_checked, resolved, escalated, vulnerability_signs and empathy_score.
+6. Select **Run analysis**. The **Test** tab shows every field next to the transcript; the **Result** tab has the JSON, where `identity_checked` comes back as a true or false value and `empathy_score` as a number.
+
+   ![The scorecard for KC-CALL-02: transcript, summary, topics, people and sentiment, with the scorecard fields further down](../images/challenge-06-scorecard.png)
+
+7. Upload the other two calls and run each. Compare the three results with your team. Do the scores match what you heard? Which field would you trust least, and why?
 
 ### Part C: The supervisor's knowledge base (10 min)
 

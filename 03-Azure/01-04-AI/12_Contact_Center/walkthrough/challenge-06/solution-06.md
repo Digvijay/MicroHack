@@ -8,7 +8,12 @@
 
 Part A uses the **Call center** prebuilt with the lab's `gpt-5.4` deployment. On `KC-CALL-02` it returns a summary (outage since Monday, third call, works from home, known ZZ4 outage, fix Thursday 18:00, automatic compensation, high-priority case), sentiment **Negative**, topics (broadband outage, compensation, escalation, callback) and the people (Priya as account holder, her husband, the agent).
 
-Part B's `contactCallScorecard` adds the scorecard fields. Our results on the telco calls:
+Part B's scorecard project (`contact-call-scorecard` in CU Studio) adds the fields to the Call Center template. Our portal run on `KC-CALL-02` returned: intent *Report outage*, `identity_checked` **true**, `resolved` **true**, `escalated` **true**, `vulnerability_signs` *distressed and relies on broadband for work, but no clear vulnerability disclosed*, `empathy_score` **4**, and a next action to monitor the case and call back. Two of those are good discussion points:
+
+- `identity_checked` is true, yet the caller was the account holder's **husband**. The adviser checked the details and then rightly limited what she shared. A yes/no field can't tell "checked and was the account holder" from "checked and wasn't"; a better schema asks *who* was verified.
+- `resolved` is true while the outage is still on. The model read "the customer got what they needed today"; a supervisor might read "the problem is fixed". Tighten the description.
+
+Earlier API runs on all three telco calls:
 
 | Call | sentiment | intent | identity_checked | resolved | escalated | vulnerability_signs | empathy_score |
 |---|---|---|---|---|---|---|---|
