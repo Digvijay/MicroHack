@@ -38,6 +38,20 @@ Rule of thumb for this test set: use **Similarity** for "did it give the right a
 
 - Scores vary by a few points between identical runs. A difference smaller than that is noise.
 
+### Our comparison: reasoning effort low vs medium
+
+| Metric | low (baseline) | medium |
+|---|---|---|
+| Overall | 69% | 69% |
+| Tool use quality | 65% | 70% |
+| Output quality | 67% | 63% |
+| Similarity | 100% (4.8) | 100% (4.7) |
+| Coherence / task completion | 4.4 / 0.4 | 4.5 / 0.6 |
+| Median latency | 4.1 s | 4.5 s |
+| Target tokens | 25,834 | 26,286 |
+
+The paired test marked **every** difference *Inconclusive* (quality) or *Too few samples* (tool metrics). That is the lesson: with ten questions, a few points either way is noise, and medium reasoning cost latency and tokens without a provable gain. For a voice channel, that settles it: keep **low**. To decide a change with evidence you need many more test questions, ideally from real (anonymised) contacts.
+
 ### Typical comparison
 
 | Change | Likely effect |

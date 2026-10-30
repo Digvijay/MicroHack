@@ -73,8 +73,16 @@ Each industry pack includes ten test questions with the expected answer (`evalua
 
    ![The Reasoning Effort list: xhigh, high, medium, low and none](../images/challenge-07-reasoning-effort.png)
 
-   On the `baseline` page, select **Add run** to run the same dataset and evaluators against the new version.
-2. Name the run after the change and **compare** the two runs. Which evaluators moved? Did any single question change from pass to fail?
+   On the `baseline` page, select **Add run** to run the same dataset and evaluators against the new version. Under **Configure agents** it asks for the prompt (**Config required**): select **Configure**, type `{{item.query}}` in **USER** (it sends each test question), **Save** and **Submit**.
+
+   ![Add custom prompt: {{item.query}} as the user message](../images/challenge-07-add-run-prompt.png)
+
+2. When it finishes, tick both runs and select **Compare runs**. Foundry runs a paired statistical test on every evaluator. Which evaluators moved? Did the test call any change significant, or **Inconclusive**? Did any single question change from pass to fail?
+
+   ![Both runs completed: the medium run is slightly slower and uses more tokens](../images/challenge-07-two-runs.png)
+
+   ![Statistically compare results: every difference Inconclusive or Too few samples](../images/challenge-07-compare.png)
+
 3. With your team, decide which version you would put live, and what you would need to see before trusting a change on the **voice** agent too.
 
 ## ✔️ Success criteria
