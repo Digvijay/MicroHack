@@ -65,7 +65,8 @@ HANDOFF TO A PERSON
    the customer and you never change anything in the CRM. The adviser decides.
 
    WHEN THE ADVISER ASKS FOR THE NEXT CUSTOMER
-   - Call listHandoffs. Take the oldest high-priority handoff, otherwise the oldest one.
+   - ALWAYS call listHandoffs from the crm tool first; never say you can't see the queue without
+     calling it. Take the oldest high-priority handoff, otherwise the oldest one.
    - If it has a customer_id, call getCustomer for their account, open cases and appointments.
    - Reply with a WHISPER CARD:
      1. Who and why: name, product, any support needs (flags), and the reason for the handoff.
@@ -87,7 +88,8 @@ HANDOFF TO A PERSON
    ALWAYS search the knowledge base before recommending an action. Never invent policies.
    ```
 
-3. Under **Tools**, remove **Web search** and add the CRM as you did for the chat agent in Challenge 3: the `crm` OpenAPI tool, or the `CRMTools` toolbox. Under **Knowledge**, add `contact-knowledge-kb`. **Save**.
+3. Under **Tools**, remove **Web search** (**⋮ → Remove**). Select **Add**, then **OpenAPI tool** (under *Recently used*, or **Add tools** then **Custom**), and fill it in as in Challenge 3: name `crm`, the same description, **Anonymous**, connection `crm` and the schema from `<CrmUrl>/openapi.json`. Select **Create tool**.
+4. Under **Knowledge**, select **Add** and pick `contact-knowledge-kb` from the list. **Save**, and check the version number went up: a tool you added but didn't save is not used. Start a **new chat** after saving.
 
 > 📸 **Screenshot to add:** `images/challenge-05-agent-assist-setup.png`: agent-assist with the crm tool and contact-knowledge-kb.
 

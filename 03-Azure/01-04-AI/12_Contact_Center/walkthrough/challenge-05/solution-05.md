@@ -48,5 +48,6 @@ Before we added the update rule, the agent handed over unverified and never sent
 |---|---|
 | No handoff on the CRM page | The agent said it was connecting the caller but never called `escalateToHuman`. Check **Traces**, then check the HANDOFF section was saved. |
 | Handoff has no `customer_id` | The caller was not verified. Fine if it was urgent; the agent should send an update after verification. |
+| `agent-assist` says it *can't access the handoff queue* and only the knowledge base appears under the answer | The chat was started before the `crm` tool was saved, so it ran the previous version. **Save**, check the version went up, start a **new chat** and ask again. The ALWAYS line in the instructions also stops the model from skipping the tool. |
 | `agent-assist` says the queue is empty | The `CRMTools` toolbox was not added to `agent-assist`, or its `crm` connection points at another CRM. Check the toolbox under **Tools**. |
 | Whisper card shows internal citation markers such as `【6:2†source】` | That's how the chat playground shows knowledge citations; the passage opens when selected. |
