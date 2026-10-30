@@ -107,11 +107,11 @@ After each scenario, refresh your **CrmUrl** home page. It lists every **identit
 
 ### Part D: Check what the agent actually did (10 min)
 
-1. Open the agent's **Traces** and select your last session. Find the tool calls: `verifyCaller` first, then the others.
-2. Check the **inputs** the agent sent. Did it use the `customer_id` from `verifyCaller`? Did it book the slot you chose?
+1. Open the agent's **Traces** tab and select your last session (wait a minute or two after it ends). Each tool call is an **Execute Tool** row named `tools/call crm___<operation>`, followed by an `http_app_func` row: that is the CRM itself answering, in the same trace. Find `verifyCaller` first, then the others.
+2. Select a tool call and read **Input + Output**. Did it use the `customer_id` from `verifyCaller`? Did `bookAppointment` get the slot you chose? The voice rows also show the realtime model (`chat gpt-realtime-…`) and the voice (`text_to_speech`).
 3. Give `contact-chat-agent` the same `CRMTools` toolbox (under **Tools**) and the same instruction changes, so both channels behave the same. **Save**, then try one scenario by chat.
 
-> 📸 **Screenshot to add:** `images/challenge-03-trace.png`: a trace with verifyCaller, getServiceNotices and bookAppointment tool calls and their inputs.
+![A voice conversation trace: getServiceNotices, verifyCaller, listAppointmentSlots and bookAppointment tool calls, each followed by the CRM request, with the bookAppointment input](../images/challenge-03-trace.png)
 
 ## ✔️ Success criteria
 
