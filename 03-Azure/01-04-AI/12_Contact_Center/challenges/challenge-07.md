@@ -21,21 +21,33 @@ Each industry pack includes ten test questions with the expected answer (`evalua
 
 ### Part B: Run the first evaluation (15 min)
 
-1. In the Foundry portal, open `contact-chat-agent`, then its **Evaluation** tab, and select **Create** (or **New evaluation**).
-2. Choose the agent as the target, and upload `evaluation.jsonl` as the dataset. Map `query` to the query and `ground_truth` to the ground truth if asked.
-3. Select these evaluators:
+1. In the Foundry portal, open `contact-chat-agent`, then its **Evaluation** tab, and select **Create**. The wizard has a step list on the left.
+2. **Target:** **Agent**, with `contact-chat-agent` ticked at its latest version. **Next**.
+
+   ![Create new evaluation, Target: Agent with contact-chat-agent selected](../images/challenge-07-target.png)
+
+3. **Scope:** **Individual turns** (each line is one question). **Frequency:** **One time**.
+4. **Data:** **Existing dataset**, then **Upload new dataset**. Name it after your company (for example `kestrel-connect-tests`), choose `evaluation.jsonl` and **Upload**. Check the preview shows the `query` and `ground_truth` columns.
+
+   ![Upload new dataset: kestrel-connect-tests with evaluation.jsonl](../images/challenge-07-upload-dataset.png)
+
+   ![The uploaded dataset selected, with a preview of the query and ground_truth columns](../images/challenge-07-dataset-preview.png)
+
+5. **Configure agents:** leave it as it is; you are testing the agent as it is.
+6. **Criteria:** keep the **Judge model** on your `ModelDeploymentName`. Keep the six **Recommended** evaluators already ticked, and add **Similarity**:
 
    | Evaluator | What it checks |
    |---|---|
-   | **Task adherence** | Did the agent follow its instructions? |
-   | **Intent resolution** | Did it understand and address what the customer wanted? |
-   | **Relevance** | Is the answer on topic? |
-   | **Similarity** (or another ground-truth evaluator) | How close is the answer to the expected answer? |
-   | **Tool call accuracy** | Did it call the right tools with the right inputs? |
+   | **Tool use quality** | Five tool evaluators together: did it pick the right tool, with the right inputs, and use the output? |
+   | **Output quality** | Six together: fluency, coherence, intent resolution, task adherence, groundedness and task completion |
+   | **Violence**, **Sexual**, **Self-harm**, **Hate and unfairness** | Safety of the answers |
+   | **Similarity** | How close each answer is to the expected answer in `ground_truth` |
 
-4. Use your `ModelDeploymentName` as the judge model. Name the run `baseline` and start it. It takes a few minutes.
+   ![The evaluator catalog with the six recommended evaluators and Similarity selected](../images/challenge-07-evaluation-setup.png)
 
-> 📸 **Screenshot to add:** `images/challenge-07-evaluation-setup.png`: the evaluation wizard with contact-chat-agent as target, evaluation.jsonl as dataset and the selected evaluators.
+7. **Review:** name the evaluation `baseline` and **Submit**. The run takes a few minutes.
+
+   ![The baseline evaluation with its run in progress](../images/challenge-07-run-started.png)
 
 ### Part C: Read the results (10 min)
 
