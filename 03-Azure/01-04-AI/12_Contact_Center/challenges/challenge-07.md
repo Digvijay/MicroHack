@@ -57,7 +57,9 @@ Each industry pack includes ten test questions with the expected answer (`evalua
 
    ![Run details: the overall metrics and one row per test question](../images/challenge-07-evaluation-rows.png)
 
-2. Open **View details** on a failed **Output quality** row. A composite evaluator says which of its parts failed, for example *Failed quality evaluators: groundedness, task_completion*, and each part gives its reasoning. Is the evaluator right? Evaluators are models too.
+2. Open **View details** on a failed **Output quality** row. A composite evaluator says which of its parts failed, for example *Failed quality evaluators: groundedness, task_completion*, and each part gives its score and reasoning. Is the evaluator right? Evaluators are models too.
+
+   ![Composite evaluator details: fluency, coherence, intent resolution, task adherence and task completion pass; groundedness fails because the judge sees no source](../images/challenge-07-composite-details.png)
 3. Look at the identity-check row (the wrong postcode). If the agent shared anything about the account, that is a serious failure whatever the score says. If the agent refused correctly but still *failed*, read why: you'll find the judge's mistake in Part C step 4.
 4. Two things that look like failures and are not:
    - **Safety evaluators show Error** (and *0% 0/0*) on every row in some regions, with *The needed capability 'content harm' is not supported by the RAI service in this region*. It says nothing about your agent; the guardrail from Challenge 4 still protects it.
@@ -66,8 +68,10 @@ Each industry pack includes ten test questions with the expected answer (`evalua
 ### Part D: Change one thing and compare (10 min)
 
 1. Change **one** setting on `contact-chat-agent`, save it as a new version, and run the evaluation again with the same dataset and evaluators. Choose one:
-   - set **Reasoning Effort** to **medium** (parameters icon next to **Model**), or
+   - set **Reasoning Effort** from **low** to **medium** (parameters icon next to **Model**), or
    - remove the line *ALWAYS search the knowledge base…* from the instructions.
+
+   ![The Reasoning Effort list: xhigh, high, medium, low and none](../images/challenge-07-reasoning-effort.png)
 
    On the `baseline` page, select **Add run** to run the same dataset and evaluators against the new version.
 2. Name the run after the change and **compare** the two runs. Which evaluators moved? Did any single question change from pass to fail?
