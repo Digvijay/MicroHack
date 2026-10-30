@@ -34,11 +34,15 @@ Your lab has two kinds of material for this:
    - **Chat completion model (mini):** your `ModelDeploymentName` (`gpt-5.4-mini`).
    - **Embedding model:** your `EmbeddingDeploymentName` (`text-embedding-3-large`).
 
-   Don't select **Deploy models** if it is offered: the deployment you need already exists.
+   Pick `gpt-5.4` under **Deployments** in the list, not under **Models** (those would create a new deployment). Select **Apply changes**. Don't select **Deploy models** if it is offered: the deployment you need already exists.
 
-4. Upload `<PREFIX>-CALL-02.mp3` and run the analysis. Check the **transcript** (are the adviser and the customer told apart as two speakers?), the **summary**, the **sentiment**, the **topics** and the **people** it found.
+   ![Configure: gpt-5.4 under Deployments for the chat completion model](../images/challenge-06-configure-models.png)
 
-> 📸 **Screenshot to add:** `images/challenge-06-call-analysis.png`: the Call center analyzer result for a recorded call: transcript with two speakers, summary, sentiment and topics.
+4. Upload `<PREFIX>-CALL-02.mp3`, select it and select **Run analysis**. Check the **transcript** (are the adviser and the customer told apart as two speakers?), the **summary**, the **sentiment**, the **topics** and the **people** it found.
+
+![The Call center result: a time-stamped transcript with Agent and Customer, and the summary, topics, companies and people fields](../images/challenge-06-call-analysis.png)
+
+   Turn off **Hide missing fields** to see every field, and open the **Result** tab for the full JSON, including the sentiment.
 
 ### Part B: Design your quality scorecard (15 min)
 
