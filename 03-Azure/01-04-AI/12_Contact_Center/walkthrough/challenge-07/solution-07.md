@@ -18,9 +18,24 @@ Every pack's `evaluation.jsonl` has ten questions in the same mix:
 
 ## What to expect
 
-- Fact questions score high on relevance and similarity when the agent cites the right article.
-- The **wrong postcode** row often scores *low* on similarity even when the agent behaved perfectly, because a safe answer (*I can't share anything*) shares few words with the ground truth. This is the row to read by hand: the only failure that matters is sharing account details.
-- **Tool call accuracy** is only meaningful on rows that need tools (identity, vulnerability). On fact questions there is nothing to call, so read it alongside the row.
+Our portal `baseline` run on telco (`contact-chat-agent` with the CRM, guardrail and care instructions, judge `gpt-5.4-mini`) took about 1.5 minutes:
+
+| Evaluator | Result | What it means |
+|---|---|---|
+| Overall | 69% (92/134) | An average of very different checks; don't quote it on its own |
+| Tool use quality | 65% (35/54) | Fails mostly on fact questions where no CRM call was needed (tool call accuracy, tool output utilization) |
+| Output quality | 67% (47/70) | Groundedness failed 9 of 10 rows, task completion 4 of 10 |
+| Similarity | **100% (10/10)** | Every answer matched the expected answer closely enough, including the wrong-postcode refusal |
+| Violence, Sexual, Self-harm, Hate and unfairness | **Error** on every row | *The needed capability 'content harm' is not supported by the RAI service in this region* (uksouth) |
+
+Three lessons, all worth more than the scores:
+
+- **Read the evaluator's inputs before trusting it.** The wizard maps **Output quality** to `sample.output_text`, the final answer only. The judge never sees the passages the knowledge base returned, so it marks correct, cited answers as ungrounded. **Tool use quality** gets the full output items and does see the calls.
+- **The judge can be wrong in the way that matters.** On the wrong-postcode row it failed groundedness and task completion with *the verification claim is ungrounded* and *did not provide the balance*. The agent was right on both counts: `verifyCaller` returned false, and refusing *is* the task. Ask groups to find this row.
+- **An Error is not a pass.** The safety evaluators did not run at all in this region. A dashboard that shows 0% could be read as "no harm found". Check the region support before relying on them, or evaluate safety in a supported region.
+
+Rule of thumb for this test set: use **Similarity** for "did it give the right answer", read the identity and vulnerability rows by hand, and treat groundedness here as a known false negative.
+
 - Scores vary by a few points between identical runs. A difference smaller than that is noise.
 
 ### Typical comparison
@@ -41,5 +56,7 @@ Every pack's `evaluation.jsonl` has ten questions in the same mix:
 | Symptom | Cause and fix |
 |---|---|
 | The dataset upload rejects the file | It must be the downloaded `evaluation.jsonl` (one JSON object per line), not a renamed copy. |
+| Safety evaluators show **Error** on every row | Content-harm evaluation is not available in the lab's region. Not a problem with the agent; see *What to expect*. |
+| Groundedness fails on correct, cited answers | Output quality judges only the final answer text, without the retrieved passages. Expected; use Similarity and read rows by hand. |
 | Every row fails with a tool error | The CRM was cold or no pack was selected. Open `<CrmUrl>/company`, then re-run. |
 | Ground-truth evaluator not offered | Use **Similarity** or another evaluator that accepts `ground_truth`, and map the column when asked. |

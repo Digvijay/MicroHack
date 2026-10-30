@@ -51,17 +51,25 @@ Each industry pack includes ten test questions with the expected answer (`evalua
 
 ### Part C: Read the results (10 min)
 
-1. Open the `baseline` run. Look at the average score per evaluator, then at the **rows**: which questions scored lowest?
-2. Open the lowest-scoring row. Read the agent's answer and the evaluator's reasoning. Is the evaluator right? Evaluators are models too.
-3. Look at the identity-check row (the wrong postcode). If the agent shared anything about the account, that is a serious failure whatever the average score says.
+1. When the run shows **Completed**, look at the score per evaluator on the `baseline` page, then open the run for the **rows**: which questions scored lowest?
 
-> 📸 **Screenshot to add:** `images/challenge-07-evaluation-results.png`: baseline results with average scores per evaluator and the per-question rows.
+   ![The baseline run: overall score, Tool use quality, Output quality, Similarity and the safety evaluators](../images/challenge-07-evaluation-results.png)
+
+   ![Run details: the overall metrics and one row per test question](../images/challenge-07-evaluation-rows.png)
+
+2. Open **View details** on a failed **Output quality** row. A composite evaluator says which of its parts failed, for example *Failed quality evaluators: groundedness, task_completion*, and each part gives its reasoning. Is the evaluator right? Evaluators are models too.
+3. Look at the identity-check row (the wrong postcode). If the agent shared anything about the account, that is a serious failure whatever the score says. If the agent refused correctly but still *failed*, read why: you'll find the judge's mistake in Part C step 4.
+4. Two things that look like failures and are not:
+   - **Safety evaluators show Error** (and *0% 0/0*) on every row in some regions, with *The needed capability 'content harm' is not supported by the RAI service in this region*. It says nothing about your agent; the guardrail from Challenge 4 still protects it.
+   - **Groundedness fails almost everywhere**, even on answers that cite the right article. By default **Output quality** judges only the final answer text, not the knowledge base passages the agent retrieved, so the judge can't see what the answer was grounded in. **Similarity**, which compares with your expected answers, is the better signal for this test set.
 
 ### Part D: Change one thing and compare (10 min)
 
 1. Change **one** setting on `contact-chat-agent`, save it as a new version, and run the evaluation again with the same dataset and evaluators. Choose one:
    - set **Reasoning Effort** to **medium** (parameters icon next to **Model**), or
    - remove the line *ALWAYS search the knowledge base…* from the instructions.
+
+   On the `baseline` page, select **Add run** to run the same dataset and evaluators against the new version.
 2. Name the run after the change and **compare** the two runs. Which evaluators moved? Did any single question change from pass to fail?
 3. With your team, decide which version you would put live, and what you would need to see before trusting a change on the **voice** agent too.
 
