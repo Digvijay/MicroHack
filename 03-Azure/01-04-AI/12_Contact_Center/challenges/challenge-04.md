@@ -22,13 +22,31 @@ Good protection has **layers**, and no single layer is trusted alone:
 
 ### Part A: Create a guardrail (15 min)
 
-1. In the Foundry portal, open **Guardrails** (under **Build**, or **Operate**, depending on the portal version) and select **Create guardrail**. Name it `contact-guardrail`.
-2. Keep the default **content filters** for hate, sexual, violence and self-harm, on both input and output.
-3. Turn on **Prompt Shields** for **jailbreak** attacks (direct attacks in the user's message) and **indirect** attacks (instructions hidden in documents or tool results).
-4. Add a **blocklist** named `contact-blocklist` with words your agent must never say to a customer, because they promise what nobody can promise. For example: `we guarantee`, `I guarantee`, `guaranteed to be fixed`, `100% certain`, `definitely approved`. Apply it to **output**. Use phrases, not single words: a good answer such as *I can't guarantee that* contains the word *guarantee*, and a single-word blocklist would block it.
-5. Assign the guardrail to `contact-voice-agent` and `contact-chat-agent` (or to the `gpt-5.4-mini` deployment, if your portal assigns guardrails to models).
+Every model deployment already has a default guardrail (`Microsoft.DefaultV2`). You'll create your own with stronger controls and a blocklist, and assign it to both agents.
 
-> 📸 **Screenshot to add:** `images/challenge-04-guardrail.png`: contact-guardrail with content filters, Prompt Shields for jailbreak and indirect attacks, and the contact-blocklist on output.
+1. In the Foundry portal, select **Build**, then **Guardrails**, then **Create**.
+2. On **Add controls**:
+   - **Jailbreak:** leave it ticked (**User input**, **Block**). This is Prompt Shields for direct attacks in the customer's message.
+   - **Indirect prompt injections:** tick it. It blocks instructions hidden in documents or tool results, for example a CRM note saying *ignore your rules*.
+   - **Content harms:** leave Hate, Sexual, Self-harm and Violence at **Medium blocking** on user input and output.
+   - **Network**, **PII** and **Task adherence:** leave them off.
+3. Tick **Blocklists**, open its dropdown and select **Create custom blocklist**. Name it `contact-blocklist` and add phrases your agent must never say, because they promise what nobody can promise: `we guarantee`, `I guarantee`, `guaranteed to be fixed`, `100% certain`, `definitely approved` (type **Exact match**). Select **Create**, then pick `contact-blocklist` in the dropdown.
+
+   Use phrases, not single words: a good answer such as *I can't guarantee that* contains the word *guarantee*, and a single-word blocklist would block it.
+
+   ![The Blocklists dropdown: built-in Profanity and Create custom blocklist](../images/challenge-04-blocklist-dropdown.png)
+
+   ![Adding the phrases to contact-blocklist as exact matches](../images/challenge-04-blocklist-terms.png)
+
+   ![Add controls: Jailbreak, Indirect prompt injections, the four content harms and contact-blocklist ticked](../images/challenge-04-guardrail-controls.png)
+
+4. Select **Next**. On **Select agents and models**, tick `contact-chat-agent`, `contact-voice-agent` and the `gpt-5.4-mini` deployment. Applying the guardrail creates a new version of each agent.
+
+   ![Select agents and models: both agents and gpt-5.4-mini ticked](../images/challenge-04-guardrail-assign.png)
+
+5. Select **Next**, review the controls, and **Create**. Foundry names the guardrail for you (for example `Guardrails645`); it now shows as applied to both agents and the model.
+
+![The new guardrail applied to contact-voice-agent, contact-chat-agent and gpt-5.4-mini, with its controls](../images/challenge-04-guardrail.png)
 
 ### Part B: Care and personal data in the instructions (10 min)
 
@@ -80,7 +98,7 @@ Transcripts and summaries are stored and read by many people. Personal data in t
 
 ## ✔️ Success criteria
 
-- [ ] `contact-guardrail` has content filters, Prompt Shields and a blocklist, and protects both agents.
+- [ ] Your guardrail has content filters, Prompt Shields for jailbreak and indirect attacks, and `contact-blocklist`, and is applied to both agents.
 - [ ] Both agents have the SAFETY AND CARE instructions.
 - [ ] You ran the five tests and can say which layer stopped each one.
 - [ ] Your agent recognised your industry's vulnerability scenario by voice and offered a person.

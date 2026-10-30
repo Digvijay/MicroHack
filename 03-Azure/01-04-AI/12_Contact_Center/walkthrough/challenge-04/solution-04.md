@@ -53,7 +53,8 @@ This is the point to discuss: off-the-shelf detection is tuned for written data.
 
 | Symptom | Cause and fix |
 |---|---|
-| No **Guardrails** menu | Depending on the portal version it sits under **Build** or **Operate**, or is called **Guardrails + controls**. Search for it. |
-| Guardrail can only be assigned to the model deployment | Assign it to `gpt-5.4-mini`. It then protects every agent that uses that deployment. If the portal does not offer the voice agent's realtime model, the voice agent relies on its instructions and the CRM; that's worth discussing. |
-| Test 1 answered something | Check the guardrail is assigned and saved, and that Prompt Shields for **jailbreak** is on for input. |
+| The guardrail has a generated name such as `Guardrails645` | Normal: the wizard names it. What matters is that it shows as applied to both agents and `gpt-5.4-mini`. |
+| `contact-blocklist` can't be selected | It is created from the **Blocklists** dropdown (**Create custom blocklist**) or the **Blocklists** tab. Create it, add the terms, then pick it in the dropdown. |
+| The agents' version number jumped | Applying a guardrail creates a new version of each selected agent. Expected. |
+| Test 1 answered something | Check that **Jailbreak** is ticked and the guardrail is applied to the agent you're testing. |
 | Good answers replaced by an error after adding the blocklist | Single words on the blocklist. See *The blocklist trap* above. |
