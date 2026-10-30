@@ -87,7 +87,12 @@ A summary is nice; a **scorecard** changes coaching. You'll build your own analy
 
 ### Part C: The supervisor's knowledge base (10 min)
 
-1. In **Build**, then **Knowledge**, create a second knowledge base `contact-insights-kb` with a new Azure Blob Storage source `contact-insights` on the **`insights`** container (same settings as Challenge 1). Wait until it is **Active**.
+1. In **Build**, then **Knowledge**, create a second knowledge base `contact-insights-kb` (chat completions model `ModelDeploymentName`, **Minimal** reasoning, **Extractive data**) with a new Azure Blob Storage source `contact-insights` on the **`insights`** container, with the same settings as Challenge 1. Wait until it is **Active**.
+
+   ![Create a knowledge source: contact-insights on the insights container, System assigned identity, Minimal, text-embedding-3-large](../images/challenge-06-insights-source.png)
+
+   ![contact-insights-kb saved with the contact-insights source Active](../images/challenge-06-insights-kb.png)
+
 2. Create an agent `supervisor-insights` with **Interaction mode** **Text**, remove **Web search**, add `contact-insights-kb` under **Knowledge**, and paste:
 
    ```text
