@@ -30,13 +30,15 @@ Every model deployment already has a default guardrail (`Microsoft.DefaultV2`). 
    - **Indirect prompt injections:** tick it. It blocks instructions hidden in documents or tool results, for example a CRM note saying *ignore your rules*.
    - **Content harms:** leave Hate, Sexual, Self-harm and Violence at **Medium blocking** on user input and output.
    - **Network**, **PII** and **Task adherence:** leave them off.
-3. Tick **Blocklists**, open its dropdown and select **Create custom blocklist**. Name it `contact-blocklist` and add phrases your agent must never say, because they promise what nobody can promise: `we guarantee`, `I guarantee`, `guaranteed to be fixed`, `100% certain`, `definitely approved` (type **Exact match**). Select **Create**, then pick `contact-blocklist` in the dropdown.
+3. Tick **Blocklists**, open its dropdown and select **Create custom blocklist**. Name it `contact-blocklist` and add phrases your agent must never say, because they promise what nobody can promise: `we guarantee`, `I guarantee`, `guaranteed to be fixed`, `100% certain`, `definitely approved` (type **Exact match**). Select **Create**, then pick `contact-blocklist` in the dropdown and set its **Intervention point** to **Output** only: the blocklist checks what the agent says, so a customer can still ask *Can you guarantee…?*
 
    Use phrases, not single words: a good answer such as *I can't guarantee that* contains the word *guarantee*, and a single-word blocklist would block it.
 
    ![The Blocklists dropdown: built-in Profanity and Create custom blocklist](../images/challenge-04-blocklist-dropdown.png)
 
-   ![Adding the phrases to contact-blocklist as exact matches](../images/challenge-04-blocklist-terms.png)
+   ![Create blocklist: contact-blocklist with the five phrases as exact matches](../images/challenge-04-blocklist-terms.png)
+
+   ![The Blocklists row: contact-blocklist selected, intervention point Output](../images/challenge-04-blocklist-output.png)
 
    ![Add controls: Jailbreak, Indirect prompt injections, the four content harms and contact-blocklist ticked](../images/challenge-04-guardrail-controls.png)
 
