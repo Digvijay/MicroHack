@@ -6,7 +6,9 @@
 
 ## Part A and B: Content Understanding
 
-`contactCallAnalyzer` is a custom analyzer for audio using the lab's `gpt-5.4-mini`. Our results on the telco calls:
+Part A uses the **Call center** prebuilt with the lab's `gpt-5.4` deployment. On `KC-CALL-02` it returns a summary (outage since Monday, third call, works from home, known ZZ4 outage, fix Thursday 18:00, automatic compensation, high-priority case), sentiment **Negative**, topics (broadband outage, compensation, escalation, callback) and the people (Priya as account holder, her husband, the agent).
+
+Part B's `contactCallScorecard` adds the scorecard fields. Our results on the telco calls:
 
 | Call | sentiment | intent | identity_checked | resolved | escalated | vulnerability_signs | empathy_score |
 |---|---|---|---|---|---|---|---|
@@ -42,8 +44,9 @@ Ask groups to connect the dots: the trend in the supervisor's week matches the s
 
 | Symptom | Cause and fix |
 |---|---|
-| Analysis fails with an internal error | The participant chose the ready-made **call center** analyzer. It needs `gpt-4.1-mini`, which this lab doesn't deploy. Build the custom analyzer as the challenge describes. |
-| *The analyzerId cannot contain '-'* | Use `contactCallAnalyzer`, not `contact-call-analyzer`. |
+| **Model deployments required** when selecting Call center | Choose the deployments in the **Configure** panel: chat completion `gpt-5.4` (`AnalysisModelDeploymentName`), mini `gpt-5.4-mini`, embedding `text-embedding-3-large`. The portal does not offer the mini model for the full-size slot. Don't select **Deploy models**. |
+| Upload area is greyed out and only a sample file shows | The models are not configured yet. Open **Configure** (gear icon) and choose them. |
+| *The analyzerId cannot contain '-'* | Use `contactCallScorecard`, not `contact-call-scorecard`. |
 | Content Understanding asks for default models every time | Set the defaults once: completion `gpt-5.4-mini`, embedding `text-embedding-3-large`. |
 | The supervisor answers about knowledge articles | It was given `contact-knowledge-kb` instead of `contact-insights-kb`. |
 | The supervisor finds only one missed check | Retrieval returned part of the digest. Ask the question on its own (*Which contacts scored 1 for verification?*); it usually finds both. |

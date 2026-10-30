@@ -25,26 +25,24 @@ Your lab has two kinds of material for this:
 
    ![Storage browser: the calls container with the three MP3 files and Download on the selected blob](../images/challenge-06-download-call.png)
 
-2. In the Foundry portal, open **Content Understanding** (search for it in the portal, or find it under **Build**). If asked to set default models, select your `ModelDeploymentName` for completions and your `EmbeddingDeploymentName` for embeddings.
-3. Create a **custom analyzer** for **audio** and name it `contactCallAnalyzer`. Analyzer names can only use letters, numbers, dots and underscores, so no hyphens. If you are asked for a model, choose your `ModelDeploymentName`.
+2. In the Foundry portal, type `content understanding` in the search bar at the top, select **Azure-AI-Content-Understanding** (a model) and **Open in playground**.
 
-   > [!NOTE]
-   > Content Understanding also has a ready-made **call center** analyzer, but it needs a `gpt-4.1-mini` deployment that this lab doesn't have. Building your own takes five minutes longer and you choose exactly what it extracts.
+   ![The Content Understanding playground with the prebuilt analyzers, including Call center](../images/challenge-06-cu-playground.png)
 
-4. Add two fields to start with:
+3. Select **Call center**. The first time, a **Configure** panel asks for model deployments. Choose:
+   - **Chat completion model:** your `AnalysisModelDeploymentName` (`gpt-5.4`). The call center analyzer needs a full-size model; the lab deploys one for it.
+   - **Chat completion model (mini):** your `ModelDeploymentName` (`gpt-5.4-mini`).
+   - **Embedding model:** your `EmbeddingDeploymentName` (`text-embedding-3-large`).
 
-   | Field | Type | Method | Description to give the model |
-   |---|---|---|---|
-   | `summary` | string | generate | Two-sentence summary of the call |
-   | `sentiment` | string | classify (`positive`, `neutral`, `negative`) | Customer sentiment at the end of the call |
+   Don't select **Deploy models** if it is offered: the deployment you need already exists.
 
-5. Upload `<PREFIX>-CALL-02.mp3` and run the analysis. Check the **transcript** (are the adviser and the customer told apart as two speakers?), the **summary** and the **sentiment**.
+4. Upload `<PREFIX>-CALL-02.mp3` and run the analysis. Check the **transcript** (are the adviser and the customer told apart as two speakers?), the **summary**, the **sentiment**, the **topics** and the **people** it found.
 
-> 📸 **Screenshot to add:** `images/challenge-06-call-analysis.png`: Content Understanding showing the transcript with two speakers, the summary and the sentiment for a recorded call.
+> 📸 **Screenshot to add:** `images/challenge-06-call-analysis.png`: the Call center analyzer result for a recorded call: transcript with two speakers, summary, sentiment and topics.
 
 ### Part B: Design your quality scorecard (15 min)
 
-A summary is nice; a **scorecard** changes coaching. Add these fields to `contactCallAnalyzer` (method **generate** for all of them), save, then run it on all three calls:
+A summary is nice; a **scorecard** changes coaching. In the Call center playground, select **Customize in CU Studio** to make your own analyzer based on it, name it `contactCallScorecard` (letters, numbers, dots and underscores only), and add these fields (method **generate**). Save, then run it on all three calls:
 
 | Field | Type | Description to give the model |
 |---|---|---|
@@ -99,7 +97,7 @@ Check one answer against the contacts file in the `insights` container. Every co
 
 ## ✔️ Success criteria
 
-- [ ] `contactCallAnalyzer` produces a transcript, summary and sentiment for your company's calls.
+- [ ] The Call center analyzer produces a transcript, summary and sentiment for your company's calls, and `contactCallScorecard` adds your scorecard fields.
 - [ ] Your scorecard fields are filled in for all three calls, and you discussed which ones you would trust.
 - [ ] `supervisor-insights` uses only `contact-insights-kb`, and finds your company's trend and the two missed identity checks.
 - [ ] Its recommended actions are tied to evidence from the contacts.

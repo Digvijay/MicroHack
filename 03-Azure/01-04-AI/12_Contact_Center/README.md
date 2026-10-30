@@ -95,7 +95,7 @@ By the end of the day you can:
 
 - A modern browser (Edge or Chrome) with **microphone access**, signed in with the lab account from your facilitator. A headset is recommended.
 - Access to the [Microsoft Foundry portal](https://ai.azure.com), the [Azure portal](https://portal.azure.com) and Azure Cloud Shell.
-- Your **lab dashboard** values: `ResourceGroupName`, `FoundryProjectEndpoint`, `ModelDeploymentName`, `EmbeddingDeploymentName`, `StorageAccountName`, `SearchServiceName` and `CrmUrl`.
+- Your **lab dashboard** values: `ResourceGroupName`, `FoundryProjectEndpoint`, `ModelDeploymentName`, `EmbeddingDeploymentName`, `AnalysisModelDeploymentName`, `StorageAccountName`, `SearchServiceName` and `CrmUrl`.
 - No local software installation. For the stretch challenge, a GitHub account for Codespaces.
 
 > [!NOTE]

@@ -122,7 +122,7 @@ if (-not $healthy) {
 
 @{ HackboxCredential = @{ name = 'ResourceGroupName'; value = $ResourceGroupName; note = 'Your lab resource group' } }
 @{ HackboxCredential = @{ name = 'EffectiveLocation'; value = $location; note = 'Azure region of your lab resources' } }
-foreach ($name in @('FoundryProjectEndpoint', 'FoundryAccountName', 'ModelDeploymentName', 'EmbeddingDeploymentName', 'StorageAccountName', 'SearchServiceName', 'SearchEndpoint', 'CrmUrl', 'ApplicationInsightsName')) {
+foreach ($name in @('FoundryProjectEndpoint', 'FoundryAccountName', 'ModelDeploymentName', 'EmbeddingDeploymentName', 'AnalysisModelDeploymentName', 'StorageAccountName', 'SearchServiceName', 'SearchEndpoint', 'CrmUrl', 'ApplicationInsightsName')) {
     if ([string]::IsNullOrWhiteSpace($outputs[$name])) {
         throw "Required template output missing: $name"
     }

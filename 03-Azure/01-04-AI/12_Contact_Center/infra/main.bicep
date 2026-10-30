@@ -13,6 +13,11 @@ param chatModelVersion string = '2026-03-17'
 param chatDeploymentName string = 'gpt-5.4-mini'
 param embeddingDeploymentName string = 'text-embedding-3-large'
 
+@description('Full-size chat model for the Content Understanding call center analyzer (Challenge 6).')
+param analysisModelName string = 'gpt-5.4'
+param analysisModelVersion string = '2026-03-05'
+param analysisDeploymentName string = 'gpt-5.4'
+
 @description('Review processing geography and model availability before approving deployment.')
 param modelSku string = 'GlobalStandard'
 
@@ -21,6 +26,9 @@ param chatCapacity int = 200
 
 @minValue(1)
 param embeddingCapacity int = 50
+
+@minValue(1)
+param analysisCapacity int = 30
 
 @description('Tags for the storage account. The default exempts it from tenant automation that disables public network access.')
 param storageTags object = { SecurityControl: 'Ignore' }
@@ -107,11 +115,23 @@ resource embedding 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01'
   }
 }
 
+// The Content Understanding call center analyzer needs a full-size chat model; the mini model is not offered for it.
+resource analysis 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
+  parent: foundry
+  name: analysisDeploymentName
+  dependsOn: [embedding]
+  sku: { name: modelSku, capacity: analysisCapacity }
+  properties: {
+    model: { format: 'OpenAI', name: analysisModelName, version: analysisModelVersion }
+    versionUpgradeOption: 'NoAutoUpgrade'
+  }
+}
+
 // Agent traces (the Traces tab) are stored in Application Insights, connected to the project.
 resource tracing 'Microsoft.CognitiveServices/accounts/projects/connections@2025-06-01' = {
   parent: project
   name: 'appinsights'
-  dependsOn: [embedding]
+  dependsOn: [analysis]
   properties: {
     category: 'AppInsights'
     target: insights.id
@@ -333,6 +353,7 @@ output FoundryAccountName string = foundry.name
 output FoundryProjectEndpoint string = 'https://${foundry.name}.services.ai.azure.com/api/projects/${project.name}'
 output ModelDeploymentName string = chat.name
 output EmbeddingDeploymentName string = embedding.name
+output AnalysisModelDeploymentName string = analysis.name
 output StorageAccountName string = storage.name
 output SearchServiceName string = search.name
 output SearchEndpoint string = 'https://${search.name}.search.windows.net'

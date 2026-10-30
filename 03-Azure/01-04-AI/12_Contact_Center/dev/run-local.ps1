@@ -83,4 +83,4 @@ if (-not (Get-Command bicep -ErrorAction SilentlyContinue)) {
 $started = Get-Date
 $outputs = & "$PSScriptRoot\..\labautomation\deploy-lab.ps1" @arguments
 Write-Host ("[OK]    Deployed in {0:N0} minutes. Lab dashboard values:" -f ((Get-Date) - $started).TotalMinutes)
-$outputs | ForEach-Object { $_.HackboxCredential } | ForEach-Object { Write-Host ("        {0,-24} {1}" -f $_.name, $_.value) }
+$outputs | ForEach-Object { $_.HackboxCredential } | ForEach-Object { Write-Host ("        {0,-28} {1}" -f $_.name, $_.value) }

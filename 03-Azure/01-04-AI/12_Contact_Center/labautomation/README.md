@@ -10,6 +10,7 @@ The Bicep template lives in [infra](../infra/main.bicep). This folder holds the 
 |---|---|
 | Microsoft Foundry account and project `contact-center` | Agents (voice and text), traces, Content Understanding and model deployments |
 | Chat model `gpt-5.4-mini` (GlobalStandard, capacity 200) | Used by the chat, agent-assist and supervisor agents, Foundry IQ and Content Understanding. The voice agent uses a managed realtime model, so nothing is deployed for it |
+| Analysis model `gpt-5.4` (GlobalStandard, capacity 30) | Used by the Content Understanding **Call center** analyzer in Challenge 6, which needs a full-size chat model |
 | Embedding model `text-embedding-3-large` (GlobalStandard, capacity 50) | Used by Foundry IQ to index the knowledge and insights containers |
 | Storage account with private containers `knowledge`, `insights`, `calls`, `evaluation`, `crm-state` and `crm-package` | The industry pack, the CRM's state and the CRM's deployment package. Shared keys and public blob access are disabled; access is by Entra ID only. Tagged `SecurityControl: Ignore` so that tenant automation in managed subscriptions does not disable public network access, which Cloud Shell and the Search indexer need |
 | Azure AI Search (Basic) with a system-assigned identity | Foundry IQ knowledge bases |
@@ -38,7 +39,7 @@ The platform sets the Az context and passes `DeploymentType`, `SubscriptionId`, 
 
 After the template, the script zips the CRM (`crm/` plus each pack's `pack.json` and `crm.json`) and publishes it to the Functions app's `/api/publish` endpoint with an ARM token, then waits until `/health` reports all five packs.
 
-Dashboard outputs (not secrets): `ResourceGroupName`, `EffectiveLocation`, `FoundryProjectEndpoint`, `FoundryAccountName`, `ModelDeploymentName`, `EmbeddingDeploymentName`, `StorageAccountName`, `SearchServiceName`, `SearchEndpoint`, `CrmUrl`, `ApplicationInsightsName`.
+Dashboard outputs (not secrets): `ResourceGroupName`, `EffectiveLocation`, `FoundryProjectEndpoint`, `FoundryAccountName`, `ModelDeploymentName`, `EmbeddingDeploymentName`, `AnalysisModelDeploymentName`, `StorageAccountName`, `SearchServiceName`, `SearchEndpoint`, `CrmUrl`, `ApplicationInsightsName`.
 
 Register these resource providers before the event: Microsoft.CognitiveServices, Microsoft.Storage, Microsoft.Search, Microsoft.Web, Microsoft.OperationalInsights and Microsoft.Insights.
 
@@ -46,7 +47,7 @@ Register these resource providers before the event: Microsoft.CognitiveServices,
 
 - **Region.** Voice agents (Voice Live), Content Understanding and Azure AI Search Basic were all available in `uksouth` in October 2026, and a full deployment there took about 11 minutes. Do one test deployment in the event subscription and region a few days before the event.
 - **Why Flex Consumption for the CRM?** Some subscriptions have no App Service plan quota at all (every tier, including Free, at 0). Flex Consumption does not use that quota.
-- **Model quota.** `gpt-5.4-mini` GlobalStandard quota is shared across the subscription. Four labs need 4 × 200K TPM. **Soft-deleted Foundry accounts keep their model quota** until they are purged, so purge test accounts after a dry run: `az cognitiveservices account purge -l <location> -n <account> -g <resource group>`.
+- **Model quota.** `gpt-5.4-mini` GlobalStandard quota is shared across the subscription. Four labs need 4 × 200K TPM of `gpt-5.4-mini` and 4 × 30K TPM of `gpt-5.4`. **Soft-deleted Foundry accounts keep their model quota** until they are purged, so purge test accounts after a dry run: `az cognitiveservices account purge -l <location> -n <account> -g <resource group>`.
 - Role assignments take a few minutes to apply. Give participants their lab at least 10 minutes after deployment.
 - `$10/day/lab` is a **planning estimate**, not a quote: Azure AI Search Basic is the largest fixed cost. Voice sessions, Content Understanding on three short calls and the agent tests are small. Codespaces used in Challenge 8 are billed by GitHub separately.
 - No Microsoft 365 licence is needed (`groups: []`).
