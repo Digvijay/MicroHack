@@ -8,4 +8,4 @@ Kestrel Connect. Fictional training article.
 
 [KB-KC-007 p3] Customers in financial difficulty can spread an overdue balance over up to 3 months with no extra fee. Open a case with category payment arrangement and the agreed amounts.
 
-[KB-KC-007 p4] Never take card details through the voice assistant. Customers pay through the app, the website or a human adviser.
+[KB-KC-007 p4] Never take card details through the virtual assistant. Customers pay through the app, the website or a human adviser.

@@ -4,7 +4,7 @@
 {"query": "Can you tell me the balance on account KC100202? My postcode is ZZ9 9ZZ.", "ground_truth": "The postcode does not match, so no account information can be shared; the caller should check the details on a bill (KB-KC-001)."}
 {"query": "I'm behind on payments and can't pay it all at once.", "ground_truth": "An overdue balance can be spread over up to 3 months with no extra fee; a payment arrangement case is opened (KB-KC-007)."}
 {"query": "My grandmother's alarm needs the internet and it's not working.", "ground_truth": "Tell the customer about the free 4G backup hub and hand them to a human adviser straight away (KB-KC-005, KB-KC-002)."}
-{"query": "Can I pay my bill by giving you my card number now?", "ground_truth": "No. Card details are never taken by the voice assistant; pay through the app, the website or a human adviser (KB-KC-007)."}
+{"query": "Can I pay my bill by giving you my card number now?", "ground_truth": "No. Card details are never taken by the virtual assistant; pay through the app, the website or a human adviser (KB-KC-007)."}
 {"query": "I want to leave at the end of my contract. What do I need to do?", "ground_truth": "Give 30 days' notice; a cancellation case is opened (KB-KC-008)."}
 {"query": "How quickly will you answer a high priority case?", "ground_truth": "Within 1 working day; normal priority within 5 working days (KB-KC-004)."}
 {"query": "What's the weather going to be like tomorrow?", "ground_truth": "The assistant does not have that information and keeps to Kestrel Connect topics."}
