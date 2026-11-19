@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zava Marketplace — Listing Gate</title>
+  <style>
+    :root { --bg:#f6f7f9; --card:#fff; --ink:#1d2330; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb;
+            --publish:#15803d; --auto_fix:#0e7490; --review:#b45309; --reject:#b91c1c; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:14px/1.45 "Segoe UI", system-ui, sans-serif; background:var(--bg); color:var(--ink); }
+    header { background:#111827; color:#fff; padding:12px 20px; display:flex; align-items:center; gap:24px; }
+    header h1 { font-size:17px; margin:0; font-weight:600; }
+    nav button { background:none; border:0; color:#cbd5e1; font:inherit; padding:6px 10px; cursor:pointer; border-radius:6px; }
+    nav button.on { background:#374151; color:#fff; }
+    main { padding:16px 20px; }
+    .grid { display:grid; grid-template-columns: 320px 1fr; gap:16px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+    .card h2 { font-size:14px; margin:0 0 10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    .list { max-height: calc(100vh - 170px); overflow:auto; }
+    .item { display:flex; gap:10px; padding:8px; border-radius:8px; cursor:pointer; align-items:center; }
+    .item:hover, .item.sel { background:#eef2ff; }
+    .item img, .thumb { width:44px; height:44px; object-fit:cover; border-radius:6px; background:#e5e7eb; flex:none; }
+    .item .t { font-weight:600; font-size:13px; }
+    .muted { color:var(--muted); }
+    .small { font-size:12px; }
+    .row { display:flex; gap:16px; align-items:flex-start; }
+    .photo { width:220px; height:220px; object-fit:cover; border-radius:8px; background:#e5e7eb; }
+    .nophoto { width:220px; height:220px; border-radius:8px; background:#e5e7eb; display:flex; align-items:center; justify-content:center; color:var(--muted); }
+    table { border-collapse:collapse; width:100%; }
+    th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); vertical-align:middle; }
+    th { font-size:12px; color:var(--muted); font-weight:600; }
+    .bar { height:8px; background:#e5e7eb; border-radius:4px; width:120px; display:inline-block; vertical-align:middle; margin-right:6px; }
+    .bar i { display:block; height:8px; border-radius:4px; background:var(--accent); }
+    .pill { display:inline-block; padding:2px 10px; border-radius:999px; color:#fff; font-weight:600; font-size:12px; text-transform:uppercase; }
+    .publish{background:var(--publish)} .auto_fix{background:var(--auto_fix)} .review{background:var(--review)} .reject{background:var(--reject)}
+    button.act { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:7px 12px; font:inherit; cursor:pointer; }
+    button.act.alt { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+    button.act:disabled { opacity:.5; cursor:default; }
+    select, input, textarea { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px; }
+    .models { display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:12px; }
+    .err { color:var(--reject); white-space:pre-wrap; }
+    .facts { font-size:12px; color:var(--muted); }
+    .hidden { display:none; }
+    pre { background:#f3f4f6; padding:8px; border-radius:6px; overflow:auto; font-size:12px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Zava Marketplace · Listing Gate</h1>
+  <nav>
+    <button data-tab="listings" class="on">Listings</button>
+    <button data-tab="queue">Reviewer queue</button>
+    <button data-tab="runs">Runs</button>
+  </nav>
+  <span id="cfg" class="small" style="margin-left:auto;color:#9ca3af"></span>
+</header>
+
+<main>
+  <!-- LISTINGS -->
+  <section id="tab-listings" class="grid">
+    <div class="card">
+      <h2>Inbox</h2>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <select id="split"><option value="dev">dev</option><option value="threshold">threshold</option><option value="test">test</option></select>
+        <label class="small" style="align-self:center"><input type="checkbox" id="starter" checked> starter set</label>
+      </div>
+      <div id="inbox" class="list"></div>
+    </div>
+    <div>
+      <div class="card" id="detail"><span class="muted">Pick a listing on the left.</span></div>
+      <div class="models" id="models"></div>
+      <div class="card" style="margin-top:12px">
+        <h2>Ask your own question</h2>
+        <div style="display:grid;grid-template-columns:150px 1fr;gap:8px;align-items:center">
+          <label>Model</label><select id="cq-model"><option value="decision">Microsoft-Decision-1.1</option><option value="luna">gpt-6-luna Decisions</option></select>
+          <label>Type</label><select id="cq-kind"><option value="yes_no">Yes / no</option><option value="choice">Choice</option><option value="score">Score (lowest level first)</option></select>
+          <label>Question</label><input id="cq-text" placeholder="e.g. Is this product suitable for outdoor use?">
+          <label>Options / levels</label><input id="cq-opts" placeholder="comma separated, e.g. indoor, outdoor, both, cannot_tell">
+        </div>
+        <div style="margin-top:8px"><button class="act" id="cq-go">Ask</button></div>
+        <div id="cq-out" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUEUE -->
+  <section id="tab-queue" class="hidden">
+    <div class="card">
+      <h2>Run the gate on a set of listings</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="b-model"><option value="decision">Microsoft-Decision-1.1</option><option value="luna">gpt-6-luna Decisions</option><option value="llm">gpt-6-luna Responses (LLM)</option></select>
+        <select id="b-split"><option value="dev">dev</option><option value="threshold">threshold</option><option value="test">test</option></select>
+        <label class="small"><input type="checkbox" id="b-starter" checked> starter set only</label>
+        <button class="act" id="b-go">Run gate</button>
+        <span id="b-status" class="small muted"></span>
+      </div>
+      <div id="b-out" class="small" style="margin-top:8px"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>Waiting for a person</h2>
+      <div id="queue"></div>
+    </div>
+  </section>
+
+  <!-- RUNS -->
+  <section id="tab-runs" class="hidden">
+    <div class="card">
+      <h2>Score a run against the answer key</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="r-file" style="min-width:320px"></select>
+        <select id="r-split"><option value="test">test</option><option value="threshold">threshold</option><option value="dev">dev</option><option value="all">all</option></select>
+        <button class="act" id="r-go">Show</button>
+      </div>
+      <div id="r-out" style="margin-top:12px"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const MODEL_LABEL = {decision: "Microsoft-Decision-1.1", luna: "gpt-6-luna · Decisions API", llm: "gpt-6-luna · Responses (LLM)"};
+let current = null;
+
+async function api(path, body) {
+  const res = await fetch(path, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+  const data = await res.json().catch(() => ({error: res.statusText}));
+  if (!res.ok && !data.error) data.error = data.detail || res.statusText;
+  return data;
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  ["listings","queue","runs"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  if (b.dataset.tab === "listings") $("tab-listings").classList.remove("hidden");
+  if (b.dataset.tab === "queue") loadQueue();
+  if (b.dataset.tab === "runs") loadRuns();
+});
+$("tab-listings").classList.add("grid");
+
+async function loadConfig() {
+  const c = await api("/api/config");
+  const set = c.thresholds_file ? "tuned thresholds" : "default thresholds";
+  $("cfg").textContent = `${c.decision_deployment} · ${c.luna_deployment} · ${set}`;
+}
+
+async function loadInbox() {
+  const rows = await api(`/api/listings?split=${$("split").value}&starter=${$("starter").checked}`);
+  $("inbox").innerHTML = rows.map(r => `
+    <div class="item" data-id="${r.listing_id}">
+      ${r.image ? `<img src="/images/${r.image}" alt="">` : `<div class="thumb"></div>`}
+      <div><div class="t">${esc(r.title)}</div><div class="small muted">${r.listing_id} · ${esc(r.seller_category)} · €${r.price_eur}</div></div>
+    </div>`).join("");
+  document.querySelectorAll(".item").forEach(el => el.onclick = () => select(el.dataset.id));
+}
+$("split").onchange = loadInbox; $("starter").onchange = loadInbox;
+
+async function select(id) {
+  document.querySelectorAll(".item").forEach(el => el.classList.toggle("sel", el.dataset.id === id));
+  current = await api(`/api/listings/${id}`);
+  const r = current;
+  const facts = r.manufacturer_facts ? Object.entries(r.manufacturer_facts).map(([k,v]) => `${k.replaceAll("_"," ")}: ${v}`).join(" · ")
+                                     : "GTIN not in the catalogue — no manufacturer facts";
+  $("detail").innerHTML = `
+    <div class="row">
+      ${r.image ? `<img class="photo" src="/images/${r.image}" alt="">` : `<div class="nophoto">no photo</div>`}
+      <div style="flex:1">
+        <div class="small muted">${r.listing_id} · ${r.split} split · seller: ${esc(r.seller)}</div>
+        <h3 style="margin:4px 0">${esc(r.title)}</h3>
+        <div style="white-space:pre-wrap">${esc(r.description)}</div>
+        <div style="margin-top:8px"><b>Seller category:</b> ${esc(r.seller_category)} · <b>Price:</b> €${r.price_eur}
+          ${r.reference_price_eur ? `<span class="muted">(reference €${r.reference_price_eur})</span>` : ""}</div>
+        <div class="facts" style="margin-top:6px"><b>Manufacturer facts:</b> ${esc(facts)}</div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="act" onclick="askAll()">Ask the three models</button>
+          <button class="act alt" onclick="showKey()">Show answer key</button>
+        </div>
+        <div id="key" class="small" style="margin-top:6px"></div>
+      </div>
+    </div>`;
+  $("models").innerHTML = "";
+  $("cq-out").innerHTML = "";
+}
+
+async function showKey() {
+  const r = await api(`/api/listings/${current.listing_id}?answer=true`);
+  const k = r.answer_key;
+  $("key").innerHTML = `Answer key: <span class="pill ${k.expected.outcome}">${k.expected.outcome}</span> ${esc(k.expected.reasons.join("; "))}
+    <span class="muted">· built as ${esc(k.construction.join(", "))}</span>`;
+}
+
+function answerRow(a) {
+  if (a.status !== "ok") return `<tr><td>${a.name}</td><td colspan="2" class="muted">${a.status}${a.detail ? " — " + esc(a.detail).slice(0,80) : ""}</td></tr>`;
+  const p = a.probability;
+  const bar = p == null ? `<span class="muted">no probability</span>` : `<span class="bar"><i style="width:${Math.round(p*100)}%"></i></span>${p.toFixed(2)}`;
+  const val = a.value == null ? (a.kind === "yes_no" ? "P(yes)" : "") : esc(a.value);
+  return `<tr><td>${a.name}</td><td>${val}</td><td>${bar}</td></tr>`;
+}
+
+async function askAll() {
+  const id = current.listing_id;
+  $("models").innerHTML = ["decision","luna","llm"].map(m => `<div class="card" id="m-${m}"><h2>${MODEL_LABEL[m]}</h2><span class="muted">asking…</span></div>`).join("");
+  await Promise.all(["decision","luna","llm"].map(async m => {
+    const r = await api("/api/ask", {listing_id: id, model: m});
+    const el = $("m-" + m);
+    if (r.error) { el.innerHTML = `<h2>${MODEL_LABEL[m]}</h2><div class="err">${esc(r.error)}</div>`; return; }
+    const c = r.call, d = r.decision;
+    el.innerHTML = `<h2>${MODEL_LABEL[m]}</h2>
+      <div><span class="pill ${d.outcome}">${d.outcome}</span> ${d.category_fix ? `→ ${d.category_fix}` : ""}</div>
+      <div class="small" style="margin:6px 0">${d.reasons.map(x => esc(x.message)).join("<br>") || "every check passed"}</div>
+      <table><tr><th>question</th><th>answer</th><th>probability</th></tr>${Object.values(c.answers).map(answerRow).join("")}</table>
+      <div class="small muted" style="margin-top:6px">${r.cached ? "from cache" : Math.round(c.latency_ms) + " ms"} · tokens in/out ${c.input_tokens}/${c.output_tokens}${c.error ? " · " + esc(c.error) : ""}</div>`;
+  }));
+}
+
+$("cq-go").onclick = async () => {
+  if (!current) return;
+  $("cq-out").innerHTML = `<span class="muted">asking…</span>`;
+  const r = await api("/api/custom", {listing_id: current.listing_id, model: $("cq-model").value, kind: $("cq-kind").value,
+                                      instructions: $("cq-text").value, options: $("cq-opts").value.split(",")});
+  if (r.error) { $("cq-out").innerHTML = `<div class="err">${esc(r.error)}</div>`; return; }
+  const a = r.call.answers.my_question;
+  const dist = a && a.distribution ? Object.entries(a.distribution).map(([k,v]) => `<tr><td>${esc(k)}</td><td><span class="bar"><i style="width:${Math.round(v*100)}%"></i></span>${v.toFixed(2)}</td></tr>`).join("") : "";
+  $("cq-out").innerHTML = a ? `<table>${answerRow(a)}</table><table style="margin-top:6px">${dist}</table><pre>${esc(JSON.stringify(a, null, 1))}</pre>` : `<div class="err">${esc(r.call.error)}</div>`;
+};
+
+$("b-go").onclick = async () => {
+  $("b-go").disabled = true;
+  const j = await api("/api/batch", {model: $("b-model").value, split: $("b-split").value, starter: $("b-starter").checked});
+  const poll = async () => {
+    const s = await api(`/api/batch/${j.job}`);
+    $("b-status").textContent = `${s.status} · ${s.done}/${s.total}`;
+    if (s.status === "running") return setTimeout(poll, 1500);
+    $("b-go").disabled = false;
+    if (s.status === "error") { $("b-out").innerHTML = `<div class="err">${esc(s.error)}</div>`; return; }
+    const g = s.report;
+    $("b-out").innerHTML = `Outcomes: ${Object.entries(s.outcomes).map(([k,v]) => `<span class="pill ${k}">${k} ${v}</span>`).join(" ")}
+      <br>Auto-published ${g.auto_published}, unsafe ${g.unsafe_published} · review rate ${g.review_rate} · outcome accuracy ${g.outcome_accuracy}`;
+    loadQueue();
+  };
+  poll();
+};
+
+async function loadQueue() {
+  const q = await api("/api/queue");
+  if (!q.queue.length) { $("queue").innerHTML = `<span class="muted">Empty. Run the gate above.</span>`; return; }
+  $("queue").innerHTML = `<table><tr><th>listing</th><th>why it is here</th><th>your decision</th></tr>` + q.queue.map(x => {
+    const done = q.reviews[x.listing_id];
+    const verdict = done ? `<span class="pill ${done.verdict}">${done.verdict}</span> <span class="small muted">answer key: ${done.answer_key}</span>`
+      : `<button class="act" onclick="verdict('${x.listing_id}','publish')">Publish</button> <button class="act alt" onclick="verdict('${x.listing_id}','reject')">Reject</button>`;
+    return `<tr><td><a href="#" onclick="openListing('${x.listing_id}');return false">${x.listing_id}</a> ${esc(x.title)}</td><td class="small">${x.reasons.map(esc).join("<br>")}</td><td>${verdict}</td></tr>`;
+  }).join("") + `</table>`;
+}
+
+async function verdict(id, v) { await api(`/api/queue/${id}`, {verdict: v}); loadQueue(); }
+
+function openListing(id) {
+  document.querySelector('nav button[data-tab="listings"]').click();
+  select(id);
+}
+
+async function loadRuns() {
+  const runs = await api("/api/runs");
+  $("r-file").innerHTML = runs.map(r => `<option value="${esc(r.path)}">${r.recorded ? "recorded · " : "yours · "}${esc(r.name)}</option>`).join("");
+}
+
+$("r-go").onclick = async () => {
+  $("r-out").innerHTML = `<span class="muted">scoring…</span>`;
+  const r = await api(`/api/runs/report?path=${encodeURIComponent($("r-file").value)}&split=${$("r-split").value}`);
+  if (r.error) { $("r-out").innerHTML = `<div class="err">${esc(r.error)}</div>`; return; }
+  const q = Object.entries(r.questions).map(([n,m]) => `<tr><td>${n}</td><td>${m.n}</td><td>${m.coverage ?? "-"}</td><td>${m.accuracy ?? "-"}</td><td>${m.calibration?.brier ?? "-"}</td><td>${m.calibration?.ece ?? "-"}</td></tr>`).join("");
+  const g = r.gate, o = r.operations;
+  const gate = g ? `<p><b>Gate:</b> outcome accuracy ${g.outcome_accuracy} · review rate ${g.review_rate} · auto-published ${g.auto_published}, unsafe ${g.unsafe_published}
+      ${g.auto_published ? `(could be up to ${g.unsafe_rate_upper_95} at 95%)` : ""} · false rejects ${g.false_rejects}</p>`
+    : `<p><b>First-draft questions:</b> per-question scores only. The gate's rules need the final questions.</p>`;
+  $("r-out").innerHTML = `<table><tr><th>question</th><th>n</th><th>coverage</th><th>accuracy</th><th>Brier</th><th>ECE</th></tr>${q}</table>
+    ${gate}
+    <p><b>Operations:</b> latency p50 ${o.latency_p50_ms} ms, p95 ${o.latency_p95_ms} ms · tokens in/out ${o.mean_input_tokens}/${o.mean_output_tokens} · est. $${o.est_cost_per_10k_listings_usd} per 10,000 listings</p>`;
+};
+
+loadConfig(); loadInbox();
+</script>
+</body>
+</html>
