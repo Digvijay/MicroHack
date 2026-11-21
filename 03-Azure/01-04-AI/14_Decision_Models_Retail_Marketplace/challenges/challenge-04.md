@@ -1,186 +1,130 @@
-# Challenge 4 — From Probabilities to a Gate
+# Challenge 4 — Where Do I Draw the Line?
 
 **[← Previous](challenge-03.md)** - [Home](../README.md) - [Next Challenge →](challenge-05.md)
 
 ## 🎯 Objective
 
-Turn probabilities into actions you can defend. You will check whether the probabilities can
-be trusted, choose **thresholds** from the **cost of each kind of mistake** on held-out data,
-measure the finished gate **once** on the test split, say honestly how safe it is, and work the
-**reviewer queue** like a member of Zava's marketplace team.
+Turn probabilities into decisions you can defend. Put a price on each kind of mistake, let the
+console find the cheapest thresholds, open the test split **once**, say honestly how safe the gate
+is — and then work the reviewer queue yourself.
 
 ## 🧭 Context
 
-A probability is not a decision. The gate's rules ([`rules.py`](../src/gate/rules.py)) compare
-every probability with two thresholds:
+A probability is not a decision. The gate compares every probability with two **thresholds**:
 
 ```
-P(yes) >= yes threshold   ->  "yes"     (the gate acts on its own)
-P(yes) <= no threshold    ->  "no"      (the gate acts on its own)
-anything in between       ->  "unsure"  (a person decides: review)
+P(yes) at or above the "yes" threshold  →  the gate acts on its own
+P(yes) at or below the "no"  threshold  →  the gate acts on its own
+anything in between                      →  unsure: a person decides (review)
 ```
 
-The defaults are `yes = 0.80`, `no = 0.20` and `choice = 0.70` for every question. They are
-guesses. Microsoft's [decision models primer](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
-says to **set thresholds from real costs**, on labelled data, *"not left at 0.5 by default"*.
-The OpenAI Agents SDK's
-[decision recipes](https://github.com/openai/openai-agents-python/tree/main/examples/decisions)
-do the same: thresholds come from a labelled set, and a refusal or an unsure answer goes to a
-person.
+The defaults are 80% and 20% for every question. They're guesses. The
+[primer](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
+and the [Microsoft-Decision-1.1 guidance](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/use-foundry-models-microsoft-decision)
+both say: set thresholds **from the cost of false positives and false negatives**, on labelled data.
 
-**Not every mistake costs the same.** [`tune.py`](../src/gate/tune.py) gives every question three
-costs, in reviewer-minutes (one manual review = 1):
+Not every mistake costs the same. Publishing a prohibited item is far worse than asking a person to
+look at a clean listing. The console prices mistakes in **reviewer-minutes** (one manual review =
+1), tries every pair of thresholds, and keeps the cheapest.
 
-| Question | Miss (problem let through) | False alarm (clean listing acted on) | Review |
-|----------|---------------------------:|-------------------------------------:|-------:|
-| `prohibited_item` | 100 | 20 (wrongful reject) | 1 |
-| `off_platform_contact` | 50 | 20 | 1 |
-| `contradicts_facts` | 20 | 20 | 1 |
-| `addressed_to_gate` | 20 | 1 | 1 |
-| `photo_matches_title` | 10 | 1 | 1 |
-| `unsupported_claim`, `photo_shows_product` | 5 | 1 | 1 |
-| `listing_quality` | 2 | 1 | 1 |
-| `category` (choice) | 5 for a wrong automatic fix | — | 1 |
-
-The tuner tries every pair of thresholds on the **threshold** split and keeps the cheapest.
-
-**Three splits, three jobs.** You design on `dev`, choose thresholds on `threshold`, and measure on
-`test` — **once**. A product never appears in two splits, so a threshold can't be tuned to one
-product's photos and then "tested" on the same product. If you look at the test results and go
-back to change a threshold, the test split has become a second threshold split and its numbers
-no longer tell you how the gate will do on new listings.
-
-**How safe is "3 unsafe out of 76"?** A small sample can't prove a low error rate. `metrics.py`
-reports a 95% **upper bound** for the unsafe rate (Clopper-Pearson). A rough rule: with **zero**
-failures in *n* listings, the true rate could still be about **3 / n**.
+**Three splits, three jobs.** You tune on the **threshold** split. The **test** split holds
+products the gate never saw while you tuned; you open it once, at the end. If you peek and go back
+to change things, the test split stops telling you how the gate will do on new listings.
 
 ## ✅ Tasks
 
-### Part A — The gate with default thresholds (10 min)
+### 🧭 Explore — in tab **4 · Thresholds**
 
-Use the recorded Microsoft-Decision-1.1 run, so everyone works with the same numbers:
+#### Part A — Move the line by hand (15 min)
+
+1. Choose **Microsoft-Decision-1.1** (`decision-all.jsonl`) — or your **decision-mine** run from
+   Challenge 2.
+2. Pick the question **addressed_to_gate**. **Predict:** if you *lower* the thresholds, what happens
+   to unsafe listings, and to the share sent to a person?
+3. Drag **yes** and **no** down step by step (try 0.10 / 0.05, then 0.03 / 0.01). Watch the four
+   numbers and the change against the defaults.
+4. Switch to **unsupported_claim**. This time drag **no** *up* (try 0.50). What happens to the
+   reviewer workload? Keep going (0.95). When does it start to hurt safety?
+5. In one sentence: what are you trading when you move a threshold?
+
+#### Part B — Price the mistakes (15 min)
+
+1. Look at the sliders: what a published prohibited item, contact detail, false spec, note to the
+   gate and invented feature cost — and what one manual review costs. Do you agree? Who at Zava
+   would have to agree?
+2. Click **Find the cheapest thresholds**. Compare **Default thresholds** with **Your cheapest
+   thresholds** on the threshold split.
+3. Open **Thresholds per question**. Where did the thresholds land? Find `category`: what's the
+   choice threshold now, and what does it do to the smart-bulb problem from Challenge 3?
+4. Change the costs — make reviews expensive (3), or a published prohibited item cost 300 — and
+   tune again. Does anything change? If not, look at the table: when the model's answers are
+   cleanly separated, many cost settings lead to the same thresholds. Costs matter most where
+   answers overlap.
+5. Click **Use these thresholds**. The header now says *your thresholds*.
+
+#### Part C — The final exam (10 min)
+
+1. Click **Open the test split**. **Predict** first: the tuned gate looked very good on the
+   threshold split. Will it look as good on products it has never seen?
+2. Look at **unsafe rate could still be up to (95%)**. If the gate published 0 unsafe listings out
+   of 300, is the unsafe rate zero? Roughly how many clean auto-published listings would you need
+   to say "under 1%"?
+3. The console counts how often you open the test split. Why does that matter?
+
+#### Part D — Work the reviewer queue (15 min)
+
+1. In **Work the reviewer queue**, choose a model and click **Fill the queue**. The gate runs the
+   starter set with your thresholds; everything it isn't sure about lands here.
+2. Click a listing ID to open it, read **why the gate wasn't sure**, and decide **Publish** or
+   **Reject**. The answer key appears after each decision.
+3. Work through at least five. Which reasons were easy? Which needed information the gate didn't
+   show you? What would make reviewers faster?
+
+#### Part E — Ship it or not? (5 min)
+
+In your **Where would I use this?** card: which model and thresholds would you launch with, what
+share of listings would a person still see, what's the unsafe rate **and its upper bound**, and what
+would you monitor in the first month?
+
+### 🛠️ Build *(optional, for developers)*
 
 ```bash
-uv run python -m gate report decision-all.jsonl --split test
+python -m gate tune decision-all.jsonl --save state/thresholds.json
+python -m gate report decision-all.jsonl --split test --thresholds state/thresholds.json
 ```
 
-Write down: outcome accuracy, review rate, how many listings were auto-published, how many of
-those were **unsafe**, and the upper bound. Which kinds of listing slipped through?
-
-### Part B — Can you trust the probabilities? (10 min)
-
-Thresholds only make sense if a probability of 0.9 means "right about 9 times in 10". Look at
-the reliability tables on the **threshold** split:
-
-```bash
-uv run python -m gate report decision-all.jsonl --split threshold --calibration
-```
-
-Each row is a bin of answers: how many (`n`), their mean probability, and how often the answer
-was actually *yes*.
-
-1. Which questions are **well calibrated** (mean P close to "actually true" in every bin with a
-   real `n`)?
-2. Look at `unsupported_claim`. About 120 answers sit between 0.1 and 0.5 and **none** of them is
-   true. What does a `no` threshold of 0.20 do to all of those listings?
-3. Look at `addressed_to_gate`. Every answer between 0.2 and 0.7 is **true**. Is a mid-range
-   probability here "unsure", or a quiet "yes"?
-4. Run the same command with `--split test` and look at `category`. On the threshold split
-   almost every category answer is above 0.9; on the test split 16 answers fall between 0.6 and
-   0.8, and none of them is right. What does that tell you about thresholds chosen on one set
-   of products and used on another?
-
-### Part C — Choose thresholds from costs (20 min)
-
-1. Run the tuner on the recorded run. It chooses thresholds on the **threshold** split, saves
-   them, and then shows the **test** split with the default and the tuned thresholds:
-   ```bash
-   uv run python -m gate tune decision-all.jsonl --save state/thresholds.json
-   ```
-2. Read the table at the top. For each question: where did the thresholds land, and how many
-   misses, false alarms and reviews do they cause on the threshold split?
-3. Compare the two test summaries at the bottom. What changed: accuracy, review rate,
-   auto-published listings, unsafe publications, upper bound?
-4. Do the same for gpt-6-luna and compare:
-   ```bash
-   uv run python -m gate tune luna-all.jsonl --save state/thresholds-luna.json
-   ```
-5. **Change the costs.** Zava's reviewers are fully booked next quarter. In
-   [`tune.py`](../src/gate/tune.py), set every `review` cost to `3` and run both tuners again
-   (without `--save`). Which model's gate changes, and how? Put the costs back afterwards.
-
-> [!IMPORTANT]
-> The tuner picks the cheapest thresholds **for the costs you give it**. The costs are a
-> business decision, not a technical one. Write down who at Zava would have to agree to them.
-
-### Part D — How sure can you be? (5 min)
-
-1. With tuned thresholds, Microsoft-Decision-1.1 auto-publishes 76 test listings and 3 of them are
-   unsafe. What is the upper bound? Would you tell Zava "the gate publishes about 4% unsafe
-   listings"?
-2. gpt-6-luna auto-publishes about 70 test listings and **none** is unsafe. Is the unsafe rate
-   zero? What is the upper bound?
-3. Roughly how many auto-published listings, with zero unsafe ones, would you need before you
-   could say "under 1%"? Where would you get them?
-
-### Part E — Work the reviewer queue (10 min)
-
-1. Restart the console (it reads `state/thresholds.json` when it starts):
-   ```bash
-   uv run uvicorn ui.app:app --reload --port 8000
-   ```
-   The header now says **tuned thresholds**.
-2. Open **Reviewer queue**, choose **Microsoft-Decision-1.1**, split `dev`, **starter set only**,
-   and click **Run gate**.
-3. Work through at least five listings. Click the listing ID to open it, read the reasons, and
-   choose **Publish** or **Reject**. The queue then shows the answer key.
-4. Which reasons were easy to decide? Which needed information the gate didn't show you? What
-   would you add to the queue to make reviewers faster?
-
-### Part F — Ship or don't ship (5 min)
-
-Write a short recommendation for Zava's marketplace lead, with numbers from the **test** split:
-
-- Which model and which thresholds you would start with.
-- What share of listings a person still has to see, and why that is acceptable (or not).
-- The unsafe rate **and** its upper bound, and the one kind of listing that worries you most.
-- What you would monitor in the first month, and what would make you roll back.
+1. Change the costs in `COSTS` in [`gate/tune.py`](../src/gate/tune.py) and tune again.
+2. Read `yes_no()` and `decide()` in [`gate/rules.py`](../src/gate/rules.py): what happens to a
+   refused, missing or failed answer? (It is never treated as *no*.)
+3. Read `upper_bound()` in [`gate/metrics.py`](../src/gate/metrics.py) (one-sided Clopper-Pearson).
 
 ## 🏁 Success criteria
 
-- [ ] You read the reliability tables and can explain where the probabilities are and aren't trustworthy.
-- [ ] You tuned thresholds on the **threshold** split and compared default and tuned thresholds on the **test** split.
-- [ ] You changed the costs and can explain how the thresholds and the gate responded.
-- [ ] You can explain why the test split may be used only once.
-- [ ] You can state the gate's unsafe rate with its upper bound.
+- [ ] You moved a threshold by hand and can say what you traded.
+- [ ] You tuned thresholds from costs on the **threshold** split and compared them with the defaults.
+- [ ] You opened the test split and can state the unsafe rate **with its upper bound**.
 - [ ] You worked at least five listings in the reviewer queue.
-- [ ] You wrote a ship / no-ship recommendation with numbers.
+- [ ] You wrote a ship / don't-ship recommendation with numbers.
 
 ## 🛠️ Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
-| `This run has no listings from the threshold split` | You passed your own starter run. Tune on a recorded run (`decision-all.jsonl`) or an `evaluate --split threshold` run of your own. |
-| The console still says **default thresholds** | Save to `src/state/thresholds.json` exactly, then restart `uvicorn`. |
-| Tuned thresholds look extreme (for example `no <= 0.01`) | That's what the costs asked for. Look at how many misses and false alarms the question has, then decide if you agree with the costs. |
-| Your tuned numbers differ from your neighbour's | Check you both tuned on the same recorded run with the same costs in `tune.py`. |
+| *The chat model returns no probabilities* | Thresholds need probabilities. Choose a decision-model run. |
+| The header still says *default thresholds* | Click **Use these thresholds** after tuning. |
+| The queue is empty | Click **Fill the queue** and wait for it to finish (about a minute). |
+| Thresholds look extreme (for example *no ≤ 0.01*) | That's what the costs asked for. Check the misses and false alarms in the table, then decide whether you agree with the costs. |
 
-## 🚀 Go further
+## 🧠 Reflection
 
-- **Tune on your own data.** Run Microsoft-Decision-1.1 on 40 threshold listings with your
-  improved wording from Challenge 2
-  (`uv run python -m gate evaluate --split threshold --limit 40`) and tune on that run. With so
-  few listings, how stable are the thresholds?
-- **One model per question.** The questions are independent. Using the two recorded runs, which
-  model would you choose for each question? Sketch how `evaluate.run` would ask each question
-  with a different model.
-- Read how Microsoft's alert-routing sample turns a decision into an action and fails safe when
-  it can't decide:
-  [`alert-investigation-eventhub`](https://github.com/Azure-Samples/azure-functions-hosted-skills-samples/tree/main/alert-investigation-eventhub).
+- Who in your organisation would own the costs? Have they ever been written down?
+- The upper bound often surprises people. How would you explain it to a manager in one sentence?
+- What would a "shadow run" look like for your use case — the model deciding, people still checking
+  everything, for a few weeks?
 
 ## 📚 Learning resources
 
-- [Decision models — Microsoft Foundry primer: "How do we make the answers trustworthy?"](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
-- [Microsoft Decision-Benchmarks — calibration (ECE, Brier)](https://github.com/microsoftconnect/Decision-Benchmarks#how-answers-are-scored)
+- [Decision models primer: "Set thresholds from real costs"](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
+- [Microsoft-Decision-1.1 — best practices for thresholds and abstention](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/use-foundry-models-microsoft-decision)
 - [OpenAI Agents SDK — decision recipes (thresholds from labelled data, refusals go to review)](https://github.com/openai/openai-agents-python/tree/main/examples/decisions)
-- [Deploy and use Microsoft-Decision-1.1 — limitations](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/use-foundry-models-microsoft-decision)
+- [Decision actions in Azure Logic Apps — designed for human oversight](https://techcommunity.microsoft.com/blog/integrationsonazureblog/announcing-decision-apis-as-actions-in-azure-logic-apps/4573643)

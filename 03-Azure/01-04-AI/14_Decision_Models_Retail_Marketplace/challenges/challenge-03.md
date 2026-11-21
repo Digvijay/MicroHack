@@ -1,156 +1,122 @@
-# Challenge 3 — Same Questions, Three Ways
+# Challenge 3 — Can I Trust the Numbers?
 
 **[← Previous](challenge-02.md)** - [Home](../README.md) - [Next Challenge →](challenge-04.md)
 
 ## 🎯 Objective
 
-Ask the same gate questions with **Microsoft-Decision-1.1**, the **Azure OpenAI Decisions API**
-(gpt-6-luna) and a **generative model** (gpt-6-luna through the Responses API). Measure them the
-way Microsoft measures decision models, and decide which one you would put in production —
-and for which questions.
+Judge three ways of answering the gate's questions — Microsoft-Decision-1.1, gpt-6-luna through the
+Decisions API, and gpt-6-luna as a chat model — on **all 1,310 labelled listings**, the way
+Microsoft judges its own decision models. Then decide which you would use, and for what.
 
 ## 🧭 Context
 
-Microsoft's primer says a decision model *"earns its place on our workload, not on a
-benchmark"*, and gives a recipe: collect labelled inputs, run the decision model **and a larger
-model**, compare **accuracy, latency and cost per decision**, and check **calibration** before you
-automate. That is this challenge.
+Microsoft's primer says a decision model *"earns its place on our workload, not on a benchmark"*:
+collect labelled inputs, run the decision model **and a larger model**, and compare **accuracy,
+latency and cost per decision** — and check **calibration** before you let it act on its own.
+That's this challenge.
 
-**How we score.** `gate/metrics.py` scores answers the same way as Microsoft's
-[Decision-Benchmarks](https://github.com/microsoftconnect/Decision-Benchmarks) runner:
+Running every listing through three models for every attendee would use the whole room's quota,
+so the hack ships **recorded runs** of all three models on every listing, made with the same code.
+Comparing them is instant and free.
 
-| Metric | Meaning |
-|--------|---------|
-| `accuracy` | Yes/no counts as yes at P(yes) ≥ 0.5; choice and score count the most probable option. For the quality score, the gate only needs *poor or not*, so that's what is scored. |
-| `coverage` | The share of questions with a usable answer. Refused, failed or missing answers are **left out of accuracy** and show up here instead. |
-| `brier` | Mean squared difference between the probability and what was true. Lower is better. |
-| `ece` | Expected calibration error, 10 bins: on average, how far the probabilities are from how often the model was right. Lower is better. |
+What the numbers mean:
 
-**Two APIs, two request formats.** Both decision APIs do the same job but take different JSON:
-
-| | Microsoft-Decision-1.1 | Azure OpenAI Decisions |
-|---|---|---|
-| Evidence field | `state` (text or JSON) | `input` (text or messages with images) |
-| Questions | an **object** keyed by name | an **array**, each with a `name` |
-| Yes/no type | `noul` | `predicate` |
-| Options | `criteria` (object for choice, list for score) | `choices` / `levels` |
-| Answers | an object keyed by name | an array in question order |
-
-There is no converter between them. Microsoft's
-[AI Gateway decision-models guide](https://github.com/Azure-Samples/ai-hub-gateway-solution-accelerator/blob/main/guides/decision-models-guide.md)
-says the same: *"Do not send an OpenAI input/array payload to SystemOne or vice versa."* The
-gate's [`clients.py`](../src/gate/clients.py) keeps one model-neutral question
-([`spec.py`](../src/gate/spec.py)) and translates it for each API.
-
-> [!NOTE]
-> `luna` and `llm` call the **same deployment**. Comparing them compares two ways of *using*
-> one model — a decision API and a generative API — not two different models.
+| In the console | Plain meaning |
+|----------------|---------------|
+| **Outcome accuracy** | How often the gate's final outcome (publish / fix / review / reject) matched the answer key |
+| **Unsafe listings published** | Listings the gate published that should have gone to a person or been rejected. The number that hurts. |
+| **Sent to a person** | The share of listings that end up in the reviewer queue — someone's workload |
+| **Typical latency (p50)** | How long one listing takes, for half of the listings |
+| **Per 10,000 listings** | Estimated cost from the tokens used (example prices — check current Azure prices) |
+| **Calibration** | When the model says 70%, is it right about 70% of the time? |
 
 ## ✅ Tasks
 
-### Part A — Run all three on the starter set (15 min)
+### 🧭 Explore — in tab **3 · Compare**
+
+#### Part A — Predict, then compare (15 min)
+
+1. **Predict:** which of the three will be most accurate? Pick one.
+2. Keep the split on **test** and the three recorded runs ticked. If you created a
+   **decision-mine** run in Challenge 2, tick it too. Click **Compare**.
+3. **See:** for each model, read the cards. Then answer:
+   - Which is the most accurate? Were you right?
+   - Which publishes the most **unsafe** listings? Click the IDs under *Which unsafe listings got
+     through?* — what kind of listing are they?
+   - What does the chat model **not** give you that the other two do?
+   - How do latency and cost compare? How many output tokens does each write per listing?
+4. Look at **Accuracy per question**. Which questions do all three get right? Which question
+   separates them?
+5. If you have a **decision-mine** run: did your improved question from Challenge 2 hold up on
+   516 listings it had never seen?
+
+#### Part B — Can you trust the probabilities? (15 min)
+
+1. In **When the model says 70%, is it right 70% of the time?**, choose Microsoft-Decision-1.1 and
+   the question `unsupported_claim`.
+2. Light bars show what the model said; dark bars show how often the answer was actually *yes*.
+   Where do they match? Where don't they?
+3. Switch to `addressed_to_gate` and `category`, and to gpt-6-luna. Which questions have
+   probabilities you'd trust enough to act on automatically?
+4. Under each band is the number of answers in it. Why should you ignore a band with only 2
+   answers?
+
+> [!TIP]
+> Look at `category` on the test split: almost every mistake is the **smart LED bulb** — is it
+> `smart_home` or `lighting`? The model isn't sure either (66–83%). When the labels themselves
+> overlap, fix the question or the policy, not the model. You'll set a threshold for it in
+> Challenge 4.
+
+#### Part C — Decide (10 min)
+
+Write a short recommendation for Zava's marketplace team in your **Where would I use this?**
+card, or in your own notes:
+
+- Which model for the gate, and why — using accuracy, **unsafe**, calibration, latency **and** cost?
+- One model for every question, or different models for different questions?
+- Where, if anywhere, does the chat model belong?
+
+### 🛠️ Build *(optional, for developers)*
 
 ```bash
-uv run python -m gate evaluate --starter --model decision luna llm
+python -m gate compare decision-all.jsonl luna-all.jsonl llm-all.jsonl --split test
+python -m gate report decision-all.jsonl --split threshold --calibration
 ```
 
-While it runs, open `clients.py` and find `ask_decision`, `ask_luna` and `ask_llm`. For each
-one, write down: which URL it calls, how it sends the photo, and where the probabilities come
-from (or why there are none).
-
-When it finishes, compare the three summaries. Then put your newest run of each model side by
-side:
-
-```bash
-uv run python -m gate compare latest
-```
-
-> [!NOTE]
-> 24 listings is enough to see how the models behave, but not enough to choose between them.
-> The next part uses all 603.
-
-### Part B — Compare on all 603 listings with the recorded runs (15 min)
-
-Running every listing through three models for every attendee would use the whole room's
-quota, so the hack ships **recorded runs** of all three models on every listing, made with the
-same code. Compare them on the **test** split:
-
-```bash
-uv run python -m gate compare decision-all.jsonl luna-all.jsonl llm-all.jsonl --split test
-```
-
-You can also open them in the console: **Runs** tab → pick a recorded run → **Show**.
-
-Answer these:
-
-1. Which questions do all three get right? Which question separates them?
-2. Which model publishes **unsafe** listings, and which kind of listing are they? Run
-   `uv run python -m gate report decision-all.jsonl --split test` to see examples.
-3. Is the generative model better, worse or the same on accuracy? What does it **not** give you
-   that the other two do?
-4. Look at `brier` and `ece` per question. Which question is worst calibrated, for which model?
-
-### Part C — Latency, rate limits and cost (15 min)
-
-From the same comparison, read `latency_p50_ms`, `latency_p95_ms`, `mean_input_tokens`,
-`mean_output_tokens` and `est_cost_per_10k_listings_usd`.
-
-1. Why do the decision models report (almost) no **output tokens**, while the generative model
-   reports hundreds? What are those output tokens?
-2. The cost estimate uses the prices in `src/.env` (`PRICE_…`). They are **assumptions**, not read
-   from Azure. Look up current prices for your region and re-run `compare`. Does the ranking
-   change?
-3. **Rate limits.** Every deployment allows a number of requests and tokens per minute (one
-   capacity unit = 1 request + 1,000 tokens per minute). Azure counts the **size of the
-   request** against the token limit, not the tokens you are billed for. A photo sent as
-   base64 counts in full: a request that is billed ~1,000 tokens can use ~4,500 tokens of
-   rate limit. Open `Pacer` in `clients.py` and see how the client estimates this and paces
-   itself, instead of firing requests and waiting on `429 Too Many Requests`.
-4. With your lab's capacities (`DECISION_CAPACITY`, `LUNA_CAPACITY` in `.env`), roughly how many
-   listings per minute can each model handle? Which one is the bottleneck?
-
-### Part D — Decide (15 min)
-
-Write a short recommendation, as if for Zava's marketplace team:
-
-- Which model would you use for the gate, and why?
-- Would you use **one model for every question**, or different models for different
-  questions? (The questions are independent — the code could ask each one with a different
-  model.)
-- Where, if anywhere, does the generative model belong?
+1. Read `question_metrics()` in [`gate/metrics.py`](../src/gate/metrics.py). It scores answers the
+   same way as Microsoft's [Decision-Benchmarks](https://github.com/microsoftconnect/Decision-Benchmarks)
+   runner: yes/no counts as *yes* at P ≥ 0.5, failed answers count against **coverage**, not
+   accuracy, and calibration uses 10 bins (ECE) and the Brier score.
+2. Run Microsoft's own benchmark runner against your `decision` deployment on a small sample
+   (`--limit 20`), following the *Microsoft-Decision-1 in Microsoft Foundry* section of the
+   Decision-Benchmarks README, and compare its numbers with the gate's.
 
 ## 🏁 Success criteria
 
-- [ ] You ran all three models on the starter set and compared them side by side.
-- [ ] You compared the recorded runs on the **test** split and can name the question that separates the models.
-- [ ] You can explain the difference between the two decision APIs' request formats.
-- [ ] You can explain why rate limits and cost depend on request size and output tokens.
-- [ ] You wrote a recommendation that uses accuracy, unsafe publications, calibration, latency **and** cost.
+- [ ] You compared the three models on the **test** split and can name the question that separates them.
+- [ ] You can explain why the most accurate model isn't automatically the best choice.
+- [ ] You read a calibration chart and can say where the probabilities are trustworthy.
+- [ ] You wrote a recommendation that uses accuracy, unsafe publications, calibration, latency and cost.
 
 ## 🛠️ Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
-| The `llm` run takes much longer | The generative model writes its answer token by token and shares the `gpt-6-luna` capacity with `luna`. That is part of the comparison. |
-| `compare` can't find `decision-all.jsonl` | Run it from `src/`. Recorded runs are in `src/data/recorded/` and are found by name. |
-| Many `queued` seconds | The client is pacing itself to your capacity. That's expected; only errors are a problem. |
-| `errors` is not 0 | Look at the run file (`runs/*.jsonl`) for the `error` field. 401/403: run `az login`. Repeated 429: lower `GATE_MAX_CONCURRENCY` to 1. |
+| No **decision-mine** run in the list | Run **Re-score with my questions** in the Question studio first, then reload this tab. |
+| The calibration chart is empty | The chat model has no probabilities. Choose a decision model. |
+| Numbers differ slightly from your neighbour's | Only runs you created yourself differ; the recorded runs are the same for everyone. |
 
-## 🚀 Go further
+## 🧠 Reflection
 
-- **Use Microsoft's benchmark runner on your own deployment.** Clone
-  [Decision-Benchmarks](https://github.com/microsoftconnect/Decision-Benchmarks), install the
-  `dbrun` runner and run a small benchmark against your `decision` deployment with
-  `--limit 20` (see the README's *Microsoft-Decision-1 in Microsoft Foundry* section; use an
-  Entra token). Compare its `ece` and `brier` with the gate's.
-- Ask the first-draft claims question (`--draft`) to all three models on the starter set. Does
-  the generative model cope better with the overlapping options?
+- If the chat model is more accurate, why would anyone use a decision model? When would you
+  choose the chat model anyway?
+- Accuracy on 516 listings — how many unsafe listings would that be at 10,000 listings a day?
+- What labelled data do you already have in your organisation that you could test a decision
+  model on next week?
 
 ## 📚 Learning resources
 
-- [Decision models — Microsoft Foundry primer: "How do we test one on our own data?"](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
+- [Decision models primer: "How do we test one on our own data?"](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
 - [Microsoft Decision-Benchmarks — how answers are scored](https://github.com/microsoftconnect/Decision-Benchmarks#how-answers-are-scored)
-- [Use the Azure OpenAI Decisions API](https://learn.microsoft.com/azure/foundry/openai/how-to/decisions)
-- [Deploy and use Microsoft-Decision-1.1](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/use-foundry-models-microsoft-decision)
-- [AI Gateway: decision and SystemOne models](https://github.com/Azure-Samples/ai-hub-gateway-solution-accelerator/blob/main/guides/decision-models-guide.md)
-- [Azure OpenAI quotas and limits](https://learn.microsoft.com/azure/foundry/foundry-models/quotas-limits)
+- [Microsoft-Decision-1.1 announcement (benchmarks, pricing)](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/introducing-microsoft-decision-1-1-build-faster-more-efficient-ai-applications-w/4573877)
+- [Artificial Analysis Decision Index](https://artificialanalysis.ai/evaluations/artificial-analysis-decision-index)

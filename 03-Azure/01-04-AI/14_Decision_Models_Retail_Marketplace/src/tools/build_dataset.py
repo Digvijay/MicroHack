@@ -10,6 +10,10 @@ Why a generator instead of hand-written or LLM-written data?
 * **No leakage.** A product (and its photo) belongs to exactly one split: `dev` (build your
   questions), `threshold` (choose thresholds) or `test` (held-out, measured once).
 * **Reproducible.** A fixed random seed gives the same file every time.
+* **Realistic mix.** On a real marketplace most listings are fine. About 80% of listings here
+  should be published; the rest carry one or two defects. Every defect type appears in every
+  split, and the rare but critical ones (prohibited items, quiet notes to the reviewer) are kept
+  in full so there is enough to learn from.
 
 The `construction` field records how each listing was made. It is for humans and the grader
 only — the gate never sends it (or `labels`/`expected`) to a model.
@@ -26,6 +30,20 @@ DATA = Path(__file__).resolve().parent.parent / "data"
 SEED = 1402
 
 OUTCOME_RANK = {"publish": 0, "auto_fix": 1, "review": 2, "reject": 3}
+
+CLEAN_SHARE = 0.80  # share of listings whose expected outcome is "publish"
+# Share of each defect type to keep. Types not listed are kept at DEFECT_KEEP.
+DEFECT_KEEP = 0.5
+KEEP_ALL = ("prohibited", "hard:subtle_aimed_at_gate", "hard:obfuscated_contact")
+
+CONDITIONS = [
+    "New and unused.", "Brand new, sealed box.", "Unopened, unwanted gift.", "New in original packaging.",
+    "Opened to check contents, never used.", "Boxed and unused.",
+]
+SHIPPING = [
+    "Ships within 2 working days.", "Dispatched from our EU warehouse.", "Collection or tracked delivery.",
+    "Free delivery in 3-5 days.", "Posted the next working day.", "",
+]
 
 SELLERS = [
     "Northfield Home & Garden", "TechNest Outlet", "Brushworks Supplies", "Kitchen Corner EU",
@@ -110,27 +128,31 @@ def describe(product: dict, quality: int, rng: random.Random) -> str:
     """Write a description whose quality level matches the policy rubric (section 7)."""
     name, brand, facts = product["name"], product["brand"], product["facts"]
     items = list(facts.items())
+    shuffled = dict(rng.sample(items, len(items)))
+    cond, ship = rng.choice(CONDITIONS), rng.choice(SHIPPING)
     if quality == 4:
-        bullets = "\n".join(f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in items)
+        bullets = "\n".join(f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in shuffled.items())
         use = rng.choice([
-            "A practical choice for jobs around the home.",
-            "Suitable for everyday use.",
-            "A straightforward, well-specified product.",
+            "A practical choice for jobs around the home.", "Suitable for everyday use.",
+            "A straightforward, well-specified product.", "Bought for a project that never happened.",
+            "Great value compared with the shops.", "Full manufacturer specification below.",
         ])
-        return (f"The {brand} {name}. {use}\n\n"
-                f"Specifications:\n{bullets}\n\nNew and unused. Ships from our EU warehouse within 2 working days.")
+        return f"The {brand} {name}. {use}\n\nSpecifications:\n{bullets}\n\n{cond} {ship}".strip()
     if quality == 3:
         return rng.choice([
-            f"{brand} {name}. Key facts: {facts_phrase(facts)}. New and unused.",
-            f"Brand new {name} from {brand} - {facts_phrase(facts)}. Sealed box, dispatched from the EU.",
-            f"Selling the {brand} {name}: {facts_phrase(facts)}. Unopened.",
+            f"{brand} {name}. Key facts: {facts_phrase(shuffled)}. {cond}",
+            f"Brand new {name} from {brand} - {facts_phrase(shuffled)}. {cond} {ship}".strip(),
+            f"Selling the {brand} {name}: {facts_phrase(shuffled)}. {cond}",
+            f"{brand} {name} ({facts_phrase(shuffled)}). {cond} {ship}".strip(),
+            f"{name}, made by {brand}. Specs: {facts_phrase(shuffled)}. {cond}",
         ])
     if quality == 2:
-        k1, v1 = items[0]
+        k1, v1 = rng.choice(items)
         return rng.choice([
             f"{name} by {brand}. {k1.replace('_', ' ').capitalize()} {v1}. New.",
             f"{brand} {name}, {k1.replace('_', ' ')} {v1}. Unused.",
             f"New {name}. {k1.replace('_', ' ').capitalize()}: {v1}.",
+            f"{brand} {name}. {k1.replace('_', ' ').capitalize()} {v1}. {ship}".strip(),
         ])
     # quality 1: very short, shouty
     return f"{name.split(',')[0].upper()} {rng.choice(POOR_SUFFIXES)}"
@@ -233,6 +255,7 @@ def build() -> list[dict]:
     by_split = {s: [p for p in products if p["split"] == s] for s in ("dev", "threshold", "test")}
     uninformative = [u["image"] for u in cat["uninformative_images"]]
     rows: list[dict] = []
+    clean_factories: list = []
 
     def add(product, split, listing, labels, construction):
         ref = product["reference_price_eur"] if product and listing["gtin"] else None
@@ -258,7 +281,8 @@ def build() -> list[dict]:
             image = f"{p['product_id']}.jpg"
             wrong_cat = rng.choice([c for c in categories if c != p["category"]])
 
-            def listing(quality=3, extra="", seller_category=None, price=None, img=image, title=None):
+            def listing(quality=3, extra="", seller_category=None, price=None, img=image, title=None,
+                        p=p, ref=ref):
                 desc = describe(p, quality, rng)
                 if extra:
                     desc = f"{desc} {extra}"
@@ -268,10 +292,11 @@ def build() -> list[dict]:
                     description=desc, price=price if price is not None else ref * rng.uniform(0.85, 1.1),
                     image=img, gtin=p["gtin"])
 
-            # Clean listings at four quality levels -> publish.
+            # Clean listings at three quality levels -> publish. More are added after sampling.
             for q in (4, 3, 2, 2):
                 labels = base_labels(p) | {"listing_quality": q}
                 add(p, split, listing(quality=q), labels, ["clean"])
+            clean_factories.append((p, split, listing))
 
             # Wrong seller category -> auto_fix.
             add(p, split, listing(seller_category=wrong_cat), base_labels(p), ["wrong_category"])
@@ -398,10 +423,43 @@ def build() -> list[dict]:
                       "photo_shows_product": None, "photo_matches_title": None, "listing_quality": None}
             add(None, item["split"], lst, labels, [f"prohibited:{item['reason']}"])
 
+    rows = rebalance(rows, clean_factories, rng, add)
     rows.sort(key=lambda r: ({"dev": 0, "threshold": 1, "test": 2}[r["split"]]))
     for i, r in enumerate(rows, start=1):
         r["listing_id"] = f"ZM-{i:04d}"
     mark_starter_set(rows, rng)
+    return rows
+
+
+def defect_type(row: dict) -> str:
+    parts = row["construction"][0].split(":")
+    return ":".join(parts[:2]) if parts[0] == "hard" else parts[0]
+
+
+def rebalance(rows: list[dict], clean_factories: list, rng: random.Random, add) -> list[dict]:
+    """Keep a share of each defect type per split, then add clean listings until about
+    CLEAN_SHARE of all listings should be published."""
+    kept: list[dict] = []
+    groups: dict[tuple[str, str], list[dict]] = {}
+    for r in rows:
+        if r["expected"]["outcome"] == "publish":
+            kept.append(r)
+        else:
+            groups.setdefault((r["split"], defect_type(r)), []).append(r)
+    for (_, kind), group in sorted(groups.items()):
+        share = 1.0 if kind in KEEP_ALL else DEFECT_KEEP
+        rng.shuffle(group)
+        kept += group[: max(1, round(len(group) * share))]
+
+    defects = sum(r["expected"]["outcome"] != "publish" for r in kept)
+    needed = round(defects * CLEAN_SHARE / (1 - CLEAN_SHARE)) - (len(kept) - defects)
+    rows[:] = kept  # `add` appends to the same list
+    for i in range(max(0, needed)):
+        p, split, listing = clean_factories[i % len(clean_factories)]
+        q = rng.choice((4, 3, 3, 3, 2))
+        title = rng.choice([None, None, f"{p['name']} - {p['brand']}", f"{p['brand']} {p['name']} (new)",
+                            f"{p['brand']} {p['name'].split(',')[0]}"])
+        add(p, split, listing(quality=q, title=title), base_labels(p) | {"listing_quality": q}, ["clean"])
     return rows
 
 
@@ -421,7 +479,15 @@ def mark_starter_set(rows: list[dict], rng: random.Random) -> None:
     remaining = [r for r in dev if r not in chosen]
     rng.shuffle(remaining)
     chosen += remaining[: max(0, 24 - len(chosen))]
-    ids = {r["listing_id"] for r in chosen[:24]}
+    chosen = chosen[:24]
+    # Every gate outcome must appear at least once.
+    slot = len(chosen) - 1
+    for outcome in OUTCOME_RANK:
+        if not any(r["expected"]["outcome"] == outcome for r in chosen):
+            extra = next(r for r in dev if r["expected"]["outcome"] == outcome and r not in chosen)
+            chosen[slot] = extra
+            slot -= 1
+    ids = {r["listing_id"] for r in chosen}
     for r in rows:
         r["starter"] = r["listing_id"] in ids
 

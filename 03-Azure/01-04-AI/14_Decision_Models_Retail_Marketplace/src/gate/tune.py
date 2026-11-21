@@ -39,10 +39,10 @@ COSTS: dict[str, dict] = {
 GRID = [i / 100 for i in range(1, 100)]
 
 
-def _problem_pairs(name: str, rows: list[dict], calls: list[GateCall]) -> list[tuple[float, bool]]:
+def _problem_pairs(name: str, rows: list[dict], calls: list[GateCall], costs: dict | None = None) -> list[tuple[float, bool]]:
     """(P(problem), is_problem) for every listing where the question has a label and a probability."""
     q = next(q for q in QUESTIONS if q.name == name)
-    problem = COSTS[name]["problem"]
+    problem = (costs or COSTS)[name]["problem"]
     pairs = []
     for row, call in zip(rows, calls):
         y = row["labels"].get(name)
@@ -76,7 +76,7 @@ def _count(pairs, lo, hi):
     return miss, fa, review
 
 
-def tune_yes_no(name: str, rows: list[dict], calls: list[GateCall]) -> dict | None:
+def tune_yes_no(name: str, rows: list[dict], calls: list[GateCall], costs: dict | None = None) -> dict | None:
     """Cheapest (lo, hi) on P(problem): flag at or above hi, clear at or below lo, review between."""
     pairs = _problem_pairs(name, rows, calls)
     if not pairs:
@@ -103,7 +103,7 @@ def tune_yes_no(name: str, rows: list[dict], calls: list[GateCall]) -> dict | No
             "cost": cost, "n": len(pairs)}
 
 
-def tune_choice(name: str, rows: list[dict], calls: list[GateCall]) -> dict | None:
+def tune_choice(name: str, rows: list[dict], calls: list[GateCall], costs: dict | None = None) -> dict | None:
     pairs = []
     for row, call in zip(rows, calls):
         y = row["labels"].get(name)
@@ -126,7 +126,7 @@ def tune_choice(name: str, rows: list[dict], calls: list[GateCall]) -> dict | No
     return {"choice": th, "wrong": wrong, "review": review, "cost": cost, "n": len(pairs)}
 
 
-def tune(rows: list[dict], calls: list[GateCall]) -> tuple[Thresholds, dict]:
+def tune(rows: list[dict], calls: list[GateCall], costs: dict | None = None) -> tuple[Thresholds, dict]:
     """Per-question thresholds that minimise the costs above. Questions the run has no
     probabilities for (the generative baseline) keep the defaults."""
     t = Thresholds()

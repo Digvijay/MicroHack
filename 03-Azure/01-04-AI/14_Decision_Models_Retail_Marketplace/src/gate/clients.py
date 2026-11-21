@@ -177,9 +177,7 @@ def _http() -> httpx.Client:
     return httpx.Client(timeout=httpx.Timeout(60.0, connect=10.0))
 
 
-def ask_decision(ev: Evidence, questions: list[Question]) -> GateCall:
-    endpoint = config.require("DECISION_ENDPOINT", config.DECISION_ENDPOINT)
-    ask, skipped = not_asked(questions, ev)
+def systemone_body(ev: Evidence, ask: list[Question]) -> dict:
     state = ev.state
     body: dict = {"model": config.DECISION_DEPLOYMENT,
                   "questions": {q.name: systemone_question(q) for q in ask}}
@@ -188,6 +186,13 @@ def ask_decision(ev: Evidence, questions: list[Question]) -> GateCall:
         body["assets"] = {"photo.jpg": {"type": "image", "format": "jpeg", "data_base64": ev.photo_b64}}
         state = {**state, "photo": "image:photo.jpg"} if isinstance(state, dict) else f"{state}\nimage:photo.jpg"
     body["state"] = state
+    return body
+
+
+def ask_decision(ev: Evidence, questions: list[Question]) -> GateCall:
+    endpoint = config.require("DECISION_ENDPOINT", config.DECISION_ENDPOINT)
+    ask, skipped = not_asked(questions, ev)
+    body = systemone_body(ev, ask)
 
     def attempt() -> GateCall:
         try:
@@ -380,3 +385,23 @@ def ask(mode: str, ev: Evidence, questions: list[Question]) -> GateCall:
     if mode not in ASKERS:
         raise ValueError(f"Unknown model mode {mode!r}. Use one of: {', '.join(MODES)}")
     return ASKERS[mode](ev, questions)
+
+
+def request_preview(mode: str, ev: Evidence, questions: list[Question]) -> dict:
+    """The exact request each mode sends, for the console's "Show me the code" panel.
+    The photo's base64 is shortened so the JSON stays readable."""
+    ask_qs, _ = not_asked(questions, ev)
+    short = f"{ev.photo_b64[:40]}... ({len(ev.photo_b64):,} characters)" if ev.photo_b64 else None
+    shown = Evidence(state=ev.state, photo_b64=short)
+    if mode == "decision":
+        return {"method": "POST", "url": f"{config.DECISION_ENDPOINT}/providers/microsoft/v1/systemone",
+                "headers": {"Authorization": "Bearer <Entra ID token>"}, "body": systemone_body(shown, ask_qs)}
+    url = f"{config.OPENAI_ENDPOINT}/openai/v1/" + ("decisions" if mode == "luna" else "responses")
+    if mode == "luna":
+        body = {"model": config.LUNA_DEPLOYMENT, "input": openai_input(shown),
+                "questions": [decisions_question(q) for q in ask_qs]}
+    else:
+        body = {"model": config.LUNA_DEPLOYMENT, "instructions": llm_instructions(ask_qs), "input": openai_input(shown),
+                "text": {"format": {"type": "json_schema", "name": "gate_answers",
+                                    "schema": llm_schema(ask_qs), "strict": True}}}
+    return {"method": "POST", "url": url, "headers": {"Authorization": "Bearer <Entra ID token>"}, "body": body}

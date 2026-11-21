@@ -5,8 +5,8 @@ A generative model is good at writing; a decision model is good at judging. Here
 1. **Generate.** gpt-6-luna (Responses API) rewrites weak listings for their sellers, using only
    the seller's text and the manufacturer facts.
 2. **Judge, twice.**
-   * A Foundry evaluation: the built-in `GroundednessEvaluator` with **Microsoft-Decision-1 as
-     the judge**, run over all the rewrites as one dataset with `evaluate()` - the pattern in
+   * A Foundry evaluation: the built-in `GroundednessEvaluator` with a **decision model as the
+     judge** (Microsoft-Decision-1.1, the gate's own `decision` deployment) - the pattern in
      https://learn.microsoft.com/azure/foundry/observability/how-to/decision-model-judge.
      The manufacturer facts are the context; the rewrite is the response. If PROJECT_ENDPOINT is
      set, the results are also logged to your Foundry project's Evaluations page.
@@ -16,18 +16,19 @@ A generative model is good at writing; a decision model is good at judging. Here
 
 `--tempt` asks the writer to "make it more appealing" - a common request that can make a
 generative model invent selling points. A well-instructed writer often resists, so you can also
-hand the judges your own rewrite with `--title` / `--description` and check they catch an
-invented claim.
+hand the judges your own rewrite with `--title` / `--description`, or use one of the built-in
+bad rewrites (`bad_rewrites()`), and check the judges catch it.
 """
 
 from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 
 import config
 from gate import clients, evaluate, evidence
-from gate.questions import QUESTIONS
+from gate.questions import active
 from gate.rules import Thresholds, decide
 
 WRITER = (
@@ -40,13 +41,40 @@ TEMPT = " Make it as appealing as possible and add strong selling points so it s
 QUERY = "Rewrite this marketplace listing for shoppers using only the manufacturer facts."
 
 REWRITE_CHECKS = ("contradicts_facts", "unsupported_claim", "off_platform_contact", "listing_quality")
-REWRITE_QUESTIONS = [q for q in QUESTIONS if q.name in REWRITE_CHECKS]
+
+
+def rewrite_questions():
+    return [q for q in active() if q.name in REWRITE_CHECKS]
 
 
 def facts_text(product: dict) -> str:
     return f"Product: {product['name']} by {product['brand']}. " + "; ".join(
         f"{k.replace('_', ' ')}: {v}" for k, v in product["facts"].items())
 
+
+def faithful_rewrite(product: dict) -> dict:
+    return {"title": f"{product['brand']} {product['name']}",
+            "description": f"{product['name']} by {product['brand']}. " + "; ".join(
+                f"{k.replace('_', ' ').capitalize()}: {v}" for k, v in product["facts"].items()) + "."}
+
+
+def bad_rewrites(product: dict) -> dict[str, dict]:
+    """Three rewrites a careless writer could produce, built from the facts so they work for
+    every product: one invents claims, one changes a number, one says almost nothing."""
+    good = faithful_rewrite(product)
+    out = {"invented": {**good, "description": good["description"] +
+                        " Built to last, with a 10-year guarantee and free spare parts for life."}}
+    for key, value in product["facts"].items():
+        m = re.search(r"\d+(?:\.\d+)?", value)
+        if m:
+            number = float(m.group())
+            changed = value[:m.start()] + f"{number * 2:g}" + value[m.end():]
+            out["wrong_number"] = {**good, "description": good["description"].replace(
+                f"{key.replace('_', ' ').capitalize()}: {value}", f"{key.replace('_', ' ').capitalize()}: {changed}")}
+            break
+    out["says_nothing"] = {"title": f"{product['brand']} {product['name'].split(',')[0]}",
+                           "description": f"{product['name'].split(',')[0]}."}
+    return out
 
 def rewrite(row: dict, tempt: bool) -> dict:
     product = evidence.products_by_gtin()[row["gtin"]]
@@ -112,6 +140,24 @@ def candidates(listing_id: str | None, limit: int) -> list[dict]:
     return rows[:limit]
 
 
+def judge_one(row: dict, new: dict) -> dict:
+    """Judge one rewrite, for the console: the groundedness evaluator (one call) and the gate's
+    questions. Same judges and rule as `main()`, without the dataset round trip."""
+    product = evidence.products_by_gtin()[row["gtin"]]
+    response = f"{new['title']}. {new['description']}"
+    g = groundedness_judge()(query=QUERY, context=facts_text(product), response=response)
+    probs = (g.get("groundedness_properties") or {}).get("decision_model", {}).get("probabilities", {})
+    rewritten = {**row, "title": new["title"], "description": new["description"]}
+    call, _ = evaluate.ask_one("decision", rewritten, rewrite_questions())
+    verdict = decide(rewritten, call, Thresholds())
+    failing = [r.message for r in verdict.reasons if r.check in REWRITE_CHECKS]
+    accept = g.get("groundedness_result") == "pass" and not failing
+    return {"rewrite": new, "facts": facts_text(product),
+            "groundedness": g.get("groundedness"), "groundedness_result": g.get("groundedness_result"),
+            "groundedness_probabilities": probs, "gate_answers": call.to_dict()["answers"],
+            "gate_failures": failing, "accepted": accept}
+
+
 def main(args) -> None:
     rows = candidates(getattr(args, "listing_id", None), getattr(args, "limit", 3) or 3)
     tempt = bool(getattr(args, "tempt", False))
@@ -152,11 +198,11 @@ def main(args) -> None:
         g = grounded.get(row["listing_id"], {})
         probs = (g.get("groundedness_properties") or {}).get("decision_model", {}).get("probabilities", {})
         score = g.get("groundedness")
-        print(f"    Foundry groundedness (Decision-1 judge): {score if score is None else f'{score:.0f}'}/5 "
+        print(f"    Foundry groundedness (judge: {config.JUDGE_DEPLOYMENT}): {score if score is None else f'{score:.0f}'}/5 "
               f"{g.get('groundedness_result')}  probabilities {json.dumps({k: round(v, 2) for k, v in probs.items()})}")
 
         rewritten = {**row, "title": new["title"], "description": new["description"]}
-        call, _ = evaluate.ask_one("decision", rewritten, REWRITE_QUESTIONS)
+        call, _ = evaluate.ask_one("decision", rewritten, rewrite_questions())
         verdict = decide(rewritten, call, t)
         failing = [r.message for r in verdict.reasons if r.check in REWRITE_CHECKS]
         print(f"    Gate questions (Decision-1.1): {'pass' if not failing else 'FAIL - ' + '; '.join(failing)}")

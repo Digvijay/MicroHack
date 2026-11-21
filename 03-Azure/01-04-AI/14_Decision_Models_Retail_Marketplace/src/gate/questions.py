@@ -14,11 +14,16 @@ Design rules (from the decision-model vendors' guidance, and Challenge 2):
    category equal the predicted category?" are done in `rules.py`, not by a model.
 
 The `name` of each question is a contract with `rules.py`. If you rename one, update the
-rules too.
+rules too. Wording you edit in the console's Question studio overrides the text here (see
+`active()` at the bottom).
 """
 
 from __future__ import annotations
 
+import json
+from dataclasses import replace
+
+import config
 from gate.spec import Choice, Option, Question, Score, YesNo
 
 CATEGORIES = (
@@ -109,6 +114,50 @@ QUESTIONS: list[Question] = [
 
 def by_name(questions: list[Question] | None = None) -> dict[str, Question]:
     return {q.name: q for q in (questions or QUESTIONS)}
+
+
+# --------------------------------------------------------------------------------------------
+# Your edits from the console (Challenge 2). The wording you save in the Question studio is
+# kept in state/questions.json and used everywhere: the console, `python -m gate` and the
+# rules. Only the instructions can change; names, types and options stay the contract with
+# rules.py. Delete the file (or press Reset) to go back to the wording in this module.
+# --------------------------------------------------------------------------------------------
+
+OVERRIDES = config.STATE / "questions.json"
+
+
+def overrides() -> dict[str, str]:
+    if not OVERRIDES.exists():
+        return {}
+    data = json.loads(OVERRIDES.read_text(encoding="utf-8"))
+    return {k: v for k, v in data.items() if k in by_name() and v.strip()}
+
+
+def active() -> list[Question]:
+    """The questions the gate asks right now: this module's wording plus your saved edits."""
+    o = overrides()
+    return [replace(q, instructions=o[q.name]) if q.name in o else q for q in QUESTIONS]
+
+
+def save_override(name: str, instructions: str) -> None:
+    if name not in by_name():
+        raise KeyError(name)
+    data = overrides()
+    if instructions.strip() == by_name()[name].instructions:
+        data.pop(name, None)
+    else:
+        data[name] = instructions.strip()
+    OVERRIDES.parent.mkdir(parents=True, exist_ok=True)
+    OVERRIDES.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def reset(name: str | None = None) -> None:
+    if name is None:
+        OVERRIDES.unlink(missing_ok=True)
+        return
+    data = overrides()
+    data.pop(name, None)
+    OVERRIDES.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 # Challenge 2: the first version of the claims check — one choice question with overlapping

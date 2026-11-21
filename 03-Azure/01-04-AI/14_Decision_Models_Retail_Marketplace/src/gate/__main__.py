@@ -20,7 +20,7 @@ from pathlib import Path
 
 import config
 from gate import clients, evaluate, evidence, metrics, perturb, tune
-from gate.questions import QUESTIONS
+from gate.questions import QUESTIONS, active
 from gate.rules import Thresholds, decide
 from gate.spec import YesNo
 
@@ -75,7 +75,7 @@ def cmd_ask(args) -> None:
     print(f"{row['listing_id']}  [{row['split']}]  seller category: {row['seller_category']}  price: {row['price_eur']} EUR  photo: {row.get('image') or 'none'}")
     print(f"  {row['title']}\n  {row['description'][:300]}\n")
     for mode in args.model:
-        call, cached = evaluate.ask_one(mode, row, QUESTIONS, layout=args.layout, use_cache=not args.no_cache)
+        call, cached = evaluate.ask_one(mode, row, active(), layout=args.layout, use_cache=not args.no_cache)
         took = "cache" if cached else f"{call.latency_ms:.0f} ms" if call.latency_ms else "-"
         print(f"== {mode}  ({took}, tokens in/out {call.input_tokens}/{call.output_tokens}){'  ERROR ' + call.error if call.error else ''}")
         for q in QUESTIONS:

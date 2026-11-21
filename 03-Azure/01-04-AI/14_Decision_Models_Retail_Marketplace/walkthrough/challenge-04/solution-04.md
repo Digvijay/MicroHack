@@ -1,99 +1,111 @@
-# Solution 4 — From Probabilities to a Gate
+# Solution 4 — Where Do I Draw the Line?
 
 **[← Back to Challenge 4](../../challenges/challenge-04.md)** · [Home](../../README.md)
 
-All numbers are from the recorded runs, so yours should match exactly.
+All numbers come from the recorded runs, so yours match as long as you use the same run and
+settings. "Threshold split" = 524 listings; "test split" = 516 listings of products never seen
+while tuning.
 
-## Part A — Default thresholds (Microsoft-Decision-1.1, test split)
+## Part A — Moving the line by hand (Microsoft-Decision-1.1, threshold split)
 
-| Outcome accuracy | Review rate | Auto-published | Unsafe | 95 % upper bound |
-|---:|---:|---:|---:|---:|
-| 0.845 | 0.571 | 56 | **6** | **20 %** |
+Starting point, default 0.20 / 0.80 for every question: **88.9%** outcome accuracy, **20.4%** sent
+to a person, **379** published automatically, **5** of them unsafe.
 
-Five of the six are `hard:subtle_aimed_at_gate` (quiet "verified by staff" notes); one (ZM-0537) is a
-contradicted piece count.
+| Question | Your thresholds (no / yes) | Accuracy | Sent to a person | Published | Unsafe |
+|----------|----------------------------|---------:|-----------------:|----------:|-------:|
+| `addressed_to_gate` | 0.20 / 0.50 | 88.9% | 20.4% | 379 | 5 |
+| `addressed_to_gate` | 0.05 / 0.10 | 89.3% | 20.8% | 377 | 3 |
+| `addressed_to_gate` | **0.01 / 0.03** | 89.9% | 21.4% | 374 | **0** |
+| `unsupported_claim` | **0.50 / 0.80** | **93.3%** | **16.0%** | 402 | 5 |
+| `unsupported_claim` | 0.95 / 0.99 | 93.1% | 15.8% | 403 | **6** |
 
-## Part B — Reliability (threshold split)
+What you're trading:
 
-1. **Well calibrated:** `prohibited_item`, `off_platform_contact`, `contradicts_facts`,
-   `photo_shows_product` and `listing_quality` — nearly all answers sit near 0 or 1 and match.
-2. **`unsupported_claim`:** about 120 answers between 0.1 and 0.5, none true. The model is
-   *under-confident about "no"*. With `no <= 0.20`, every answer between 0.2 and 0.8 goes to review —
-   dozens of clean listings a person must read for nothing. A higher `no` threshold is safe here.
-3. **`addressed_to_gate`:** every mid-range answer (0.2–0.7) is true. Here a middle probability is a
-   quiet **yes**, and the default `no = 0.20` only catches it by luck. The tuner puts the `yes`
-   threshold very low for this question.
-4. **`category` on test:** 16 answers between 0.6 and 0.8, none right. The threshold split had almost
-   none of these, so a threshold tuned there can't "see" them. New products behave differently —
-   that's why the test split uses different products, and why you monitor after launch.
+- **`addressed_to_gate`:** on the threshold split, Microsoft-Decision-1.1 gives the twelve quiet
+  *"verified by staff"* notes anything from 0.01 to 0.72 — five of them below 0.10. Treating even a
+  small probability as *yes* catches them all, at the price of a few more reviews. A low threshold
+  is right when a miss is expensive.
+- **`unsupported_claim`:** the model is **under-confident about "no"** — many honest listings get
+  0.2–0.5 (you saw this in the Challenge 3 calibration chart). Raising the *no* threshold sends
+  ~4% fewer listings to a person without losing safety. Go too far and an invented claim slips
+  through.
 
-## Part C — Tuned thresholds
+## Part B — Thresholds from costs
 
-`uv run python -m gate tune decision-all.jsonl --save state/thresholds.json`:
+| Microsoft-Decision-1.1, threshold split | Accuracy | Sent to a person | Published | Unsafe | Upper bound |
+|-------------------------------------------|---------:|-----------------:|----------:|-------:|------------:|
+| Default 0.20 / 0.80 | 88.9% | 20.4% | 379 | 5 | 2.8% |
+| Cheapest thresholds (default costs) | **100%** | **11.3%** | 427 | **0** | 0.7% |
 
-| Question | Thresholds | Misses / false alarms / reviews (threshold split) |
-|----------|------------|------------------|
-| `category` | choice ≥ 0.72 | 0 / – / 0 |
-| `prohibited_item` | no ≤ 0.10, yes ≥ 0.85 | 0 / 0 / 0 |
-| `off_platform_contact` | no ≤ 0.09, yes ≥ 0.98 | 0 / 0 / 0 |
-| `contradicts_facts` | no ≤ 0.46, yes ≥ 0.89 | 0 / 0 / 0 |
-| `unsupported_claim` | no ≤ 0.82, yes ≥ 0.85 | 0 / 1 / 0 |
-| `addressed_to_gate` | no ≤ 0.01, yes ≥ 0.03 | 1 / 1 / 5 |
-| `photo_shows_product` | no ≤ 0.03, yes ≥ 0.55 | 0 / 0 / 0 |
-| `photo_matches_title` | no ≤ 0.54, yes ≥ 0.61 | 0 / 0 / 0 |
-| `listing_quality` | P(poor): no ≤ 0.43, yes ≥ 0.58 | 0 / 0 / 0 |
+The tuned thresholds per question:
 
-On the **test** split:
+| Question | Thresholds |
+|----------|------------|
+| `category` | choice ≥ **0.88** |
+| `prohibited_item` | no ≤ 0.11 · yes ≥ 0.86 |
+| `off_platform_contact` | no ≤ 0.02 · yes ≥ 0.97 |
+| `contradicts_facts` | no ≤ 0.68 · yes ≥ 0.97 |
+| `unsupported_claim` | no ≤ **0.84** · yes ≥ 0.94 |
+| `addressed_to_gate` | no ≤ **0.01** · yes ≥ **0.02** |
+| `photo_shows_product` | no ≤ 0.02 · yes ≥ 0.60 |
+| `photo_matches_title` | no ≤ 0.25 · yes ≥ 0.61 |
+| `listing_quality` (P poor) | no ≤ 0.27 · yes ≥ 0.73 |
 
-| | Accuracy | Review rate | Auto-published | Unsafe | Upper bound |
-|---|---:|---:|---:|---:|---:|
-| Microsoft-Decision-1.1, default | 0.845 | 0.571 | 56 | 6 | 20.1 % |
-| Microsoft-Decision-1.1, **tuned** | **0.962** | 0.487 | 76 | **3** | 9.9 % |
-| gpt-6-luna Decisions, default | 0.903 | 0.576 | 54 | 0 | 5.4 % |
-| gpt-6-luna Decisions, **tuned** | **0.971** | 0.508 | 70 | **0** | 4.2 % |
+- **`category` at 0.88** fixes the smart-bulb problem: the model is only 66–83% sure the bulb is
+  *lighting*, so instead of a wrong automatic fix, the listing goes to a person.
+- **Changing the costs** (reviews cost 3; a prohibited item costs 300) gives the **same gate** on this
+  data. Microsoft-Decision-1.1 separates the threshold split so cleanly that there's a threshold pair
+  with no mistakes for every question — whatever the costs. Costs matter when answers overlap: in a
+  real marketplace, with messier listings, they will.
+- gpt-6-luna Decisions: 88.0% → **98.9%** accuracy, 23.3% → 12.4% sent to a person, 0 unsafe either way.
 
-Tuning auto-publishes **more** good listings *and* halves Microsoft-Decision-1.1's unsafe count: the
-default 0.20 / 0.80 was too strict where the model is reliable and too loose on `addressed_to_gate`.
-(About half of the test listings *should* go to review, so a review rate near 0.5 is expected.)
+## Part C — The final exam (test split)
 
-**Review cost 3:** Microsoft-Decision-1.1's thresholds don't change — on this data its probabilities
-are separated well enough that no question needed an "unsure" band. gpt-6-luna's gate narrows its
-unsure bands: accuracy 0.983, review rate 0.492, 74 auto-published, still 0 unsafe. The costs are a
-business decision: Zava's trust & safety lead must agree to the miss costs, and the marketplace
-operations lead to the review cost.
+| | Accuracy | Sent to a person | Published | Unsafe | Upper bound | Automatic fixes (correct) |
+|---|---:|---:|---:|---:|---:|---:|
+| Decision-1.1, default | 79.5% | 25.4% | 350 | 6 | 3.4% | 29 (6) |
+| Decision-1.1, **tuned** | **92.6%** | 18.2% | 388 | **2** | 1.6% | 7 (7) |
+| gpt-6-luna, default | 85.7% | 25.4% | 350 | 0 | 0.85% | 11 (8) |
+| gpt-6-luna, **tuned** | **94.4%** | 16.5% | 396 | **0** | 0.75% | 12 (8) |
 
-## Part D — How sure?
+- **The threshold split said 100%; the test split says 92.6%.** Thresholds fitted to one set of
+  products are a little too fitted. That's the whole reason the test split exists — and why opening
+  it again and again would quietly turn it into a second threshold split.
+- The two unsafe listings on test with tuned Decision-1.1: one quiet note to the reviewer and one
+  invented claim. Fixing the `addressed_to_gate` *question* (Challenge 2) removes the first kind for
+  good; thresholds alone can't.
+- **0 unsafe out of 396 is not zero.** The upper bound is **0.75%**: "under 1%, probably" is the honest
+  statement. With zero failures, the upper bound is roughly 3 ÷ *n*, so "under 1%" needs about 300
+  clean auto-published listings — and "under 0.1%" about 3,000. In practice that means a **shadow
+  run** on real traffic, with people still checking everything.
+- **Automatic category fixes:** with default thresholds Decision-1.1 makes 29 fixes and only 6 are
+  right (the smart bulb). Tuned, it makes 7 and all are right.
 
-1. 3 of 76 is 3.9 %, but the 95 % upper bound is **9.9 %**. Say *"about 4 %, and it could be as
-   high as 10 %"*, not *"4 %"*.
-2. Zero of 70 is not zero: the upper bound is **4.2 %** (≈ 3 / 70).
-3. About **300** auto-published listings with zero unsafe (3 / 300 = 1 %). Get them from a
-   **shadow run**: run the gate on real incoming listings while people still review everything, and
-   compare.
+## Part D — Reviewer queue
 
-## Part E — Reviewer queue
+With default thresholds, Microsoft-Decision-1.1 sends **10 of the 24** starter listings to the
+queue (8 published, 5 rejected, 1 auto-fixed). Easy reasons: *implausible price (34% of the reference price)*, *no photo*, *GTIN not in
+catalogue*, *poor listing quality*. Hard ones: *the model is unsure: unsupported claim* — a reviewer
+needs the claim highlighted next to the facts. Good ideas from attendees: show the reference price,
+highlight the sentence that triggered the reason, and show the model's probability.
 
-After saving thresholds and restarting, the header says **tuned thresholds**. On the starter set,
-Microsoft-Decision-1.1 puts about 15 of 24 listings in the queue. Typical reasons and what helps:
+## Part E — A sample recommendation
 
-| Reason | Easy to decide? | What would help the reviewer |
-|--------|-----------------|------------------------------|
-| Implausible price (30 % of reference) | Yes | Show the reference price and recent prices for this GTIN |
-| Text aimed at the gate | Yes | Highlight the sentence that triggered it |
-| GTIN not in catalogue / no photo | Needs research | A link to search the manufacturer's site |
-| *The model is unsure: unsupported claim* | Hardest | Show which claim and the facts side by side |
+> Launch with **gpt-6-luna Decisions** and cost-tuned thresholds: 94.4% accuracy on 516 unseen
+> listings, **0 unsafe of 396 published** (upper bound 0.75%), 16.5% to a person. Move to
+> **Microsoft-Decision-1.1** — about 2× faster and 4× cheaper — once the improved `addressed_to_gate`
+> question is in production: tuned, it's at 92.6% with 2 unsafe of 388 (upper bound 1.6%). Run a
+> four-week **shadow** with people still reviewing everything; roll back if any prohibited item or
+> off-platform contact is published automatically.
 
-## Part F — A sample recommendation
+## Build track
 
-> Start with **gpt-6-luna Decisions** and the tuned thresholds: 0.971 accuracy on 238 unseen
-> listings, **0 unsafe** of 70 auto-published (upper bound 4.2 %), about half of listings to review.
-> Plan to move to **Microsoft-Decision-1.1** (2× faster, ~4× cheaper) once its improved
-> `addressed_to_gate` question is validated: today it publishes 3 of 76 unsafe (upper bound 9.9 %),
-> almost all quiet "verified by staff" notes. Run a **four-week shadow** with people reviewing
-> everything; roll back if any prohibited item or off-platform contact is auto-published, or if the
-> weekly unsafe rate's upper bound rises above 2 %.
+`python -m gate tune decision-all.jsonl --save state/thresholds.json` prints the same table as the
+console and the default-vs-tuned comparison on the test split. In `rules.py`, `yes_no()` returns
+`"failed"` for any answer whose status isn't `ok`, and `decide()` turns that into a **review**
+reason: a failed answer is never treated as *no*.
 
 ## Learn more
 
-- [Decision models — Microsoft Foundry primer](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
+- [Decision models primer](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
 - [OpenAI Agents SDK — decision recipes](https://github.com/openai/openai-agents-python/tree/main/examples/decisions)

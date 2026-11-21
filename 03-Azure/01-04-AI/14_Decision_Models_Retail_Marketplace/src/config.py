@@ -30,9 +30,10 @@ DECISION_DEPLOYMENT = os.getenv("DECISION_DEPLOYMENT", "decision").strip()
 OPENAI_ENDPOINT = os.getenv("OPENAI_ENDPOINT", "").strip().rstrip("/")
 LUNA_DEPLOYMENT = os.getenv("LUNA_DEPLOYMENT", "gpt-6-luna").strip()
 
-# Challenge 6: Microsoft-Decision-1 as the judge in Foundry evaluations. (Microsoft-Decision-1.1
-# is not supported as an evaluation judge yet, so the lab deploys Decision-1 for this.)
-JUDGE_DEPLOYMENT = os.getenv("JUDGE_DEPLOYMENT", "decision-judge").strip()
+# Challenge 6: the judge in Foundry evaluations. Microsoft-Decision-1.1 (the same `decision`
+# deployment) works as a judge with azure-ai-evaluation 1.18.11+; Microsoft-Decision-1 (preview)
+# retires on 4 February 2027, so the lab no longer deploys it.
+JUDGE_DEPLOYMENT = os.getenv("JUDGE_DEPLOYMENT", "").strip() or DECISION_DEPLOYMENT
 
 # Optional: your Foundry project endpoint, to also log Challenge 6 evaluations to the portal.
 PROJECT_ENDPOINT = os.getenv("PROJECT_ENDPOINT", "").strip()
@@ -65,6 +66,10 @@ PRICES = {
 }
 
 TOKEN_SCOPE = "https://cognitiveservices.azure.com/.default"
+
+# Web app only: the console asks for this code before it opens (the lab shows it on your Hackbox).
+# Empty when you run the console yourself.
+ACCESS_CODE = os.getenv("GATE_ACCESS_CODE", "").strip()
 
 
 def require(name: str, value: str) -> str:

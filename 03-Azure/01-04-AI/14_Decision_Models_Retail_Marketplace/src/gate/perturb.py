@@ -17,7 +17,7 @@ import random
 from dataclasses import replace
 
 from gate import evaluate, metrics
-from gate.questions import QUESTIONS
+from gate.questions import active
 from gate.rules import RANK, Thresholds, decide
 from gate.spec import Choice, Question
 
@@ -88,10 +88,10 @@ def compare(rows: list[dict], base_calls, variant_calls, variant_rows=None,
 def run(kind: str, mode: str, rows: list[dict], thresholds: Thresholds | None = None) -> dict:
     base = evaluate.run(mode, rows)
     if kind == "shuffle":
-        variant = evaluate.run(mode, rows, questions=shuffled(QUESTIONS))
+        variant = evaluate.run(mode, rows, questions=shuffled(active()))
         return compare(rows, base, variant, thresholds=thresholds)
     if kind == "paraphrase":
-        variant = evaluate.run(mode, rows, questions=paraphrased(QUESTIONS))
+        variant = evaluate.run(mode, rows, questions=paraphrased(active()))
         return compare(rows, base, variant, thresholds=thresholds)
     if kind == "layout":
         variant = evaluate.run(mode, rows, layout="plain")

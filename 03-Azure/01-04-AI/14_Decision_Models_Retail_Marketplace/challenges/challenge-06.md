@@ -4,144 +4,128 @@
 
 ## 🎯 Objective
 
-Use each kind of model for what it is good at. A **generative model** rewrites weak listings for
-their sellers. A **decision model**, as the judge in a **Foundry evaluation**, decides whether each
-rewrite sticks to the manufacturer's facts. The gate's own questions check it again. A rewrite is
-offered to the seller only if both judges pass it.
+Use each kind of model for what it's good at: a **generative model writes** a better listing for
+the seller, and a **decision model judges** it before anyone sees it.
 
 ## 🧭 Context
 
 Some listings are honest but poor: *"EXPANDABLE GARDEN HOSE 30 M !!! LIMITED STOCK !!!"*. The gate
-sends them to review (policy section 7). Zava would rather offer the seller a better version. A
-generative model can write one — but it might **invent** a feature, a warranty or a number, and
-then Zava would publish a false claim in the seller's name.
+sends them to review. Zava would rather offer the seller a better version — but if a generative
+model **invents** a warranty or a number, Zava publishes a false claim in the seller's name.
 
-So the rewrite is checked before anyone sees it:
+So every rewrite is judged twice before the seller sees it:
 
 ```mermaid
 flowchart LR
-    W[Weak listing<br/>+ manufacturer facts] --> G[gpt-6-luna<br/>Responses API<br/>writes a rewrite]
-    G --> E[Foundry evaluation<br/>GroundednessEvaluator<br/>judge: Microsoft-Decision-1]
-    G --> Q[Gate questions<br/>Microsoft-Decision-1.1]
-    E & Q -->|both pass| O[Offer the rewrite<br/>to the seller]
+    W[Weak listing<br/>+ manufacturer facts] --> G[gpt-6-luna<br/>writes a rewrite]
+    G --> E[Foundry groundedness evaluator<br/>judge: Microsoft-Decision-1.1]
+    G --> Q[The gate's questions<br/>Microsoft-Decision-1.1]
+    E & Q -->|both pass| O[Offer the rewrite]
     E & Q -->|either fails| K[Keep the original]
 ```
 
-**Foundry evaluators with a decision model as judge.** Foundry's built-in evaluators normally use
-a generative model as the judge. You can use **Microsoft-Decision-1** instead: it answers each
-evaluation question with probabilities, so it is faster, costs input tokens only, and changes
-fewer results between runs (see
-[Use a decision model as an evaluation judge](https://learn.microsoft.com/azure/foundry/observability/how-to/decision-model-judge)).
-[`judge.py`](../src/gate/judge.py) follows that article exactly:
+**A decision model as the judge.** Foundry's built-in evaluators — groundedness, coherence,
+relevance, task adherence and more — can use a **decision model** instead of a chat model as the
+judge. It answers with probabilities, costs input tokens only and changes fewer results between
+runs ([Use a decision model as an evaluation judge](https://learn.microsoft.com/azure/foundry/observability/how-to/decision-model-judge)).
+This hack uses **Microsoft-Decision-1.1**, your `decision` deployment.
 
-```python
-judge = {"type": "decision", "azure_endpoint": DECISION_ENDPOINT, "azure_deployment": "decision-judge"}
-groundedness = GroundednessEvaluator(model_config=judge, credential=credential)
-results = evaluate(data="runs/judge-....jsonl", evaluators={"groundedness": groundedness}, ...)
-```
+> [!NOTE]
+> The [Microsoft-Decision-1.1 announcement](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/introducing-microsoft-decision-1-1-build-faster-more-efficient-ai-applications-w/4573877)
+> says 1.1 can be used as a judge, and it works with `azure-ai-evaluation` 1.18.11 or later. At
+> the time of writing, the Learn article still names the preview Microsoft-Decision-1, which
+> retires in February 2027.
 
-> [!IMPORTANT]
-> The judge is **Microsoft-Decision-1**, not 1.1. Microsoft-Decision-1.1 isn't supported as an
-> evaluation judge yet. That's why your lab has a third deployment, `decision-judge`.
-
-Groundedness is a **scale** evaluator: it scores the most likely level from 1 to 5 and passes at 3
-or more. The result includes the **probability of every level**, so you can see how sure the
-judge was.
+Groundedness is a **scale**: level 1 (not grounded) to 5 (fully grounded); 3 or more passes. The
+judge returns the **probability of every level**, so you can see how sure it was.
 
 ## ✅ Tasks
 
-### Part A — Generate and judge (15 min)
+### 🧭 Explore — in tab **6 · Generate, then judge**
 
-1. Run the default: three weak `dev` listings, rewritten and judged:
-   ```bash
-   uv run python -m gate judge
-   ```
-2. For each listing, compare *before* and *after*. Then read both judges' results: the
-   groundedness score and its **probabilities**, and the gate questions' verdict.
-3. Open `runs/judge-<time>.jsonl` (the dataset the evaluation ran on) and
-   `runs/judge-<time>.results.json` (Foundry's results). Find `groundedness_properties` →
-   `decision_model` → `probabilities`.
+#### Part A — Rewrite and judge (10 min)
 
-### Part B — Try to make the writer invent things (10 min)
+1. Pick a weak listing. Read it and its manufacturer facts.
+2. Click **Rewrite with AI**. Read the rewrite: is every fact in it from the facts?
+3. Read the verdict: the groundedness level and its probabilities, the gate's own questions, and
+   the decision — **offer** or **keep the original**.
+4. Click **Rewrite — "make it as appealing as possible"**. Did the writer add anything that isn't
+   in the facts? Did the judges notice?
 
-1. Ask the writer to *"make it as appealing as possible"* — a very common request:
-   ```bash
-   uv run python -m gate judge --tempt
-   ```
-   Did the writer add anything that isn't in the facts? Did the judges notice?
-2. The writer's instructions say *"Use ONLY the seller's listing and the manufacturer facts"*.
-   Remove that sentence from `WRITER` in `judge.py` and run `--tempt` again. What changed? Put
-   the sentence back.
+#### Part B — Test the judges (15 min)
 
-### Part C — Check the judges catch a bad rewrite (10 min)
+A judge you've never seen fail is a judge you can't trust. Load each prepared rewrite and click
+**Judge this rewrite**. **Predict** first: pass or fail?
 
-A judge you have never seen fail is a judge you can't trust. Hand the judges a rewrite with
-invented claims yourself — the paint has no coat, washability or guarantee facts:
+| Button | What the rewrite does |
+|--------|-----------------------|
+| **faithful** | Says only what's in the facts |
+| **invents a guarantee** | Adds *"a 10-year guarantee and free spare parts for life"* |
+| **changes one number** | Doubles one number from the facts |
+| **says almost nothing** | True, but useless |
+
+Then write your own bad rewrite in the boxes. Can you get one past both judges?
+
+#### Part C — In the Foundry portal, no code (10 min)
+
+1. Open the [Foundry portal](https://ai.azure.com) with your lab account and go to the
+   **marketplace-gate** project.
+2. Open **Evaluations** and start a new evaluation. Choose **Groundedness** and your `decision`
+   deployment as the judge model, and upload a few rewrites as a dataset with `query`, `context`
+   and `response` columns.
+3. Compare the portal's result with the console's.
+
+> [!TIP]
+> Want decisions in a workflow without code? **Logic Apps** now has **Yes/No, Choice and Score**
+> decision actions (public preview) with a fully managed decision model — see
+> [Decision actions in Azure Logic Apps](https://techcommunity.microsoft.com/blog/integrationsonazureblog/announcing-decision-apis-as-actions-in-azure-logic-apps/4573643).
+
+#### Part D — Where would I use this? (5 min)
+
+Name two places in your work where a generative model writes something and a decision model
+should check it first — and the question the judge would answer.
+
+### 🛠️ Build *(optional, for developers)*
 
 ```bash
-uv run python -m gate judge ZM-0049 \
-  --title "Coatwell Interior Wall Paint, Matt White, 5 L" \
-  --description "Water-based matt white paint. Covers 12 m2 per litre. One coat hides any colour, washable and mould-resistant, with a 10-year guarantee."
+python -m gate judge                       # rewrite three weak listings, judge them as a dataset
+python -m gate judge --tempt
+python -m gate judge ZM-0062 --title "..." --description "..."
 ```
 
-1. What did each judge decide, and how sure was the groundedness judge?
-2. Write a **subtle** bad rewrite: change one number (for example the coverage) and keep
-   everything else. Which judge catches it? Which question in the gate is responsible?
-3. Write a rewrite that is true but **leaves out** important facts. Should it pass?
-
-### Part D — See it in Foundry (optional, 10 min)
-
-If your Hackbox shows a `FoundryProjectEndpoint`, put it in `src/.env` as `PROJECT_ENDPOINT` and
-run `uv run python -m gate judge` again. The evaluation is also logged to your Foundry project:
-open the link it prints, or go to the [Foundry portal](https://ai.azure.com) → your project →
-**Evaluations**.
-
-You can run the same evaluation without code: **Evaluations** → **Create** → choose the
-`decision-judge` deployment as the judge model and **Groundedness** as the evaluator, and upload a
-`runs/judge-<time>.jsonl` file as the dataset.
-
-### Part E — Where else would you use this? (5 min)
-
-Write down two places in Zava's business — or your own — where a generative model writes
-something and a decision model should check it before it is used. For each, name the question
-the judge would answer.
+1. Read `judge_one()` and `groundedness_judge()` in [`gate/judge.py`](../src/gate/judge.py): the
+   judge is one `model_config` with `"type": "decision"`.
+2. Add `RelevanceEvaluator` to `foundry_evaluation()`. Set `PROJECT_ENDPOINT` in `.env` to log
+   the run to your project's **Evaluations** page.
+3. **Combine judges:** the Learn article suggests a decision-model judge on everything, and a
+   generative judge with a written explanation only for failed or borderline results. Which
+   rewrites would you send for a second opinion, using the probabilities?
 
 ## 🏁 Success criteria
 
-- [ ] You ran the generate-then-judge loop and can read the groundedness probabilities.
-- [ ] You tried to make the writer invent claims and saw what the judges did.
-- [ ] You gave the judges a bad rewrite and both rejected it.
-- [ ] You can explain why the judge is Microsoft-Decision-1 and not 1.1.
-- [ ] You named two other places where a decision model should check generated text.
+- [ ] You rewrote a listing with AI and read both judges' verdicts.
+- [ ] Both judges rejected the invented guarantee and the changed number.
+- [ ] You can explain why the "says almost nothing" rewrite passes groundedness but not the gate.
+- [ ] You named two places where a decision model should check generated text.
 
 ## 🛠️ Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
-| `DeploymentNotFound` for `decision-judge` | Check `JUDGE_DEPLOYMENT` in `src/.env` matches your Hackbox's `JudgeDeployment`. |
-| `ModuleNotFoundError: azure.ai.evaluation` | Run `uv sync` in `src/`. |
-| `azure-ai-evaluation` says the model type is not supported | Decision judges need **azure-ai-evaluation 1.18.11 or later**. Run `uv sync` to get the version in `pyproject.toml`. |
-| 401/403 when logging to the project | Logging needs the **Foundry User** role on the Foundry resource, which the lab grants. It can take a few minutes after the lab is created. The evaluation itself still runs without `PROJECT_ENDPOINT`. |
-| `--tempt` rewrites always pass | The writer's instructions are strict, and gpt-6-luna follows them. That is a good result. Use Part C to test the judges. |
+| The AI rewrite always passes | gpt-6-luna follows its instructions well. Use the prepared rewrites to test the judges. |
+| The judge call fails | It uses your `decision` deployment and the console's identity. Reload after a minute; if it persists, check the light for Microsoft-Decision-1.1. |
+| You can't find the evaluation in the portal | Make sure you're in the **marketplace-gate** project of your own resource group. |
 
-## 🚀 Go further
+## 🧠 Reflection
 
-- **Add a second evaluator.** The decision-model judge also supports `CoherenceEvaluator`,
-  `FluencyEvaluator`, `RelevanceEvaluator` and others (see the
-  [supported evaluators](https://learn.microsoft.com/azure/foundry/observability/how-to/decision-model-judge#supported-evaluators)).
-  Add `RelevanceEvaluator` to `foundry_evaluation` in `judge.py`.
-- **Combine judges.** The article suggests running the decision-model judge on everything and
-  re-evaluating only the failed or borderline results with a generative judge, to get a written
-  explanation. Which rewrites would you send for a second opinion, using the probabilities?
-- **Gate an agent's actions.** The OpenAI Agents SDK's
-  [`tool_risk_gate`](https://github.com/openai/openai-agents-python/tree/main/examples/decisions)
-  recipe uses a decision model to decide whether an agent may run a tool call, or must ask a person.
-  How would that fit a seller-support agent at Zava?
+- Groundedness asks *"is everything it says supported?"* What does it **not** ask?
+- Why might a decision-model judge be better than a chat-model judge for a nightly evaluation of
+  thousands of outputs — and when would you still want the chat model?
 
 ## 📚 Learning resources
 
 - [Use a decision model as an evaluation judge](https://learn.microsoft.com/azure/foundry/observability/how-to/decision-model-judge)
-- [Groundedness and other built-in evaluators](https://learn.microsoft.com/azure/foundry/concepts/built-in-evaluators)
+- [Built-in evaluators in Microsoft Foundry](https://learn.microsoft.com/azure/foundry/concepts/built-in-evaluators)
 - [Run evaluations from the Foundry portal](https://learn.microsoft.com/azure/foundry/how-to/evaluate-generative-ai-app)
-- [OpenAI Agents SDK — decision recipes](https://github.com/openai/openai-agents-python/tree/main/examples/decisions)
-- [Decision models — Microsoft Foundry primer](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
+- [Decision actions in Azure Logic Apps (preview)](https://techcommunity.microsoft.com/blog/integrationsonazureblog/announcing-decision-apis-as-actions-in-azure-logic-apps/4573643)
+- [OpenAI Agents SDK — decision recipes (tool risk gate)](https://github.com/openai/openai-agents-python/tree/main/examples/decisions)

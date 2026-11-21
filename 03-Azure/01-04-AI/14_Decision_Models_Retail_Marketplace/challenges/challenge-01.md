@@ -1,196 +1,186 @@
-# Challenge 1 — Set Up and Ask Your First Questions
+# Challenge 1 — Meet the Models
 
 **[Home](../README.md)** - [Next Challenge →](challenge-02.md)
 
 ## 🎯 Objective
 
-In this challenge you:
-
-- sign in with your lab account and start your **Codespace**,
-- connect to your **two decision models** and the generative baseline,
-- open the **Listing Gate console** and look at the marketplace listings, and
-- ask your first **yes/no, choice and score** questions and read the probabilities.
+Find out what a **decision model** is by asking one the same questions as a chat model, about
+real marketplace listings — and seeing what comes back.
 
 ## 🧭 Context
 
-Zava Marketplace receives thousands of listings from third-party sellers. Before a listing goes
-live, the **Listing Gate** checks it against Zava's [Listing Policy](../src/data/policy.md) and
-gives one outcome: **publish**, **auto-fix** (correct the category), **review** (a person decides)
-or **reject**.
+Zava Marketplace opens to sellers tomorrow. Every listing goes through the **Listing Gate**,
+which asks nine small questions about it — *Is this a prohibited item? Does the photo match the
+title? Is there text aimed at the reviewer?* — and turns the answers into one outcome: **publish**,
+**auto-fix** (correct the category), **review** (a person decides) or **reject**.
 
-The gate asks **decision models** small questions about each listing. A decision model doesn't
-write text. It answers a closed question with a **probability for every possible answer**:
+The answers come from **decision models**. A decision model doesn't write. It answers a closed
+question with a **probability for every possible answer**, in a single pass:
 
-| Question type | Example | Answer |
-|---------------|---------|--------|
+| Question type | Example | What comes back |
+|---------------|---------|-----------------|
 | **Yes / no** | *Does the listing ask shoppers to pay outside the marketplace?* | P(yes) = 0.98 |
-| **Choice** | *Which category does this product belong to?* | `garden_and_lawn` with 0.97, `lighting` 0.01, ... |
+| **Choice** | *Which category does this product belong to?* | `garden_and_lawn` 97%, `lighting` 1%, … |
 | **Score** | *How useful is this listing to a shopper?* Unusable → Excellent | Most likely *Good*, with a probability per level |
 
-You have three ways to ask, all in your own Foundry resource:
+You'll compare three ways of asking the same nine questions:
 
-| In the code | Model | API |
-|-------------|-------|-----|
-| `decision` | Microsoft-Decision-1.1 | `/providers/microsoft/v1/systemone` |
-| `luna` | gpt-6-luna | Azure OpenAI **Decisions API**, `/openai/v1/decisions` |
-| `llm` | gpt-6-luna | **Responses API** (a normal generative model) — the baseline |
-
-Use the credentials from your **Hackbox** (see **Credentials** at the top of the Hackbox page)
-for all of this setup. Don't use a personal or work account.
+| In the console | Model | API |
+|----------------|-------|-----|
+| Microsoft-Decision-1.1 | Microsoft's decision model (generally available) | `/providers/microsoft/v1/systemone` |
+| gpt-6-luna · Decisions API | OpenAI's model, used as a decision model | `/openai/v1/decisions` |
+| gpt-6-luna · chat | The **same** deployment, used as a normal chat model | Responses API, JSON output |
 
 ## ✅ Tasks
 
-### Part A — Sign in to Azure (5 min)
+### 🧭 Explore
 
-1. Open the [Azure portal](https://portal.azure.com) and sign in with your Hackbox credentials.
-   When asked to choose an account, select **Use another account**.
+#### Part A — Open the console (5 min)
 
-   ![Sign in to the Azure portal with another account](../images/setup-azureportal.png)
+1. On your Hackbox, find **ConsoleUrl** and **AccessCode**. Open the URL in your browser and
+   enter the code.
+2. Check the three lights at the top: **Microsoft-Decision-1.1**, **gpt-6-luna Decisions API**
+   and **gpt-6-luna Responses API (chat)** should all be green. Hover over a light to see how
+   long the model took to answer.
+3. Read the lesson banner at the top of tab **1 · Meet the models**.
 
-2. Select **Resource groups** and open the resource group from your Hackbox.
+#### Part B — Predict, then ask three models (20 min)
 
-   ![Resource groups in the Azure portal navigation menu](../images/setup-resource-groups.png)
+1. In **Seller listings**, click **ZM-0050** — a smart-plug listing. Read the description to the
+   end and the **manufacturer facts** below it.
+2. **Predict:** what should the gate do with this listing? Pick an outcome in the drop-down.
+   Not sure? Open the **Listing Policy** link.
+3. **Try:** click **Ask all three models**.
+4. **See:** for each model, look at
+   - the **outcome** the gate's rules chose, and the reason;
+   - the **probability bars** — which questions is each model sure about?
+   - **tokens in/out** — how many words did each model write?
+   - the line above the cards: did your prediction match the answer key?
+5. Open **Show me the code** on two of the cards. Compare the request sent to
+   Microsoft-Decision-1.1 with the one sent to the Decisions API. How is the yes/no question
+   named in each (`noul` or `predicate`)?
+6. Repeat with **ZM-0072** (a weedkiller) and **ZM-0056**. Predict first each time.
 
-3. Confirm it contains one **Foundry** resource named `dm-…`. Open it and select
-   **Model deployments** (or open it in the Foundry portal): you should see `decision`,
-   `gpt-6-luna` and `decision-judge`.
+#### Part C — Ask your own questions (15 min)
 
-### Part B — Sign in to GitHub and fork the repository (10 min)
+With a listing selected, use **Ask your own question**. Click the examples to fill the form, or
+write your own:
 
-1. Open [GitHub](https://github.com) and select **Sign in**. You **don't have a separate GitHub
-   password**: select **Sign in with your identity provider** and use the same lab account.
-
-   ![Sign in to GitHub with another account](../images/setup-github-login.png)
-
-2. Open your profile menu → **Organizations** and select the lab organization.
-
-   ![GitHub organization selector](../images/setup-github-organization.png)
-
-3. Open the `microhack` repository and click **Fork**. Give the fork a **unique name**, for
-   example `microhack-labuser-0001`, and select **Create fork**.
-
-   ![Create fork](../images/setup-create-fork-1.png)
-
-   ![Fork repository with a unique name](../images/setup-create-fork-2.png)
-
-### Part C — Start the Codespace (10 min)
-
-1. On your fork, select **Code → Codespaces**, open the `...` menu and choose
-   **New with options...**. Don't use *Create codespace on main*: it uses a different
-   dev container.
-
-   ![Create a GitHub Codespace with options](../images/setup-github-codespaces.png)
-
-2. Set **Dev container configuration** to
-   **Azure / AI / Decision Models Retail Marketplace** (the list is sorted by area, so scroll),
-   keep the **2-core** machine type and select **Create codespace**.
-
-3. The first start takes a few minutes. The container installs Python, `uv` and the Azure
-   CLI, then `.devcontainer/post-create.sh` installs the Python packages and creates
-   `src/.env`. The Explorer shows the `14_Decision_Models_Retail_Marketplace` folder.
-
-   > [!IMPORTANT]
-   > If VS Code asks whether to open the git repository in the parent folders, select **Never**.
-   > If it asks **Do you trust the authors of the files in this folder?**, select
-   > **Trust Folder & Continue**.
-   >
-   > ![Select Never when asked to open the repository](../images/setup-never-open-repository.png)
-
-### Part D — Connect to your models (10 min)
-
-1. In a terminal, sign in with your Hackbox credentials:
-   ```bash
-   az login --use-device-code
-   ```
-2. Open `src/.env` and paste the values from your Hackbox:
-   ```
-   DECISION_ENDPOINT=<DecisionEndpoint>
-   OPENAI_ENDPOINT=<OpenAIEndpoint>
-   DECISION_DEPLOYMENT=decision
-   LUNA_DEPLOYMENT=gpt-6-luna
-   JUDGE_DEPLOYMENT=decision-judge
-   DECISION_CAPACITY=<DecisionCapacity>
-   LUNA_CAPACITY=<LunaCapacity>
-   ```
-3. Check that everything answers:
-   ```bash
-   cd src
-   uv run python -m gate check
-   ```
-   You should see three `ok` lines and **All good - you're ready.** Each line asked the same
-   question — *Is this a garden product?* — about a garden hose. The two decision models answer
-   with a probability, the generative model with `True`.
-
-There are **no keys** anywhere. Your code gets an Entra ID token from `az login`, and the lab
-gave your account the **Cognitive Services User** role on the Foundry resource.
-
-### Part E — Explore the listings (10 min)
-
-1. Start the console from `src/`:
-   ```bash
-   uv run uvicorn ui.app:app --reload --port 8000
-   ```
-   Codespaces opens the forwarded **port 8000**.
-2. The **Inbox** shows the 24-listing **starter set**. Click a few listings. For each one you see
-   the seller's title, description, category, price and photo, and the **manufacturer facts**
-   that Zava holds for the product's GTIN.
-3. Read [`src/data/policy.md`](../src/data/policy.md). For three listings, decide yourself which
-   outcome the policy requires. Then click **Show answer key** to check.
-4. Click **Ask the three models**. Each card shows the answer to every gate question, the
-   probability, and the outcome the gate's rules chose. Look for:
-   - questions where the two decision models give different probabilities,
-   - the generative model's card, which has answers but **no probabilities**,
-   - the **tokens in/out** line: the decision models return almost no output tokens.
-
-### Part F — Ask your own questions (10 min)
-
-Use **Ask your own question**, below the model cards, with a listing selected.
-
-1. A **yes/no** question, for example *"Is this product meant to be used outdoors?"* Note the
-   probability. Try it on a garden hose and on a desk lamp.
-2. A **choice** question, for example *"Which room would a shopper most likely use this in?"*
-   with options `garden, kitchen, living_room, cannot_tell`. Look at the probability of *every*
-   option, not only the chosen one.
-3. A **score** question, for example *"How expensive does this product seem for its type?"*
-   with levels `cheap, average, premium`, lowest first.
+1. **Yes/no** — *"Is this product meant to be used outdoors?"* Try it on the garden hose
+   **ZM-0005** and on the desk lamp **ZM-0186**.
+2. **Choice** — *"What is the product mainly made of?"* with `metal, plastic, wood, fabric,
+   cannot tell`. Look at the probability of **every** option, not only the winner.
+3. **Score** — *"How expensive does this product seem for its type?"* with `cheap, average,
+   premium` (lowest first).
 4. Ask the same question to both decision models. Do they agree? Are they equally sure?
 
 > [!NOTE]
-> A yes/no probability close to **0** means the model is confident the answer is **no**. It
-> doesn't mean the model is unsure. "Unsure" is a probability near the middle.
+> A yes/no probability close to **0** is a confident **no**, not an unsure answer. "Unsure" is
+> a probability near the middle.
+
+#### Part D — Where would I use this? (5 min)
+
+Scroll to the **Where would I use this?** card. Write down one decision in your own work that a
+decision model could make — a yes/no, a choice or a score — and click **Save**.
+
+### 🛠️ Build *(optional, for developers)*
+
+Set up the code once; you'll use it in every challenge.
+
+1. In the [Azure portal](https://portal.azure.com), signed in with your lab account, open
+   **Cloud Shell** (the `>_` icon) and choose **Bash**. When asked about storage, **mount your
+   lab's file share** so your work survives breaks:
+   1. Choose **Mount storage account**, pick your lab subscription and select **Apply**.
+   2. Choose **Select existing storage account** and select **Next**.
+   3. Pick your **ResourceGroupName**, the storage account **CloudShellStorage** from your
+      Hackbox, and the file share **`cloudshell`**. Select **Select**.
+
+   > [!IMPORTANT]
+   > Cloud Shell recycles its machine after **20 minutes without input** — a lunch break is
+   > enough. With the file share mounted, everything in your home folder (the clone, `.venv` and
+   > `.env`) is still there when you come back. Without it, you start from scratch.
+   >
+   > Used Cloud Shell before without storage? Open **Settings → Reset User Settings** first, and
+   > you'll get the storage question again.
+2. Get the hack and install it:
+   ```bash
+   cd ~
+   git clone --depth 1 --filter=blob:none --sparse https://github.com/microsoft/MicroHack.git
+   cd MicroHack && git sparse-checkout set 03-Azure/01-04-AI/14_Decision_Models_Retail_Marketplace
+   cd 03-Azure/01-04-AI/14_Decision_Models_Retail_Marketplace/src
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -q -r requirements.txt
+   cp ../.env.example .env && code .env
+   ```
+3. In `.env`, paste `DecisionEndpoint` and `OpenAIEndpoint` from your Hackbox, save, and check:
+   ```bash
+   python -m gate check
+   ```
+   Cloud Shell is already signed in as your lab account, so there are no keys and no `az login`.
+
+   > [!TIP]
+   > **Back from a break?** A new Cloud Shell session starts in your home folder. Run
+   > `cd ~/MicroHack/03-Azure/01-04-AI/14_Decision_Models_Retail_Marketplace/src && source .venv/bin/activate`
+   > and carry on — your files are on the mounted share.
+4. **Call the API yourself.** Save this as `first.py` and run `python first.py`:
+   ```python
+   import httpx, config
+   from azure.identity import DefaultAzureCredential
+
+   token = DefaultAzureCredential().get_token("https://cognitiveservices.azure.com/.default").token
+   body = {
+       "model": config.DECISION_DEPLOYMENT,
+       "state": "Garden hose 30 m, brass connector. For a quick deal call me on 0612 345 678.",
+       "questions": {
+           "contact": {"type": "noul", "instructions": "Does the text ask the buyer to contact the seller outside the marketplace?"},
+           "category": {"type": "choice", "instructions": "Which category fits the product?",
+                        "criteria": {"garden": "Garden products", "kitchen": "Kitchen products", "other": "Anything else"}},
+       },
+   }
+   r = httpx.post(f"{config.DECISION_ENDPOINT}/providers/microsoft/v1/systemone",
+                  headers={"Authorization": f"Bearer {token}"}, json=body)
+   print(r.json())
+   ```
+5. Run the same listing through the gate from the command line:
+   `python -m gate ask ZM-0050 --model decision luna llm --show-answer`
+6. Open [`gate/clients.py`](../src/gate/clients.py) and find `systemone_question` and
+   `decisions_question`. List three differences between the two request formats.
 
 ## 🏁 Success criteria
 
-- [ ] You forked the `microhack` repository under a unique name and your Codespace runs the **Azure / AI / Decision Models Retail Marketplace** dev container.
-- [ ] `uv run python -m gate check` prints **All good - you're ready.**
-- [ ] The Listing Gate console shows the starter set and the three model cards for a listing.
-- [ ] You asked your own yes/no, choice and score question and can explain what each probability means.
-- [ ] You can name the question type each provider uses for yes/no (`noul` and `predicate`).
+- [ ] The console opens and all three lights are green.
+- [ ] You predicted the outcome for at least three listings and compared with the answer key.
+- [ ] You can explain the difference between what a decision model and a chat model return.
+- [ ] You asked your own yes/no, choice and score question and can explain each probability.
+- [ ] You saved a **Where would I use this?** card.
+- [ ] *(Build)* `python -m gate check` prints **All good** and your own script returned typed answers.
 
 ## 🛠️ Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
-| **Azure / AI / Decision Models Retail Marketplace** isn't in the dev container list | Make sure you're on your **fork** and used **New with options...**. |
-| `uv: command not found` or no `src/.venv` | The Codespace used the wrong dev container. Recreate it with **New with options...**, or run `bash .devcontainer/post-create.sh`. |
-| `DECISION_ENDPOINT is not set` | Paste the values from your Hackbox into `src/.env` (not `.env.example`). |
-| `Could not get a token` | Run `az login --use-device-code` in the same terminal and sign in with the lab account. |
-| `HTTP 401` or `HTTP 403` | Your role on the Foundry resource can take a few minutes to become active after the lab is created. Wait, then run `gate check` again. Check that `az account show` shows the lab account. |
-| `HTTP 429` | Too many requests for your deployment's capacity. Wait a minute. Don't raise `GATE_MAX_CONCURRENCY`. |
-| Local Dev Container: `uv sync` fails with SSL errors | Your network needs a proxy or package mirror. Export `HTTPS_PROXY` or `UV_DEFAULT_INDEX` in the container terminal and re-run `bash .devcontainer/post-create.sh`. |
-| Port 8000 didn't open | Open the **Ports** tab and click the globe icon next to 8000. |
+| The console asks for the code again and again | Use the **AccessCode** from your Hackbox exactly; it's case-sensitive. Allow cookies for the site. |
+| A light is red | Hover over it to see the error. Shortly after the lab is created, permissions can take a few minutes to arrive — reload after a minute. |
+| A card shows `HTTP 429` | Too many requests for your deployment's capacity. Wait a minute and try again. |
+| *(Build)* `DECISION_ENDPOINT is not set` | Paste the values into `src/.env` (not `.env.example`). |
+| *(Build)* `pip install` is slow or fails | Cloud Shell needs internet access to PyPI. Retry once; the packages take about a minute. |
+| *(Build)* My files are gone after a break | Cloud Shell started without storage. Open **Settings → Reset User Settings**, mount **CloudShellStorage** as in step 1, and repeat step 2 — it takes two minutes. |
+| *(Build)* The storage account isn't in the list | Choose your lab subscription and **ResourceGroupName** first. If there's no **CloudShellStorage** on your Hackbox, your tenant blocks mounting: use a session without storage and repeat step 2 after each break. |
+| *(Build)* `401` or `403` from your script | Check `az account show` shows your lab account. |
 
-## 🚀 Go further
+## 🧠 Reflection
 
-- Open [`src/gate/clients.py`](../src/gate/clients.py) and find `systemone_question` and
-  `decisions_question`. They turn the same question into the two APIs' formats. List three
-  differences.
-- In a terminal, ask about one listing with all three models, without the console:
-  `uv run python -m gate ask ZM-0008 --model decision luna llm --show-answer`.
+- The chat model also answered every question. What can't you do with its answers that you can
+  do with a probability?
+- The decision models wrote almost no output tokens. Why does that matter at thousands of
+  listings a day?
+- Microsoft uses Microsoft-Decision-1.1 to route Copilot requests. What small, high-volume
+  decision in your organisation looks like that?
 
 ## 📚 Learning resources
 
 - [Decision models — Microsoft Foundry primer](https://github.com/microsoft-foundry/model-releases/blob/main/3-primers/decision-models.md)
 - [Deploy and use Microsoft-Decision-1.1 in Microsoft Foundry](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/use-foundry-models-microsoft-decision)
+- [Introducing Microsoft-Decision-1.1 — quickstarts](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/introducing-microsoft-decision-1-1-build-faster-more-efficient-ai-applications-w/4573877)
 - [Use the Azure OpenAI Decisions API](https://learn.microsoft.com/azure/foundry/openai/how-to/decisions)
-- [Azure OpenAI starter — Decisions samples in six languages](https://github.com/Azure-Samples/azure-openai-starter)
+- [Persist files in Azure Cloud Shell](https://learn.microsoft.com/azure/cloud-shell/persisting-shell-storage)
