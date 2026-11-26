@@ -1,0 +1,5 @@
+customer_id,name,country,tier
+CUS-01,Brennmark Industries GmbH,Germany,strategic
+CUS-02,Solvik Marine AS,Norway,key
+CUS-03,Østerdal Pumps AS,Norway,standard
+CUS-04,Ferrovia Systems S.p.A.,Italy,key

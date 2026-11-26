@@ -1,0 +1,4 @@
+po_id,supplier_id,component_id,quantity,port,original_eta,status
+PO-7781,SUP-01,HX-220,3500,Esbjerg,2026-12-08,held_at_port
+PO-7790,SUP-04,ST-50,4000,Duisburg,2026-12-10,in_transit
+PO-7795,SUP-03,SL-12,5000,Malmö,2026-12-09,in_transit

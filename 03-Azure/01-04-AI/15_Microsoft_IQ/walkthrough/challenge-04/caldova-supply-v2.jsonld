@@ -1,0 +1,132 @@
+{
+  "@context": {
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "cal": "https://schema.caldova.example/supply#"
+  },
+  "@graph": [
+    {
+      "@id": "cal:Supplier",
+      "@type": "owl:Class",
+      "rdfs:comment": "A company that supplies parts to Caldova Components AB. Name it by its full legal name, for example Nordhavn Castings A/S."
+    },
+    {
+      "@id": "cal:Component",
+      "@type": "owl:Class",
+      "rdfs:comment": "A part used to build Caldova products. Name it by its part code only, for example HX-220, never with a description."
+    },
+    {
+      "@id": "cal:Product",
+      "@type": "owl:Class",
+      "rdfs:comment": "A finished Caldova product. Name it by its product code only, for example PV-400, never with a description."
+    },
+    {
+      "@id": "cal:Customer",
+      "@type": "owl:Class",
+      "rdfs:comment": "A company that buys Caldova products. Name it by its full legal name, for example Brennmark Industries GmbH."
+    },
+    {
+      "@id": "cal:Port",
+      "@type": "owl:Class",
+      "rdfs:comment": "A port that supplier shipments leave from. Name it by the city, for example Esbjerg."
+    },
+    {
+      "@id": "cal:supplies",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:Supplier"
+      },
+      "rdfs:range": {
+        "@id": "cal:Component"
+      },
+      "rdfs:comment": "The supplier is the primary supplier of the component."
+    },
+    {
+      "@id": "cal:backupFor",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:Supplier"
+      },
+      "rdfs:range": {
+        "@id": "cal:Component"
+      },
+      "rdfs:comment": "The supplier is the backup supplier for the component."
+    },
+    {
+      "@id": "cal:usedIn",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:Component"
+      },
+      "rdfs:range": {
+        "@id": "cal:Product"
+      },
+      "rdfs:comment": "The component is part of the product's bill of materials."
+    },
+    {
+      "@id": "cal:buys",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:Customer"
+      },
+      "rdfs:range": {
+        "@id": "cal:Product"
+      },
+      "rdfs:comment": "The customer buys the product from Caldova under a framework agreement."
+    },
+    {
+      "@id": "cal:shipsFrom",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:Supplier"
+      },
+      "rdfs:range": {
+        "@id": "cal:Port"
+      },
+      "rdfs:comment": "The supplier ships its parts to Caldova from this port."
+    },
+    {
+      "@id": "cal:QualityReport",
+      "@type": "owl:Class",
+      "rdfs:comment": "A Caldova quality report. Name it by its report id, for example QR-2026-118."
+    },
+    {
+      "@id": "cal:Policy",
+      "@type": "owl:Class",
+      "rdfs:comment": "A Caldova policy. Name it by its policy id, for example SQP-04 or AP-02."
+    },
+    {
+      "@id": "cal:placesOnHold",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:QualityReport"
+      },
+      "rdfs:range": {
+        "@id": "cal:Supplier"
+      },
+      "rdfs:comment": "The quality report puts the supplier on quality hold."
+    },
+    {
+      "@id": "cal:restricts",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:Policy"
+      },
+      "rdfs:range": {
+        "@id": "cal:Component"
+      },
+      "rdfs:comment": "The policy restricts which suppliers may be used for the component, for example pressure-bearing parts."
+    },
+    {
+      "@id": "cal:failedLotOf",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cal:QualityReport"
+      },
+      "rdfs:range": {
+        "@id": "cal:Component"
+      },
+      "rdfs:comment": "The quality report records a failed lot of the component."
+    }
+  ]
+}

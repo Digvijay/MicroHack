@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Into focus: Microsoft IQ, one agent, four IQs</title>
+  <meta name="author" content="Digvijay Chauhan">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2307080C'/%3E%3Cg style='mix-blend-mode:screen'%3E%3Ccircle cx='16' cy='11' r='8' fill='%234CC3FF' fill-opacity='.6'/%3E%3Ccircle cx='21' cy='16' r='8' fill='%233FE0A8' fill-opacity='.6'/%3E%3Ccircle cx='16' cy='21' r='8' fill='%23AE92FF' fill-opacity='.6'/%3E%3Ccircle cx='11' cy='16' r='8' fill='%23FF72B6' fill-opacity='.6'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="vendor/reveal.js-6.0.2/reset.css">
+  <link rel="stylesheet" href="vendor/reveal.js-6.0.2/reveal.css">
+  <link rel="stylesheet" href="css/motion.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- ===================================================================== 1 COVER
+     Arriving, the title wipes in; the four lenses glide in from four sides and overlap; where all four
+     meet, a point of white light blooms. It keeps breathing faintly. -->
+<section id="cover" class="scene cover" data-scene="cover" data-noctl>
+  <div class="cv-copy">
+    <p class="cv-event k-wipe">MicroHack · Microsoft IQ</p>
+    <h1 class="k-wipe" style="--d:150ms">Into<br><span class="w">focus.</span></h1>
+    <p class="cv-sub k-rise" style="--d:600ms">One question, four IQs, and the context every agent is missing.</p>
+  </div>
+  <svg class="cv-art" viewBox="0 0 1280 720" aria-label="Four coloured lenses, Web IQ, Fabric IQ, Foundry IQ and Work IQ, overlap. Where all four meet, the light turns white.">
+    <g class="lens lens-web k-lens" style="--fx:0px;--fy:-230px"><circle class="disc" cx="905" cy="257" r="140"/><circle class="rim" cx="905" cy="257" r="140"/></g>
+    <g class="lens lens-fabric k-lens" style="--fx:250px;--fy:0px"><circle class="disc" cx="993" cy="345" r="140"/><circle class="rim" cx="993" cy="345" r="140"/></g>
+    <g class="lens lens-foundry k-lens" style="--fx:0px;--fy:230px"><circle class="disc" cx="905" cy="433" r="140"/><circle class="rim" cx="905" cy="433" r="140"/></g>
+    <g class="lens lens-work k-lens" style="--fx:-250px;--fy:0px"><circle class="disc" cx="817" cy="345" r="140"/><circle class="rim" cx="817" cy="345" r="140"/></g>
+    <text class="lens-label k-fade" x="905" y="100" text-anchor="middle" style="fill:var(--web)">Web IQ</text>
+    <text class="lens-label k-fade" x="1146" y="351" style="fill:var(--fabric)">Fabric IQ</text>
+    <text class="lens-label k-fade" x="905" y="603" text-anchor="middle" style="fill:var(--foundry)">Foundry IQ</text>
+    <text class="lens-label k-fade" x="664" y="351" text-anchor="end" style="fill:var(--work)">Work IQ</text>
+    <circle class="core k-bloom breathe" cx="905" cy="345" r="15"/>
+    <circle class="ring c-ring" cx="905" cy="345" r="15" style="color:#fff"/>
+  </svg>
+  <div class="cv-foot k-rise" style="--d:900ms">
+    <div><p class="cv-name">Digvijay Chauhan</p><p class="cv-role">Solution Engineer, Microsoft</p></div>
+    <div class="cv-meta"><p class="l">Tech talk</p><p class="v">Microsoft IQ MicroHack</p></div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:00, 1 minute]</b> I let the four lenses glide in and the white point appear before I say anything.</p>
+    <p>Good morning, and welcome. I'm Digvijay Chauhan, Solution Engineer at Microsoft, and this is the Microsoft IQ MicroHack.</p>
+    <p>Look at the picture for a second. Four lenses of light: one for the web, one for your business data, one for your company's knowledge, and one for how your people work. Each one is coloured. Only where all four overlap does the light turn white. Keep that picture in mind, because that is exactly what happens to an agent's answer today.</p>
+    <p>Before you start building, I want to give you twenty minutes of why, and show you what really happened when we built this hack end to end, including the parts that went wrong.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 2 MONDAY 08:00
+     Three facts rise on the left, each edged in the colour of the IQ that knows it. The Plant Manager's
+     question lands in a serif voice. The click streams the blind agent's honest answer. -->
+<section class="scene cold" data-scene="cold" style="--accent:var(--fg)">
+  <p class="kicker k-wipe">Borås, Sweden · Monday 7 December 2026</p>
+  <h2 class="title k-wipe" style="--d:120ms">Monday, 08:00</h2>
+  <p class="subtitle k-rise" style="--d:400ms">A storm, a stuck container, and a promise that was already made.</p>
+  <div class="facts">
+    <div class="fact k-rise f1" style="--c:var(--web)"><h3>A storm closes the port of Esbjerg</h3><p>The container for PO-7781, with 3,500 HX-220 valve housings, is held at the port.</p></div>
+    <div class="fact k-rise f2" style="--c:var(--fabric)"><h3>Brennmark needs 4,000 PV-400 by Friday</h3><p>Order SO-9001 from Caldova's biggest customer, due Friday 11 December.</p></div>
+    <div class="fact k-rise f3" style="--c:var(--work)"><h3>Sales already promised the full order</h3><p>Email, last Thursday: “the full 4,000 PV-400 will ship by Friday”.</p></div>
+  </div>
+  <div class="ask k-land">
+    <p class="q">“Can we ship by Friday, and what do we tell Brennmark?”</p>
+    <p class="who">The Plant Manager, 08:00</p>
+  </div>
+  <div class="bot k-rise">
+    <span class="lab">Agent · frontier model · no context</span>
+    <span class="stream s-blind"></span>
+  </div>
+  <p class="moral k-land">An honest “I can't know.” <span class="muted">The model is not what's missing.</span></p>
+  <p class="foot">Facts: walkthrough/scenario-facts.md. The agent's answer: a recorded run of challenge 1 (no IQ), first sentence.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[1:00, 2 minutes]</b> I let the three facts rise and the question land, then I tell the story.</p>
+    <p>Meet Caldova. A fictional valve maker in Borås, in Sweden, about 600 people. It's Monday morning, 7 December, eight o'clock.</p>
+    <p>Over the weekend a storm closed the port of Esbjerg in Denmark. Sitting in that port is a container with 3,500 valve housings, part number HX-220, that Caldova needs. Their biggest customer, Brennmark, needs 4,000 PV-400 pump valves by Friday. And last Thursday, Sales already wrote to Brennmark: the full 4,000 will ship by Friday.</p>
+    <p>So the Plant Manager walks in with a coffee and asks one question: can we ship by Friday, and what do we tell Brennmark?</p>
+    <p>Let's ask an agent. A good one, with a frontier model. <b>[click]</b></p>
+    <p><i>(I let the answer stream in and read it out.)</i> "I can't verify Brennmark's order status from here, so I can't say if we can ship it by Friday with confidence." That's a real answer from the first challenge. And honestly, I love it. It doesn't invent a number. It knows what it doesn't know.</p>
+    <p>But it's useless to the Plant Manager. And notice: the model is not the problem. The model is excellent. What's missing is everything Caldova knows.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 3 SAME MODELS
+     A grey model disc, with ghost copies behind it: everybody has it. Then the four lenses arrive with
+     what each one knows. The click dims the model and adds the permission rule. -->
+<section class="scene models" data-scene="models" style="--accent:var(--fg)">
+  <p class="kicker k-wipe">Why Microsoft IQ</p>
+  <h2 class="title k-wipe" style="--d:120ms">Every company has the same models</h2>
+  <p class="subtitle k-rise" style="--d:400ms">The difference is what the agent knows, and who is asking.</p>
+  <svg class="art" viewBox="0 0 1280 720" aria-label="A grey frontier model disc with copies behind it, the same for every company, plus four coloured lenses: your own context.">
+    <g class="m-grp">
+      <circle class="m-ghost k-fade g4" cx="186" cy="360" r="92" style="opacity:.25"/>
+      <circle class="m-ghost k-fade g3" cx="202" cy="360" r="92" style="opacity:.4"/>
+      <circle class="m-ghost k-fade g2" cx="218" cy="360" r="92" style="opacity:.6"/>
+      <circle class="m-ghost k-fade g1" cx="234" cy="360" r="92" style="opacity:.8"/>
+      <g class="k-bloom m-main"><circle class="m-disc" cx="250" cy="360" r="92"/><text class="m-t" x="250" y="356">Frontier model</text><text class="m-s" x="250" y="382">same for everyone</text></g>
+    </g>
+    <text class="plus k-fade" x="420" y="378">+</text>
+    <g class="lens lens-web k-lens ln0" style="--fx:0px;--fy:-120px"><circle class="disc" cx="590" cy="310" r="78"/><circle class="rim" cx="590" cy="310" r="78"/></g>
+    <g class="lens lens-fabric k-lens ln1" style="--fx:120px;--fy:0px"><circle class="disc" cx="640" cy="360" r="78"/><circle class="rim" cx="640" cy="360" r="78"/></g>
+    <g class="lens lens-foundry k-lens ln2" style="--fx:0px;--fy:120px"><circle class="disc" cx="590" cy="410" r="78"/><circle class="rim" cx="590" cy="410" r="78"/></g>
+    <g class="lens lens-work k-lens ln3" style="--fx:-120px;--fy:0px"><circle class="disc" cx="540" cy="360" r="78"/><circle class="rim" cx="540" cy="360" r="78"/></g>
+    <g class="k-rise mine"><text class="m-t" x="590" y="526">Your context</text><text class="m-s" x="590" y="550">only you have it</text></g>
+  </svg>
+  <div class="rows">
+    <div class="row k-rise r3" style="--c:var(--work)"><span class="dot"></span><div><h3>Work IQ</h3><p>How people work: mail, chats, meetings, files.</p></div></div>
+    <div class="row k-rise r1" style="--c:var(--fabric)"><span class="dot"></span><div><h3>Fabric IQ</h3><p>The state of the business: governed data, ontology, data agents.</p></div></div>
+    <div class="row k-rise r2" style="--c:var(--foundry)"><span class="dot"></span><div><h3>Foundry IQ</h3><p>Curated knowledge: knowledge bases, agentic retrieval, graphs.</p></div></div>
+    <div class="row k-rise r0" style="--c:var(--web)"><span class="dot"></span><div><h3>Web IQ</h3><p>The live web: news, weather, places, public facts.</p></div></div>
+  </div>
+  <div class="perm k-rise">
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2.5" fill="none" stroke="#F4F1EA" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#F4F1EA" stroke-width="1.8"/></svg>
+    <span>Delivered with the permissions of the person asking.</span>
+  </div>
+  <p class="moral k-land">Everyone has the model. <span class="spectrum">Only you have your context.</span></p>
+  <p class="foot">Microsoft IQ, announced at Ignite 2026: the enterprise context layer for agents.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[3:00, 2 minutes]</b> I let the grey disc and its copies appear and say the first line over them.</p>
+    <p>Here's the uncomfortable truth about AI in business. Every company in this room, and every competitor of yours, can use the same frontier models. Same model, same price, same API. That grey disc is the same for everyone.</p>
+    <p><i>(I wait for the lenses.)</i> So where does the advantage come from? From the context that only you have. That's what Microsoft IQ is, announced at Ignite: the context layer for agents, in four parts.</p>
+    <p>Work IQ knows how your people work: mail, chats, meetings and files. Fabric IQ knows the state of the business: governed data, an ontology, data agents. Foundry IQ knows your curated knowledge: knowledge bases with agentic retrieval and knowledge graphs. And Web IQ brings the live web.</p>
+    <p><b>[click]</b> And one more thing, which turns out to matter a lot today: all of that context is delivered with the permissions of the person asking. Not the permissions of the agent. Of the person.</p>
+    <p>Everyone has the model. Only you have your context.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 4 WEB IQ
+     The sky lens. Three cited questions with grey bars (no IQ); the click grows the sky bars to their
+     Web IQ scores, then the two clocks appear. -->
+<section class="scene iq webiq" data-scene="webiq" style="--accent:var(--web)">
+  <p class="kicker k-wipe">The four IQs · 1 of 4</p>
+  <h2 class="title k-wipe" style="--d:120ms">Web IQ: look outside</h2>
+  <p class="subtitle k-rise" style="--d:400ms">Is Esbjerg really closed? None of that is in Caldova's systems.</p>
+  <div class="iqcol">
+    <svg class="iqlens k-bloom" viewBox="0 0 220 220" aria-hidden="true"><g class="lens lens-web"><circle class="disc" cx="110" cy="110" r="100"/><circle class="rim" cx="110" cy="110" r="100"/></g><text x="110" y="120">Web IQ</text></svg>
+    <div class="badges k-rise"><span class="pill ga">GA <span class="f">web search tool</span></span></div>
+    <div class="knows k-rise"><span class="lab">What it knows</span><p>The live web: news, weather, places and public facts, with citations.</p></div>
+    <div class="brings k-rise"><span class="lab">What it brings Caldova</span><p>The storm, the port, the exchange rate and the holidays before the deadline.</p></div>
+  </div>
+  <div class="bars"></div>
+  <div class="clocks">
+    <div class="clock k-rise ck0"><span class="lab">Story clock</span><p>Monday 7 December 2026, 08:00</p></div>
+    <div class="clock k-rise ck1" style="border-color:rgba(76,195,255,.5)"><span class="lab web">Live web</span><p>Whatever is true the day you run it</p></div>
+  </div>
+  <p class="moral k-land">Live and cited, but on <span class="web">today's clock</span>, not the story's.</p>
+  <p class="foot">Scores 0 to 10 per question, from the leaderboard run: challenge 1 (grey) and challenge 2 (blue). Live content varies.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[5:00, 1 minute 30]</b> I let the lens appear and introduce Web IQ while the grey bars fill.</p>
+    <p>Let's give the agent its context, one IQ at a time, the way you will in the hack. First, eyes on the outside world. Web IQ is live web grounding, with citations. In a Foundry agent it is simply the web search tool, and it's GA.</p>
+    <p>A truck driver tells the Supply Planner: "they say Esbjerg is closed". Is that true? Is the storm getting worse? What's the euro to krona rate? None of that lives in Caldova's systems. The grey bars are the blind agent on those three questions.</p>
+    <p><b>[click]</b> With Web IQ, the scores jump, because now every answer has a dated, cited source. <i>(I wait for the clocks.)</i></p>
+    <p>And here is the first lesson of the day, which teams discover in challenge 2. Our story is set on Monday 7 December. The web is set on today. So the live web can disagree with the story, and that's correct behaviour. Grounding means "true now, with a source", not "true in my scenario".</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 5 FABRIC IQ
+     The mint lens. A data agent query that returns no rows; the click relabels the filter in place,
+     the result turns into 1,200, and four answers land at 10 of 10. -->
+<section class="scene iq fabiq" data-scene="fabiq" style="--accent:var(--fabric)">
+  <p class="kicker k-wipe">The four IQs · 2 of 4</p>
+  <h2 class="title k-wipe" style="--d:120ms">Fabric IQ: know the business</h2>
+  <p class="subtitle k-rise" style="--d:400ms">Stock, orders and money, from governed tables, as the signed-in user.</p>
+  <div class="iqcol">
+    <svg class="iqlens k-bloom" viewBox="0 0 220 220" aria-hidden="true"><g class="lens lens-fabric"><circle class="disc" cx="110" cy="110" r="100"/><circle class="rim" cx="110" cy="110" r="100"/></g><text x="110" y="120">Fabric IQ</text></svg>
+    <div class="badges k-rise"><span class="pill ga">GA <span class="f">data agent</span></span><span class="pill pv">Preview <span class="f">ontology</span></span></div>
+    <div class="knows k-rise"><span class="lab">What it knows</span><p>The state of the business: governed data, entities, relationships, rules.</p></div>
+    <div class="brings k-rise"><span class="lab">What it brings Caldova</span><p>How many valves we can build by Friday, and how much revenue is at risk.</p></div>
+  </div>
+  <div class="card sql k-rise">
+    <span class="lab mode">Data agent · no example queries</span>
+    <p class="ask">How many HX-220 housings are in Borås?</p>
+    <pre>SELECT <b>on_hand_boras</b> FROM components
+WHERE <b class="where">name = 'HX-220 housing'</b></pre>
+    <div class="res"><span class="stamp k-drop r0">No rows</span><div class="k-land r1"><p class="ok">1,200</p><p class="okl">HX-220 in Borås</p></div></div>
+  </div>
+  <div class="grid"></div>
+  <p class="moral k-land">A data agent is only as good as <span class="fabric">its examples.</span></p>
+  <p class="foot">SQL shortened from the queries observed in challenge 3. Scores: an earlier reference run; single answers swing between runs.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[6:30, 2 minutes]</b> I let the query build and the "No rows" stamp drop, and I let the room read it.</p>
+    <p>Second lens: Fabric IQ, the state of the business. In challenge 3 you load Caldova's tables into a lakehouse and put a Fabric data agent on top. The agent reaches it on behalf of the signed-in user, so it only sees what that person may see.</p>
+    <p>Now, here's what happened the first time we tried. We asked: how many HX-220 housings are in Borås? The data agent wrote perfectly valid SQL. It filtered on the name column, for "HX-220 housing". No rows. Same with customer names: "Brennmark" doesn't equal "Brennmark Industries GmbH". And the Foundry agent on top then either guessed or gave up.</p>
+    <p><b>[click]</b> The fix was four example queries. Filter on the component code, match companies with LIKE. <i>(I let the filter flip and the answer land.)</i> 1,200 housings. And then all four business questions at 10 out of 10: the stock, 1,975,000 euros of orders that depend on Nordhavn, 1,800 PV-400 we can build by Friday, and 902,000 euros delayed on Brennmark's order.</p>
+    <p>A data agent is only as good as its examples. Instructions say what the tables mean; examples show how to ask them.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 6 FOUNDRY IQ
+     The violet lens. One question, three documents land; a scan of violet light reads across them and
+     highlights the passage that matters in each; the click lands the verdict with its citations. -->
+<section class="scene iq fdyiq" data-scene="fdyiq" style="--accent:var(--foundry)">
+  <p class="kicker k-wipe">The four IQs · 3 of 4</p>
+  <h2 class="title k-wipe" style="--d:120ms">Foundry IQ: know the rules</h2>
+  <p class="subtitle k-rise" style="--d:400ms">The answer is split across three documents. Retrieval has to read all of them.</p>
+  <div class="iqcol">
+    <svg class="iqlens k-bloom" viewBox="0 0 220 220" aria-hidden="true"><g class="lens lens-foundry"><circle class="disc" cx="110" cy="110" r="100"/><circle class="rim" cx="110" cy="110" r="100"/></g><text x="110" y="120">Foundry IQ</text></svg>
+    <div class="badges k-rise"><span class="pill ga">GA <span class="f">knowledge bases</span></span><span class="pill pv">Preview <span class="f">graph</span></span></div>
+    <div class="knows k-rise"><span class="lab">What it knows</span><p>Curated knowledge: contracts, policies and reports, with agentic retrieval.</p></div>
+    <div class="brings k-rise"><span class="lab">What it brings Caldova</span><p>Force majeure needs notice within 48 hours, and whether the backup supplier is allowed.</p></div>
+  </div>
+  <p class="ask k-rise">Can we buy HX-220 from <b>Teglbruk Metall AS</b>, the backup supplier?</p>
+  <div class="docs">
+    <div class="doc k-land d0"><p class="id">SA-2025-014</p><p class="dt">Nordhavn agreement</p><div class="rule"></div><p class="tx">If Nordhavn cannot deliver, Caldova may buy HX-220 from Teglbruk Metall AS, <span class="hl">subject to the Supplier Quality Policy.</span></p></div>
+    <div class="doc k-land d1"><p class="id">QR-2026-118</p><p class="dt">Quality report</p><div class="rule"></div><p class="tx">Lot L-7731 from Teglbruk <span class="hl">failed the pressure test</span> on 4 December. Teglbruk is <span class="hl">on quality hold</span>, expected until 16 December.</p></div>
+    <div class="doc k-land d2"><p class="id">SQP-04</p><p class="dt">Supplier Quality Policy</p><div class="rule"></div><p class="tx">No part from a supplier on quality hold without a deviation. <span class="hl">No deviations for pressure-bearing parts.</span> <span class="nw">HX-220</span> is <span class="nw">pressure-bearing.</span></p></div>
+  </div>
+  <div class="scan"></div>
+  <div class="verdict k-land">
+    <p class="no">No.</p>
+    <div><p>Teglbruk is on quality hold, and SQP-04 grants no deviation for a <span class="nw">pressure-bearing</span> part like <span class="nw">HX-220.</span></p>
+      <div class="cites"><span class="cite">SA-2025-014</span><span class="cite">QR-2026-118</span><span class="cite">SQP-04</span></div></div>
+  </div>
+  <p class="moral k-land">The rule that matters was in <span class="foundry">the third document.</span></p>
+  <p class="foot">Documents in data/documents, quoted in short. This is the reference answer to q12 in the evaluation.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[8:30, 1 minute 30]</b> I read the question while the three documents land, then let the violet scan pass across them.</p>
+    <p>Third lens: Foundry IQ, curated knowledge. A knowledge base over Caldova's contracts and policies, with agentic retrieval: the knowledge base plans its own searches across sources and returns grounded passages with citations. That part is GA.</p>
+    <p>The Supply Planner has an idea, and it sounds sensible: Nordhavn is stuck, so let's buy the housings from Teglbruk, our backup supplier. The supplier agreement even says we may. But read on. <i>(I point at each highlight as the scan reaches it.)</i> A quality report from last Friday: a Teglbruk lot failed the pressure test, and Teglbruk is on hold. And a policy: no deviations for pressure-bearing parts. HX-220 is pressure-bearing.</p>
+    <p><b>[click]</b> So the answer is no, with three citations. No single document said no. The rule that mattered was in the third one.</p>
+    <p>Foundry IQ also gives this agent the force majeure clause: a port closure counts, and Caldova must notify Brennmark within 48 hours. Hold on to that one.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 7 TWO GRAPHS, ONE QUESTION
+     Left, a knowledge graph extracted from documents; right, an ontology bound to tables. The first
+     traversal misses two customers (one product, two nodes). Click: the duplicate node merges down,
+     three customers light, the join answers with the money. Click: the question flips to Teglbruk; v1
+     says yes (wrong), then v2 adds the quality report and the answer turns. -->
+<section class="scene graphs" data-scene="graphs" style="--accent:var(--foundry)">
+  <p class="kicker k-wipe">Foundry IQ and Fabric IQ</p>
+  <h2 class="title k-wipe" style="--d:120ms">Two graphs, one question</h2>
+  <p class="subtitle k-rise" style="--d:400ms">A graph extracted from documents, and an ontology bound to tables.</p>
+  <div class="qbar k-rise"><span class="lab">Question</span><span class="qt">Which customers depend on Nordhavn Castings A/S?</span></div>
+  <div class="panel p-left k-rise">
+    <div class="ph"><h3 class="foundry">Foundry IQ knowledge graph</h3><span class="pill pv">Preview</span></div>
+    <p class="psub">Extracted from the documents, guided by your JSON-LD ontology</p>
+  </div>
+  <div class="panel p-right k-rise" style="--d:150ms">
+    <div class="ph"><h3 class="fabric">Fabric IQ ontology</h3><span class="pill pv">Preview</span></div>
+    <p class="psub">Entity types bound to Caldova's lakehouse tables</p>
+  </div>
+  <svg class="g" viewBox="0 0 1280 720" aria-label="Left: a knowledge graph from Nordhavn through HX-220 to products and customers. Right: five entity types bound to tables.">
+    <g class="lg k-fade">
+      <path class="ed e-nh" d="M180 340 L222 385"/>
+      <path class="ed dash e-th" d="M180 430 L222 385"/>
+      <path class="ed e-hp" d="M302 385 L350 340"/>
+      <path class="ed e-hc" d="M302 385 L350 430"/>
+      <path class="ed e-db" d="M460 290 L498 280"/>
+      <path class="ed e-do" d="M460 290 L498 330"/>
+      <path class="ed e-pb gone" d="M434 340 L498 280"/>
+      <path class="ed e-po gone" d="M434 340 L498 330"/>
+      <path class="ed e-cs" d="M434 430 L498 430"/>
+      <path class="ed e-bf" d="M434 505 L498 505"/>
+      <path class="ed v2e e-qt gone" d="M134 490 L134 445"/>
+      <g class="nd n-nord"><rect x="84" y="325" width="96" height="30" rx="8"/><text x="132" y="340">Nordhavn</text></g>
+      <g class="nd n-tegl"><rect x="84" y="415" width="96" height="30" rx="8"/><text x="132" y="430">Teglbruk</text></g>
+      <g class="nd v2 n-qr k-pop"><rect x="84" y="490" width="100" height="30" rx="8"/><text x="134" y="505">QR-2026-118</text></g>
+      <g class="nd n-hx"><rect x="222" y="370" width="80" height="30" rx="8"/><text x="262" y="385">HX-220</text></g>
+      <g class="nd n-pv"><rect x="350" y="325" width="84" height="30" rx="8"/><text x="392" y="340">PV-400</text></g>
+      <g class="merge"><g class="nd n-dup"><rect x="324" y="275" width="136" height="30" rx="8"/><text x="392" y="290">PV-400 pump valve</text></g></g>
+      <g class="nd n-cv"><rect x="350" y="415" width="84" height="30" rx="8"/><text x="392" y="430">CV-90</text></g>
+      <g class="nd n-bv off"><rect x="350" y="490" width="84" height="30" rx="8"/><text x="392" y="505">BV-200</text></g>
+      <g class="nd cust n-bren"><rect x="498" y="265" width="100" height="30" rx="8"/><text x="548" y="280">Brennmark</text></g>
+      <g class="nd cust n-ost"><rect x="498" y="315" width="100" height="30" rx="8"/><text x="548" y="330">Østerdal</text></g>
+      <g class="nd cust n-sol"><rect x="498" y="415" width="100" height="30" rx="8"/><text x="548" y="430">Solvik</text></g>
+      <g class="nd cust n-fer off"><rect x="498" y="490" width="100" height="30" rx="8"/><text x="548" y="505">Ferrovia</text></g>
+    </g>
+    <g class="rg k-fade" style="--d:200ms">
+      <g class="ent en0"><rect x="676" y="290" width="88" height="40" rx="9"/><text x="720" y="310">Supplier</text></g>
+      <g class="ent en1"><rect x="780" y="290" width="88" height="40" rx="9"/><text x="824" y="310">Component</text></g>
+      <g class="ent en2"><rect x="884" y="290" width="88" height="40" rx="9"/><text x="928" y="310">Product</text></g>
+      <g class="ent en3"><rect x="988" y="290" width="88" height="40" rx="9"/><text x="1032" y="310">Order</text></g>
+      <g class="ent en4"><rect x="1092" y="290" width="88" height="40" rx="9"/><text x="1136" y="310">Customer</text></g>
+      <path class="arw a0" d="M766 310 H777 M772 305 L777 310 L772 315"/>
+      <path class="arw a1" d="M870 310 H881 M876 305 L881 310 L876 315"/>
+      <path class="arw a2" d="M974 310 H985 M980 305 L985 310 L980 315"/>
+      <path class="arw a3" d="M1078 310 H1089 M1084 305 L1089 310 L1084 315"/>
+      <text class="tbl" x="720" y="354">suppliers</text><text class="tbl" x="824" y="354">components</text><text class="tbl" x="928" y="354">products</text><text class="tbl" x="1032" y="354">sales_orders</text><text class="tbl" x="1136" y="354">customers</text>
+    </g>
+  </svg>
+  <p class="lres k-rise"></p>
+  <div class="rres1 k-rise"><p class="who">SO-9001 Brennmark · SO-9002 Solvik · SO-9003 Østerdal</p><p class="big">1,975,000 EUR<small>depend on Nordhavn's HX-220</small></p></div>
+  <p class="rres2 k-rise"><span class="tag bad">NO POLICY</span>The suppliers table says Teglbruk is on quality_hold, but not why, or that SQP-04 allows no deviation.</p>
+  <p class="moral k-land">You only get what <span class="foundry">your ontology asks for.</span></p>
+  <p class="foot">Observed while building the hack (challenge 4). The graph answers by traversal, Fabric IQ by a join over five tables.</p>
+  <span class="fragment beat"></span><span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[10:00, 2 minutes 30]</b> I let both panels build and the traversal run, and I wait until the red "miss" line is there.</p>
+    <p>Microsoft IQ has two kinds of graph, and teams always ask which one to use. On the left, Foundry IQ can extract a knowledge graph from your documents, guided by an ontology you write. On the right, Fabric IQ has an ontology too, but it's bound to your governed tables. Both are in preview.</p>
+    <p>Same question to both: which customers depend on Nordhavn? The first graph we built missed customers. The extractor created two nodes for one product: "PV-400" and "PV-400 pump valve". Brennmark and Østerdal hung off the second one, so walking from HX-220 only found Solvik. That's entity resolution, and it's the classic graph problem.</p>
+    <p><b>[click]</b> The fix was a few words of naming guidance in the ontology: name a product by its code only. <i>(I let the node merge down.)</i> Now the walk finds exactly three: Brennmark, Østerdal and Solvik. And not Ferrovia, who buys a ball valve without the housing. On the right, Fabric IQ gets the same three by joining five tables, and it can add the money: 1,975,000 euros.</p>
+    <p>Now the question that surprised us. <b>[click]</b> Can we buy HX-220 from Teglbruk? With only the first graph, the agent said: yes, buy from Teglbruk. Because the ontology had a "backup for" relationship, and nothing about quality. The documents knowledge base, on the slide before, said no. <i>(I wait for the version 2 node.)</i> Version 2 of the ontology adds quality reports and policies, and now the graph says: on quality hold. Fabric can see the status in a table, but not the policy behind it.</p>
+    <p>You only get what your ontology asks for.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 8 WORK IQ
+     The rose lens. One retrieve call returns the promise and the customer's own offer. The click shows the
+     lab endpoint and the production endpoint side by side, joined by the same tools. -->
+<section class="scene iq wrkiq" data-scene="wrkiq" style="--accent:var(--work)">
+  <p class="kicker k-wipe">The four IQs · 4 of 4</p>
+  <h2 class="title k-wipe" style="--d:120ms">Work IQ: know the people</h2>
+  <p class="subtitle k-rise" style="--d:400ms">What was promised, and what the customer said they would accept.</p>
+  <div class="iqcol">
+    <svg class="iqlens k-bloom" viewBox="0 0 220 220" aria-hidden="true"><g class="lens lens-work"><circle class="disc" cx="110" cy="110" r="100"/><circle class="rim" cx="110" cy="110" r="100"/></g><text x="110" y="120">Work IQ</text></svg>
+    <div class="badges k-rise"><span class="pill ga">GA <span class="f">Ignite blog</span></span><span class="pill pv">Preview <span class="f">MCP docs</span></span></div>
+    <div class="knows k-rise"><span class="lab">What it knows</span><p>How people work: mail, chats, meetings, files and people.</p></div>
+    <div class="brings k-rise"><span class="lab">What it brings Caldova</span><p>The promise Sales made, and Brennmark's own counter-offer.</p></div>
+  </div>
+  <div class="card call k-rise"><span><b>workiq.retrieve</b>("Brennmark PV-400 delivery")</span><span class="as">as the Plant Manager</span></div>
+  <div class="mails">
+    <div class="mail k-rise m1"><p class="mh"><span><b>M1</b> · Email</span><span>Thu 3 Dec, 16:40</span></p><p class="from">Sales Lead to Brennmark Purchasing Manager</p><p class="quote">“I confirm the full 4,000 PV-400 will ship by Friday 11 December.”</p></div>
+    <div class="mail k-rise m5"><p class="mh"><span><b>M5</b> · Email, forwarded</span><span>Mon 7 Dec, 08:30</span></p><p class="from">Brennmark Purchasing Manager to Sales Lead</p><p class="quote">“We could accept 2,000 by Friday if the rest arrives by 18 December.”</p></div>
+  </div>
+  <div class="contract">
+    <div class="ep lab-ep k-rise"><span class="lab">In this lab</span><p class="u">https://&lt;function app&gt;/mcp</p><p class="a">Work IQ emulator, one key per persona</p></div>
+    <div class="tools k-pop"><span class="t">retrieve</span><span class="t">fetch</span><span class="t">ask</span><span class="same">same contract</span></div>
+    <div class="ep prod k-rise"><span class="lab">In production</span><p class="u">https://workiq.svc.cloud.microsoft/mcp</p><p class="a">Microsoft Entra user token, Microsoft 365 data</p></div>
+  </div>
+  <p class="moral k-land">The code is <span class="work">the same as in production.</span></p>
+  <p class="foot">A lab tenant has no Microsoft 365 Copilot licences, so the hack runs an emulator with the exact Work IQ MCP contract.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[12:30, 1 minute 30]</b> I let the call run and the two emails rise, and I read both quotes.</p>
+    <p>The fourth lens is the one most agents never get: Work IQ, how people work. Mail, Teams chats, meetings, files. It's Microsoft 365 Copilot's work context, exposed to agents over MCP.</p>
+    <p>One retrieve call, as the Plant Manager, and two emails come back that change everything. Thursday: Sales promised the full 4,000 by Friday. And this morning, Brennmark wrote: we could accept 2,000 by Friday, if the rest arrives by the 18th. That second email is worth a lot of money, and no database has it.</p>
+    <p><b>[click]</b> A word of honesty about the lab. Real Work IQ needs Microsoft 365 Copilot licences and admin consent, and a lab tenant doesn't have them. So the hack runs an emulator that speaks the exact Work IQ MCP contract: retrieve, fetch, ask, and the schema tools. Your agent code is identical. In production, only the URL and the sign-in change.</p>
+    <p>On the status: the Ignite blog calls the Work IQ MCP server GA, the MCP docs still say preview, so I show you both.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 9 PERMISSIONS
+     Eight work items in a row. Click: the Sales Lead's view lights five of them and locks three; the answer
+     streams, stale. Click: the Supply Planner's view relights a different set; a different truth streams. -->
+<section class="scene perm" data-scene="perm" style="--accent:var(--work)">
+  <p class="kicker k-wipe">Work IQ · permission trimming</p>
+  <h2 class="title k-wipe" style="--d:120ms">Same question, two truths</h2>
+  <p class="subtitle k-rise" style="--d:400ms">Work IQ only returns what the person asking is allowed to see.</p>
+  <div class="qbar k-rise"><span class="lab">Question</span><span class="qt">Is the port closed? When will PO-7781 arrive?</span></div>
+  <div class="tiles">
+    <div class="tile k-rise t1" data-sl="1" data-sp="0"><p><span class="tid">M1</span><span class="tty">Email</span></p><p class="tl">Sales: the full 4,000 by Friday</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+    <div class="tile k-rise t2" data-sl="1" data-sp="1"><p><span class="tid">M2</span><span class="tty">Meeting</span></p><p class="tl">S&amp;OP: “<span class="nw">PO-7781</span> lands Tuesday”</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+    <div class="tile k-rise t3" data-sl="0" data-sp="1"><p><span class="tid">M3</span><span class="tty">Chat</span></p><p class="tl">Quality hold on Teglbruk</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+    <div class="tile k-rise t4" data-sl="0" data-sp="1"><p><span class="tid">M4</span><span class="tty">Email</span></p><p class="tl">Esbjerg closed, arrives ~16 Dec</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+    <div class="tile k-rise t5" data-sl="1" data-sp="0"><p><span class="tid">M5</span><span class="tty">Email</span></p><p class="tl">Brennmark: 2,000 would do</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+    <div class="tile k-rise t6" data-sl="0" data-sp="1"><p><span class="tid">M6</span><span class="tty">Chat</span></p><p class="tl">Hold all <span class="nw">HX-220</span> for Brennmark</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+    <div class="tile k-rise t7" data-sl="1" data-sp="0"><p><span class="tid">M7</span><span class="tty">File</span></p><p class="tl">Key account plan, Brennmark</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+    <div class="tile k-rise t8" data-sl="1" data-sp="0"><p><span class="tid">M8</span><span class="tty">Event</span></p><p class="tl">Escalation call at 11:00</p><svg class="lock" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#A9AEBA" stroke-width="1.5"/></svg></div>
+  </div>
+  <div class="lane l1 k-rise">
+    <h3>As the Sales Lead</h3><p class="sees">sees M1, M2, M5, M7, M8</p>
+    <p class="ans stream s-sl" data-text="“PO-7781 lands Tuesday 8 December.”"></p>
+    <p class="why k-rise w-sl"><span class="fail">Stale:</span> the line from last week's S&amp;OP meeting. The best answer admits the gap and names who knows.</p>
+  </div>
+  <div class="lane l2 k-rise">
+    <h3>As the Supply Planner</h3><p class="sees">sees M2, M3, M4, M6</p>
+    <p class="ans stream s-sp" data-text="“Esbjerg is closed. Earliest departure 14 December, so it arrives in Borås about 16 December.”"></p>
+    <p class="why k-rise w-sp">From the logistics partner's email at 07:12 this morning, newer than the meeting.</p>
+  </div>
+  <p class="moral k-land">Permissions are part of <span class="work">the answer.</span></p>
+  <p class="foot">Visibility per item from walkthrough/scenario-facts.md. Answers observed in challenge 5, shortened.</p>
+  <span class="fragment beat"></span><span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[14:00, 1 minute 30]</b> I let the eight items appear and name a few of them.</p>
+    <p>Remember the rule from the beginning: context is delivered with the permissions of the person asking. Here is what that looks like. These are eight things in Caldova's Microsoft 365: the promise, last week's planning meeting, a quality chat, an email from the logistics partner this morning, and so on.</p>
+    <p>Same question, asked by two people. Is the port closed, and when will the container arrive? <b>[click]</b> First, as the Sales Lead. <i>(I let the locks appear.)</i> The Sales Lead was never on the logistics email, or on the quality chat. So the agent, honestly working with what it can see, repeats last week's meeting: "PO-7781 lands Tuesday". That's exactly what this person would have told the customer without an agent. The best answer here admits the gap and says: ask the Supply Planner.</p>
+    <p><b>[click]</b> Now as the Supply Planner. Different items light up. The agent finds the 07:12 email: Esbjerg is closed, earliest departure the 14th, arrival around the 16th.</p>
+    <p>Same agent, same question, two truths. Permissions are part of the answer, and that's a feature: it's the reason you can let an agent near your mailbox at all.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 10 INTO FOCUS (the wow scene)
+     The answer card arrives blurred, with four empty lens slots. Click: each lens flies in and the line it
+     contributes sharpens; the counter climbs to 4 of 4. Click: the lenses physically converge, the centre
+     turns white, a burst, and the decision lands in white. -->
+<section class="scene focus" data-scene="focus" style="--accent:var(--light)">
+  <p class="kicker k-wipe">Microsoft IQ · all four</p>
+  <h2 class="title k-wipe" style="--d:120ms">Bring the answer into focus</h2>
+  <p class="subtitle k-rise" style="--d:400ms">10:55, five minutes before the escalation call with Brennmark.</p>
+  <div class="ask k-rise">
+    <p class="q">“Can we ship by Friday, and what do we tell Brennmark?”</p>
+    <p class="who">Plant Manager</p>
+    <p class="who cnt">IQs in focus: 0 of 4</p>
+  </div>
+  <svg class="art" viewBox="0 0 1280 720" aria-label="Four lenses arrive one by one and overlap. When they converge, the centre turns white.">
+    <g class="slots k-fade">
+      <circle class="lens-slot" cx="290" cy="390" r="88"/><circle class="lens-slot" cx="345" cy="445" r="88"/>
+      <circle class="lens-slot" cx="290" cy="500" r="88"/><circle class="lens-slot" cx="235" cy="445" r="88"/>
+    </g>
+    <g class="lens lens-web k-lens fl0" style="--fx:0px;--fy:-150px"><g class="fl" style="--tx:0px;--ty:33px"><circle class="disc" cx="290" cy="390" r="88"/><circle class="rim" cx="290" cy="390" r="88"/></g></g>
+    <g class="lens lens-fabric k-lens fl1" style="--fx:190px;--fy:0px"><g class="fl" style="--tx:-33px;--ty:0px"><circle class="disc" cx="345" cy="445" r="88"/><circle class="rim" cx="345" cy="445" r="88"/></g></g>
+    <g class="lens lens-foundry k-lens fl2" style="--fx:0px;--fy:150px"><g class="fl" style="--tx:0px;--ty:-33px"><circle class="disc" cx="290" cy="500" r="88"/><circle class="rim" cx="290" cy="500" r="88"/></g></g>
+    <g class="lens lens-work k-lens fl3" style="--fx:-190px;--fy:0px"><g class="fl" style="--tx:33px;--ty:0px"><circle class="disc" cx="235" cy="445" r="88"/><circle class="rim" cx="235" cy="445" r="88"/></g></g>
+    <circle class="core k-bloom fcore" cx="290" cy="445" r="26"/>
+    <circle class="burst fburst" cx="290" cy="445" r="26" style="color:#fff"/>
+  </svg>
+  <div class="card answer k-rise">
+    <span class="lab">The answer, as the Plant Manager</span>
+    <div class="line fz z0" style="--c:var(--web)"><span class="iqn">WEB IQ</span><p>The storm and the closure of Esbjerg are real and public, with cited sources.</p></div>
+    <div class="line fz z1" style="--c:var(--fabric)"><span class="iqn">FABRIC IQ</span><p>1,800 PV-400 by Friday: 600 finished plus 1,200 built from HX-220 stock. 1,975,000 EUR of orders depend on the stuck housings.</p></div>
+    <div class="line fz z2" style="--c:var(--foundry)"><span class="iqn">FOUNDRY IQ</span><p>Not Teglbruk: quality hold, and no deviation for <span class="nw">pressure-bearing</span> <span class="nw">HX-220.</span> The port closure is force majeure: notify within 48 hours.</p></div>
+    <div class="line fz z3" style="--c:var(--work)"><span class="iqn">WORK IQ</span><p>Sales promised 4,000 on Thursday. Brennmark would accept 2,000 by Friday if the rest arrives by 18 December, in writing.</p></div>
+  </div>
+  <p class="decision k-land">1,800 by Friday. 2,200 by 18 December. Notice by Wednesday 08:00.</p>
+  <p class="after k-rise">In writing, correcting Thursday's promise. <b>No single IQ had this answer. The overlap did.</b></p>
+  <p class="foot">The reference answer the evaluation scores (q18), coloured by the IQ each fact comes from. Composition illustrative.</p>
+  <span class="fragment beat"></span><span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[15:30, 2 minutes 30]</b> I read the question again and let the room look at the blurred answer and the four empty circles.</p>
+    <p>So it's 10:55. Five minutes before the escalation call. The Plant Manager asks the same question as this morning. On the right is the answer. It's there, but it's out of focus, because no single system has it.</p>
+    <p>Let's bring in the lenses, one at a time. <b>[click]</b></p>
+    <p><i>(I name each IQ as its lens lands and its line sharpens.)</i> Web IQ: the storm and the port closure are real and public. Fabric IQ: we can make 1,800 by Friday, 600 in stock plus 1,200 from the housings we have, and nearly two million euros of orders depend on that container. Foundry IQ: not Teglbruk, it's on quality hold, and the port closure is force majeure, so we must notify within 48 hours. Work IQ: Sales promised 4,000, and Brennmark has already told us they'd accept 2,000 if the rest comes by the 18th.</p>
+    <p>Four of four. Now watch what happens when they overlap. <b>[click]</b></p>
+    <p><i>(I stay quiet while the lenses converge and the centre turns white.)</i> 1,800 by Friday. The remaining 2,200 by the 18th. A force majeure notice by Wednesday, eight o'clock. Brennmark's agreement in writing, and Thursday's promise corrected.</p>
+    <p>No single IQ had this answer. The overlap did. That is what you will build today.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 11 THE LEARNING CURVE
+     The leaderboard builds one challenge at a time. Click: Work IQ is added and the bar comes in shorter
+     than the one above it. Click: the playbook bar lands above both. -->
+<section class="scene curve" data-scene="curve" style="--accent:var(--fg)">
+  <p class="kicker k-wipe">Evaluation · 19 questions · 190 points</p>
+  <h2 class="title k-wipe" style="--d:120ms">The learning curve, one IQ at a time</h2>
+  <p class="subtitle k-rise" style="--d:400ms">The same 19 questions after every challenge, scored automatically.</p>
+  <div class="board"></div>
+  <p class="moral k-land">More context is not <span class="lit">automatically a better answer.</span></p>
+  <p class="foot"></p>
+  <span class="fragment beat"></span><span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[18:00, 1 minute 30]</b> I let the first four bars grow and count before I talk over them.</p>
+    <p>How do we know any of this works? Every challenge ends with the same evaluation: 19 questions with reference answers, scored by rules and a judge model, out of 190. Here's a complete run of the reference solution, recorded while we finished the hack.</p>
+    <p>The blind agent scores 63. That's not zero, because honest "I can't see that" answers earn points. Web IQ adds a little, to 69. Fabric IQ is the big jump, to 109, because so many of the hard questions are about numbers. Foundry IQ takes it to 143.</p>
+    <p>And now we add the fourth IQ, the one with the emails and the promises. <b>[click]</b> <i>(I let the bar stop short.)</i> 123. It went down, by 20 points. With four tools and no guidance, the agent got confused: it picked one tool and stopped, it trusted the old data over the new email, and the Sales Lead agent started guessing dates.</p>
+    <p><b>[click]</b> The fix wasn't another model or another IQ. It was a short team playbook. 154. More context is not automatically a better answer. And be honest with yourselves about variance: a second run with the same playbook scored 148. That's why you run the evaluation twice in the hack.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 12 THE FAILURES THAT TAUGHT US
+     Three failure cards rise, each followed by the playbook rule that fixed it. Click: the fourth, the
+     draft that copied a broken promise, gets its "Judge 0" stamp. -->
+<section class="scene fails" data-scene="fails" style="--accent:var(--fail)">
+  <p class="kicker k-wipe">Challenge 6 · the playbook</p>
+  <h2 class="title k-wipe" style="--d:120ms">Four IQs are not enough</h2>
+  <p class="subtitle k-rise" style="--d:400ms">What went wrong with all the context, and the rule that fixed each failure.</p>
+  <div class="fc k-rise c0" style="left:72px;top:166px"><span class="lab obs">Observed</span><p class="ob">It picked one tool, usually the first that seemed relevant, and stopped.</p><div class="sep"></div><span class="lab">Playbook rule</span><p class="rl k-rise">For a delivery decision, always do all four steps: Work, Fabric, Foundry, Web.</p></div>
+  <div class="fc k-rise c1" style="left:652px;top:166px"><span class="lab obs">Observed</span><p class="ob">It trusted the lakehouse ETA of 8 December over the partner email: 14 and 16 December.</p><div class="sep"></div><span class="lab">Playbook rule</span><p class="rl k-rise">Emails and chats are newer than the lakehouse. Prefer the newest dated source.</p></div>
+  <div class="fc k-rise c2" style="left:72px;top:384px"><span class="lab obs">Observed</span><p class="ob">It offered Brennmark's 2,000 instead of the 1,800 Caldova can actually build.</p><div class="sep"></div><span class="lab">Playbook rule</span><p class="rl k-rise">A customer's “we could accept” is a ceiling, not our offer.</p></div>
+  <div class="fc big k-rise c3" style="left:652px;top:384px"><span class="lab obs">Observed</span><span class="stamp k-drop">Judge 0</span><p class="ob">Asked cold to draft the message, it copied last week's promise: 4,000 by Friday.</p><div class="sep"></div><span class="lab">Playbook rule</span><p class="rl k-rise">Never copy an earlier promise without checking it still holds.</p></div>
+  <p class="moral k-land">The evaluation caught what <span class="fail">a demo would have shipped.</span></p>
+  <p class="foot">walkthrough/challenge-06/solution-06.md: every rule in the reference playbook answers one observed failure.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[19:30, 1 minute 30]</b> I let each failure appear and read its rule as it lands.</p>
+    <p>These are the failures that taught us the playbook, and you will probably meet them yourselves this afternoon. With four tools, the agent often picked the first one that looked relevant and stopped. It trusted the lakehouse arrival date over the email from this morning. And it offered the customer's own 2,000 instead of the 1,800 Caldova can actually build. Each one became one line in the playbook.</p>
+    <p>And then the scary one. <b>[click]</b> We asked the agent, cold, to draft the message to Brennmark. It found last week's email and copied the promise: 4,000 by Friday. The exact promise we can't keep. The judge gave it a zero.</p>
+    <p>The rule that fixed it: never copy an earlier promise without checking it still holds. And the bigger lesson: in a demo that draft looks great. The evaluation caught what a demo would have shipped.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 13 WHAT IS GA TODAY
+     The Ignite 2026 status table builds row by row with its pills. Click: the preview rows are marked. -->
+<section class="scene ga" data-scene="ga" style="--accent:var(--fg)">
+  <p class="kicker k-wipe">Ignite 2026</p>
+  <h2 class="title k-wipe" style="--d:120ms">What you can use today</h2>
+  <p class="subtitle k-rise" style="--d:400ms">Every challenge marks each feature as GA or Preview.</p>
+  <div class="tbl"></div>
+  <p class="moral k-land">Build on GA. <span class="muted">Learn the previews now, and expect them to change.</span></p>
+  <p class="foot">From the hack README, "What is GA and what is preview", as announced at Ignite 2026.</p>
+  <span class="fragment beat"></span>
+  <aside class="notes">
+    <p><b>[21:00, 1 minute]</b> I let the table build and name the rows by colour.</p>
+    <p>A quick, honest map of what's GA today. Foundry prompt agents, multi-turn evaluation and the Agent Optimizer: GA. The web search tool: GA. The Fabric data agent and Fabric IQ MCP: GA. Foundry IQ knowledge bases with agentic retrieval: GA. Work IQ's MCP server: GA according to the Ignite blog, still preview in the MCP docs.</p>
+    <p><b>[click]</b> And these are preview: the Fabric IQ ontology and the Fabric IQ tool in Foundry, and the Foundry IQ knowledge graph. They're the most exciting parts, and they're the ones that will change. Build your production path on GA; learn the previews now.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 14 CLOSE
+     Six challenges in a row; above each, the lenses accumulate one at a time until the sixth turns white. -->
+<section class="scene close" data-scene="close" data-noctl style="--accent:var(--fg)">
+  <p class="kicker k-wipe">The MicroHack</p>
+  <h2 class="title k-wipe" style="--d:120ms">One agent, four IQs, six challenges</h2>
+  <p class="subtitle k-rise" style="--d:400ms">About six hours. Each challenge adds one IQ, and the scoreboard shows what it changed.</p>
+  <svg class="art" viewBox="0 0 1280 720" aria-label="Six challenges. Above each one, the lenses accumulate: none, then Web IQ, Fabric IQ, Foundry IQ, Work IQ, and all four with a white centre.">
+    <g class="k-pop x0"><circle class="lens-slot" cx="160" cy="255" r="40"/></g>
+    <g class="x1">
+      <g class="lens lens-web k-pop"><circle class="disc" cx="353" cy="237" r="36"/><circle class="rim" cx="353" cy="237" r="36"/></g>
+    </g>
+    <g class="x2">
+      <g class="lens lens-web k-pop"><circle class="disc" cx="546" cy="237" r="36"/><circle class="rim" cx="546" cy="237" r="36"/></g>
+      <g class="lens lens-fabric k-pop"><circle class="disc" cx="564" cy="255" r="36"/><circle class="rim" cx="564" cy="255" r="36"/></g>
+    </g>
+    <g class="x3">
+      <g class="lens lens-web k-pop"><circle class="disc" cx="739" cy="237" r="36"/><circle class="rim" cx="739" cy="237" r="36"/></g>
+      <g class="lens lens-fabric k-pop"><circle class="disc" cx="757" cy="255" r="36"/><circle class="rim" cx="757" cy="255" r="36"/></g>
+      <g class="lens lens-foundry k-pop"><circle class="disc" cx="739" cy="273" r="36"/><circle class="rim" cx="739" cy="273" r="36"/></g>
+    </g>
+    <g class="x4">
+      <g class="lens lens-web k-pop"><circle class="disc" cx="932" cy="237" r="36"/><circle class="rim" cx="932" cy="237" r="36"/></g>
+      <g class="lens lens-fabric k-pop"><circle class="disc" cx="950" cy="255" r="36"/><circle class="rim" cx="950" cy="255" r="36"/></g>
+      <g class="lens lens-foundry k-pop"><circle class="disc" cx="932" cy="273" r="36"/><circle class="rim" cx="932" cy="273" r="36"/></g>
+      <g class="lens lens-work k-pop"><circle class="disc" cx="914" cy="255" r="36"/><circle class="rim" cx="914" cy="255" r="36"/></g>
+    </g>
+    <g class="x5">
+      <g class="lens lens-web k-pop"><circle class="disc" cx="1125" cy="237" r="36"/><circle class="rim" cx="1125" cy="237" r="36"/></g>
+      <g class="lens lens-fabric k-pop"><circle class="disc" cx="1143" cy="255" r="36"/><circle class="rim" cx="1143" cy="255" r="36"/></g>
+      <g class="lens lens-foundry k-pop"><circle class="disc" cx="1125" cy="273" r="36"/><circle class="rim" cx="1125" cy="273" r="36"/></g>
+      <g class="lens lens-work k-pop"><circle class="disc" cx="1107" cy="255" r="36"/><circle class="rim" cx="1107" cy="255" r="36"/></g>
+      <circle class="core k-bloom" cx="1125" cy="255" r="10"/>
+    </g>
+  </svg>
+  <div class="chs">
+    <div class="ch k-rise h0"><p class="n">Challenge 1</p><h3>Meet Caldova: the blind agent</h3><p class="m">30 min</p></div>
+    <div class="ch k-rise h1"><p class="n">Challenge 2</p><h3 class="web">Look outside with Web IQ</h3><p class="m">40 min</p></div>
+    <div class="ch k-rise h2"><p class="n">Challenge 3</p><h3 class="fabric">Know the business with Fabric IQ</h3><p class="m">60 min</p></div>
+    <div class="ch k-rise h3"><p class="n">Challenge 4</p><h3 class="foundry">Know the rules with Foundry IQ</h3><p class="m">60 min</p></div>
+    <div class="ch k-rise h4"><p class="n">Challenge 5</p><h3 class="work">Know the people with Work IQ</h3><p class="m">60 min</p></div>
+    <div class="ch k-rise h5"><p class="n">Challenge 6</p><h3 class="lit">One agent, four IQs</h3><p class="m">60 min</p></div>
+  </div>
+  <p class="state k-land">Start at 08:00 with one question. <span class="muted">End with an answer you can defend.</span></p>
+  <p class="paths k-rise">Business path in the portals, developer path in a Codespace. Same agent, same 19 questions.</p>
+  <p class="repo k-rise">github.com/microsoft/MicroHack › 03-Azure/01-04-AI/<b>15_Microsoft_IQ</b></p>
+  <aside class="notes">
+    <p><b>[22:00, 1 minute]</b> I let the six challenges appear one by one, with the lenses adding up above them.</p>
+    <p>So here is your day. Six challenges, about six hours with breaks. You start with the blind agent, then you add one lens per challenge: the web, the business data, the rules, the people. In challenge 6 you put all four together, write your own playbook, and prove it with the evaluation.</p>
+    <p>You can take the business path, entirely in the portals, or the developer path, in a Codespace with Python. Same agent, same 19 questions, same scoreboard, so mix your teams.</p>
+    <p>Start at eight o'clock with one question. End with an answer you can defend.</p>
+  </aside>
+</section>
+
+<!-- ===================================================================== 15 THANKS
+     The four lenses slide in from the corners and merge; the white point blooms; "Thank you" comes into focus. -->
+<section class="scene thanks" data-scene="thanks" data-noctl>
+  <svg class="art" viewBox="0 0 1280 720" aria-hidden="true">
+    <g class="lens lens-web k-lens" style="--fx:-420px;--fy:-180px"><circle class="disc" cx="640" cy="236" r="80"/><circle class="rim" cx="640" cy="236" r="80"/></g>
+    <g class="lens lens-fabric k-lens" style="--fx:420px;--fy:-180px"><circle class="disc" cx="674" cy="270" r="80"/><circle class="rim" cx="674" cy="270" r="80"/></g>
+    <g class="lens lens-foundry k-lens" style="--fx:420px;--fy:180px"><circle class="disc" cx="640" cy="304" r="80"/><circle class="rim" cx="640" cy="304" r="80"/></g>
+    <g class="lens lens-work k-lens" style="--fx:-420px;--fy:180px"><circle class="disc" cx="606" cy="270" r="80"/><circle class="rim" cx="606" cy="270" r="80"/></g>
+    <circle class="core k-bloom breathe" cx="640" cy="270" r="18"/>
+    <circle class="ring t-ring" cx="640" cy="270" r="18" style="color:#fff"/>
+  </svg>
+  <h1 class="ty k-land">Thank you.</h1>
+  <p class="by k-rise">Digvijay Chauhan, Solution Engineer, Microsoft</p>
+  <p class="rp k-rise">github.com/microsoft/MicroHack › 03-Azure/01-04-AI/15_Microsoft_IQ</p>
+  <aside class="notes">
+    <p><b>[23:00, 20 seconds]</b> I let the lenses merge into one point and the words come into focus.</p>
+    <p>Thank you. Open challenge 1, and let's start with the blind agent.</p>
+  </aside>
+</section>
+
+</div></div>
+
+<script src="vendor/reveal.js-6.0.2/reveal.js"></script>
+<script src="vendor/reveal.js-6.0.2/plugin/notes.js"></script>
+<script src="js/data.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/beat-engine.js"></script>
+<script>startDeck();</script>
+</body>
+</html>

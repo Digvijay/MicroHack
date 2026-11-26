@@ -1,0 +1,6 @@
+supplier_id,name,country,port,status
+SUP-01,Nordhavn Castings A/S,Denmark,Esbjerg,active
+SUP-02,Teglbruk Metall AS,Norway,Bergen,quality_hold
+SUP-03,Kvarnby Polymers AB,Sweden,Malmö,active
+SUP-04,Rhein Präzision GmbH,Germany,Duisburg,active
+SUP-05,Baltic Fasteners UAB,Lithuania,Klaipėda,active

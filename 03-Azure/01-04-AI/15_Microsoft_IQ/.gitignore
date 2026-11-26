@@ -1,0 +1,8 @@
+src/.env
+src/.venv/
+src/.caldova/
+**/__pycache__/
+# Resolved in the Codespace on first 'uv sync' (a lock made behind a corporate feed would leak its URLs)
+src/uv.lock
+# Your team's playbook (Challenge 6). The coach reference is walkthrough/challenge-06/playbook.md
+src/playbook.md
