@@ -16,7 +16,7 @@ Build **Alex's agent** (`alex-agent`) and connect it to Alex's Microsoft 365 wor
 >
 > So the agent asks Sam, in the same thread Alex will read in the morning. Sam replies in thirty seconds, and adds what none of the systems knew. Tonight, **Sam is a person on your team** (or, for solo hackers, auto-Sam).
 
-The Work IQ emulator speaks the Work IQ MCP contract over a simulated Microsoft 365 world. Each persona has its own key, and a key sees only that persona's items. Alex's key is `WORKIQ_KEY`; Sam's key is `WORKIQ_KEY_SAM`. Both are in `.env`.
+The Work IQ emulator speaks the Work IQ MCP contract over a simulated Microsoft 365 world. Each persona has its own key, and a key sees only that persona's items. Alex's key is `WorkIQKey`; Sam's key is `WorkIQKeySam`. Both are on your lab dashboard (in `.env` they are `WORKIQ_KEY` and `WORKIQ_KEY_SAM`).
 
 ## Tasks
 
@@ -36,10 +36,10 @@ The Work IQ emulator speaks the Work IQ MCP contract over a simulated Microsoft 
    | Field | Value |
    |---|---|
    | Name | `workiq` |
-   | Remote MCP Server endpoint | `WORKIQ_MCP_URL` from `.env` (the emulator URL, ends in `/mcp`) |
+   | Remote MCP Server endpoint | `WorkIQEmulatorEndpoint` from the lab dashboard (the emulator URL, ends in `/mcp`) |
    | Authentication | **Key-based** (the other options are OAuth Identity Passthrough, Microsoft Entra and Unauthenticated) |
    | Credential: key | `Authorization` |
-   | Credential: value | `Bearer <WORKIQ_KEY>` (Alex's key from `.env`, with the word `Bearer` and a space) |
+   | Credential: value | `Bearer <WorkIQKey>` (Alex's key from the lab dashboard, with the word `Bearer` and a space) |
 
 <!-- SHOT: c05-mcp-tool-form | Foundry portal, strandvik project > alex-agent > Add > Add tools > Custom > Model Context Protocol (MCP) > Create | The "Add Model Context Protocol tool" form filled with name workiq, the emulator /mcp endpoint, Key-based authentication and the Authorization credential (value blurred) | Highlight the endpoint, Key-based and the credential key Authorization -->
 ![Custom MCP tool for the Work IQ emulator](../images/c05-mcp-tool-form.png)
@@ -127,7 +127,7 @@ Now `retrieve` and `fetch` run on their own. `create_entity` (a post in the thre
 
 One person plays Sam. Solo? Use auto-Sam (step 3).
 
-1. **Sam:** open `WORKIQ_VIEWER_URL` in a **private window** and sign in with **`WORKIQ_KEY_SAM`**. Go to **Chats** > **Kolvo press line 2, SD-900** and keep it open: it refreshes every 4 seconds.
+1. **Sam:** open `WorkIQViewerUrl` in a **private window** and sign in with **`WorkIQKeySam`**. Go to **Chats** > **Kolvo press line 2, SD-900** and keep it open: it refreshes every 4 seconds.
 2. **Agent:** in the `alex-agent` playground, send one prompt at a time:
 
    ```text
@@ -203,7 +203,7 @@ One person plays Sam. Solo? Use auto-Sam (step 3).
 
 | Symptom | Fix |
 |---|---|
-| Tool call fails with 401 | The credential key must be `Authorization` and the value `Bearer <key>`, with Alex's key (`WORKIQ_KEY`), not Sam's. |
+| Tool call fails with 401 | The credential key must be `Authorization` and the value `Bearer <key>`, with Alex's key (`WorkIQKey`), not Sam's. |
 | Tool call fails with 503 | The emulator has no keys configured. Ask your coach. |
 | Every tool call waits for approval | That is the default "Never auto-approve tools". Do Part C. Posts still wait for **Approve**: that is intended. |
 | Next turn fails with "The following MCP approval requests do not have an approval" | A tool call was left without **Approve** or **Deny**. Answer it, or start a new chat. |
@@ -216,7 +216,7 @@ One person plays Sam. Solo? Use auto-Sam (step 3).
 ## Go further
 
 - Select **Deny** on a post and see how the agent reports it. Does it try to post somewhere else? It should not.
-- Sign in to the viewer with Alex's key (`WORKIQ_KEY`) and then with Sam's key. Compare what each persona sees.
+- Sign in to the viewer with Alex's key (`WorkIQKey`) and then with Sam's key. Compare what each persona sees.
 - Ask the agent to search for "RSV-2291" and "Rotterdam SD-900" and list every item it finds, with where each came from.
 
 ## Reflection

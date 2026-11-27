@@ -32,7 +32,7 @@ The seven documents are plain text, so Minimal is enough. **Standard** fails in 
 
 ### Stretch: knowledge graph (notebook 02)
 
-The notebook creates `strandvik-graph-v1` with `graphExtraction` (Search preview REST API, chat model `gpt-5.6-luna`, the ontology inline), waits a few minutes for ingestion, then creates `strandvik-graph-v1-kb`. The chat model is only allowed together with `graphExtraction`. The ontology is fixed at creation: a changed ontology needs `VERSION = "v2"`. Expected answer: Sam, the reservation owner, in writing (a chat message counts), plus Poliden's planner for the stop date. The activity list shows graph retrieval.
+Only for developers with the optional Codespace (on their own fork) or a local clone. The notebook creates `strandvik-graph-v1` with `graphExtraction` (Search preview REST API, chat model `gpt-5.6-luna`, the ontology inline), waits a few minutes for ingestion, then creates `strandvik-graph-v1-kb`. The chat model is only allowed together with `graphExtraction`. The ontology is fixed at creation: a changed ontology needs `VERSION = "v2"`. Expected answer: Sam, the reservation owner, in writing (a chat message counts), plus Poliden's planner for the stop date. The activity list shows graph retrieval.
 
 ## Expected results
 

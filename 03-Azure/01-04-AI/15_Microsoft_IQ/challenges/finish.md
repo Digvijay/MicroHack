@@ -53,7 +53,7 @@ For each question, open the evidence in a browser tab so you can show it quickly
 |---|---|
 | Evidence from an earlier challenge is gone (thread reset, run lost) | Show the agent's **Traces** tab or the evaluation instead. A trace counts as evidence of the run. |
 | The board or an agent fails while you show it | Show the last good trace or screenshot. Score is about what you built and can explain, not a live demo. |
-| You cannot find the Foundry Agent Consumer assignment | Notebook 01 granted it to the agent identity (the portals cannot pick agent identities yet). Show the notebook output where it granted the role. |
+| You cannot find the Foundry Agent Consumer assignment | The Cloud Shell script `enable-a2a.py` granted it to the agent identity (the portals cannot pick agent identities yet). Run the same command again: it prints `already granted, nothing to do` when the role is there. |
 
 ## Go further
 

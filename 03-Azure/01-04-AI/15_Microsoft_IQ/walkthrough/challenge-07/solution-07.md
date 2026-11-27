@@ -36,7 +36,7 @@ Application Insights is connected to both projects by the lab, so spans nest acr
 
 ### The stretch handover
 
-Not verified in testing. In this chain nobody is signed in: Maria's agent starts it with its own identity, and the Parts tool on `alex-agent` uses OAuth Identity Passthrough, so expect the Parts call to fail. Let Alex's agent use the facts it already gathered in the night thread, or give Parts the files fallback from solution 6. Frame it as an exploration of where identity breaks.
+The team opens `alex-agent` with `python3 enable-a2a.py --agent alex-agent --caller strandvik/strandvik-customer-service` in Cloud Shell (the first run prints `granted`). Not verified end to end in testing. In this chain nobody is signed in: Maria's agent starts it with its own identity, and the Parts tool on `alex-agent` uses OAuth Identity Passthrough, so expect the Parts call to fail. Let Alex's agent use the facts it already gathered in the night thread, or give Parts the files fallback from solution 6. Frame it as an exploration of where identity breaks.
 
 ## Expected results
 
@@ -88,7 +88,7 @@ Ask the room "Which of the three is your company today?" Most are the repair sho
 | Custom rubric scores everything 3 | Rubric pasted without the criteria list | Paste the whole text box |
 | Compare runs greyed out | Runs from different evaluations selected | Select two runs of the same evaluation |
 | Trace shows only Alex's agent, no nested spans | Application Insights not connected to one project | Check connections `appinsights-strandvik` and `appinsights-kolvo` |
-| Board: `tool_user_error` again | A new version of `strandvik-customer-service` lost incoming A2A, or the role was removed | Re-run notebook 01 for it |
+| Board: `tool_user_error` again | A new version of `strandvik-customer-service` lost incoming A2A, or the role was removed | Re-run `enable-a2a.py --agent strandvik-customer-service --caller kolvo/maria-procurement` in Cloud Shell |
 | Board times out with the stretch | Chain Maria > customer service > Alex > three specialists exceeds 180 seconds | Prepare the proposal earlier and only fetch it, or call fewer specialists |
 | Test posts in the Kolvo thread | Evaluation rows called Work IQ | `POST /manage/thread/reset` or `/viewer/coach` |
 

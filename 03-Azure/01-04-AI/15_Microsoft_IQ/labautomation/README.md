@@ -8,8 +8,9 @@ and the Work IQ emulator with Kolvo's procurement board. There is no shared back
 coach step per lab. One-time tenant settings are listed under
 [Platform admin prerequisites](#platform-admin-prerequisites-once-per-tenant).
 
-Participants build everything else themselves in the portals (and two helper notebooks).
-They never run these scripts.
+Participants build everything else themselves in the browser: the portals, plus one script in
+Azure Cloud Shell ([`scripts/enable-a2a.py`](../scripts/enable-a2a.py)). They need no Codespace and
+no local install, and they never run these scripts.
 
 | File | Purpose |
 |------|---------|
@@ -101,8 +102,9 @@ role assignments use stable names.
 | `ApplicationInsightsName` | `iq-appi-<hash>` |
 | `LabRegion` | The lab region |
 
-Participants do not copy these by hand: [`create-env.sh`](../create-env.sh) (or
-`create-env.ps1`) reads the same values from Azure and writes `.env`.
+Participants read these on the lab dashboard. Developers who use the optional Codespace or a
+local clone run [`create-env.sh`](../create-env.sh) (or `create-env.ps1`), which reads the same
+values from Azure and writes `.env` for the notebooks.
 
 The emulator **admin key** is not an output. Coaches read `WORKIQ_ADMIN_KEY` from the Function
 App's environment variables (Azure portal > the lab resource group > `iq-wiq-...` > Settings >
@@ -130,8 +132,8 @@ script adds:
 | Deployment identity (if not the lab user) | Foundry account | Foundry User (to build the Kolvo agents through the data plane) |
 
 **Why no RBAC administrator role for the lab user?** Challenge 2 asks the lab user to grant
-Maria's agent identity **Foundry Agent Consumer** on the strandvik project in Access control
-(IAM). The built-in **Foundry Project Manager** role already allows
+Maria's agent identity **Foundry Agent Consumer** on the strandvik customer service agent (with
+`enable-a2a.py` in Cloud Shell, because the portals cannot pick agent identities yet). The built-in **Foundry Project Manager** role already allows
 `roleAssignments/write` with a condition that limits it to exactly two roles: Foundry Agent
 Consumer and Foundry User. That is all the challenge needs, and the platform's Owner role on
 the resource group covers it too.
@@ -205,7 +207,8 @@ Set once by the lab tenant's Fabric administrator, **Fabric admin portal, Tenant
 
 Lab users need a Fabric (Power BI) licence: `"groups": ["GHCPUsers", "M365-E5-Users"]` in
 [`lab-defaults.json`](lab-defaults.json) assigns Microsoft 365 E5 (includes Power BI Pro) and a
-GitHub Copilot seat with Codespaces access.
+GitHub Copilot seat. Participants do not need Codespaces: the hack is browser only. A participant
+who wants a Codespace creates it on their own fork, billed to their own GitHub account.
 
 ## Packing and quotas (`labsPerSubscription = 10`)
 

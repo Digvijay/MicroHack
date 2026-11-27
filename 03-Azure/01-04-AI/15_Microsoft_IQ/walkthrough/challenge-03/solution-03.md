@@ -60,7 +60,7 @@ Other example questions:
 |---|---|---|
 | Fabric items do not open, or the data agent never answers | Fabric capacity paused | Azure portal > the Fabric capacity > **Resume** |
 | No **Data agent** or **Ontology** in **+ New item** | Expected in the test tenant | Use the lakehouse ribbon: **Add to data agent** > **New data agent**. If missing, the admin must enable **Users can create and share Data agent item types (preview)** |
-| Data agent "cannot find table" | SQL analytics endpoint not synced | Open it and **Refresh**, or run the last cell of notebook 00 |
+| Data agent "cannot find table" | SQL analytics endpoint not synced | Open it and **Refresh** (or, in the optional Codespace, run the last cell of notebook 00) |
 | SD9-R-0733 listed as "available" | Reservation rule or example query missing | Add the reservation rule and import the example queries |
 | SD7-R-0388 listed | No fit rule | Add the `required_model` rule |
 | Fabric IQ not in **Configured**, or no data agent in the picker | Not published, or picker filtered to **Semantic model** | Publish, refresh Foundry, set **Type** to **Data agent** |

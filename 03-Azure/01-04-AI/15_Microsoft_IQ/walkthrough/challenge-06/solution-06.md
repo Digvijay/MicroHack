@@ -14,13 +14,13 @@ One `alex-agent` run calls `strandvik-parts`, `strandvik-logistics` and `strandv
 
 Foundry portal Workflows are being retired and classic connected agents are gone. A2A keeps each specialist as its own agent with its own tools and owner; Alex's agent only asks. Check that teams create no Workflow items.
 
-### Why the notebook grants the role (Part C)
+### Why the Cloud Shell script grants the role (Part C)
 
-Same as challenge 2: each target needs incoming A2A, and the caller's **agent identity** needs **Foundry Agent Consumer**. Neither the Foundry **Assign Azure roles** dialog nor the Azure IAM member picker can find an agent identity yet. With `CALLER = ("strandvik", "alex-agent")`, notebook 01 looks up `alex-agent`'s identity and grants the role on that one specialist (least privilege). Look for `Granted Foundry Agent Consumer to alex-agent on agent : ...` (or `already has`). The role needs 3 to 6 minutes before it works.
+Same as challenge 2: each target needs incoming A2A, and the caller's **agent identity** needs **Foundry Agent Consumer**. Neither the Foundry **Assign Azure roles** dialog nor the Azure IAM member picker can find an agent identity yet. Teams run `enable-a2a.py` three times, `--agent strandvik-parts`, `strandvik-logistics` and `strandvik-service`, each with `--caller strandvik/alex-agent`. The script looks up `alex-agent`'s identity and grants the role on that one specialist (least privilege, `--scope agent`). Look for `granted` (or `already granted, nothing to do`) under `Foundry Agent Consumer for alex-agent on agent ...`. Each specialist gets its default card unless the team passes `--description`. An ephemeral Cloud Shell session loses the file, so teams download it again. The role needs 3 to 6 minutes before it works.
 
 ### Why Parts uses OAuth Identity Passthrough (Part E)
 
-The Fabric IQ tool runs with a **signed-in user's** identity. With **Microsoft Entra Agent Identity**, the call arrives as an agent and the Fabric tool fails with `tool_server_error` (the trace shows the error on the Fabric tool span inside `strandvik-parts`). **OAuth Identity Passthrough** passes on the user; lab users have Foundry Agent Consumer on the project. Logistics and Service use only Foundry tools, so agent identity plus the notebook role is enough. The role on Parts does no harm and keeps the door ready for a later Fabric that accepts agent identities. Same agent, two trust models: a good talking point.
+The Fabric IQ tool runs with a **signed-in user's** identity. With **Microsoft Entra Agent Identity**, the call arrives as an agent and the Fabric tool fails with `tool_server_error` (the trace shows the error on the Fabric tool span inside `strandvik-parts`). **OAuth Identity Passthrough** passes on the user; lab users have Foundry Agent Consumer on the project. Logistics and Service use only Foundry tools, so agent identity plus the script's role is enough. The role on Parts does no harm and keeps the door ready for a later Fabric that accepts agent identities. Same agent, two trust models: a good talking point.
 
 ### If the Parts agent fails over A2A
 
@@ -64,8 +64,8 @@ Final confirmation from Alex by 07:30.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `tool_user_error` on every `alex-agent` run | One specialist unreachable, `alex-agent` lacks the role, or the role is younger than 4 minutes | Remove A2A tools until it works, add back one at a time; check the notebook output; wait |
-| A2A tool works for one specialist, not another | That specialist has no incoming A2A | Run notebook 01 for it; check the card URL returns JSON |
+| `tool_user_error` on every `alex-agent` run | One specialist unreachable, `alex-agent` lacks the role, or the role is younger than 4 minutes | Remove A2A tools until it works, add back one at a time; check the script output (`granted` for each specialist); wait |
+| A2A tool works for one specialist, not another | That specialist has no incoming A2A | Run `enable-a2a.py --agent <specialist> --caller strandvik/alex-agent` for it; check the card prints |
 | `tool_server_error` from the Parts agent | The Parts A2A tool uses agent identity; Fabric needs a person | Recreate `strandvik-parts-a2a` with **OAuth Identity Passthrough** |
 | Parts answers "no data found for SD9-K-0412" | The question named only the serial | Ask with customer and machine; the full turn 1 prompt works |
 | Alex's agent answers from memory | Weak routing in instructions | Keep "Who knows what" and "Order of work"; name the tools exactly |

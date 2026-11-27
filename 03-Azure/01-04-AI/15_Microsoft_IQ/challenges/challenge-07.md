@@ -77,7 +77,7 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
 ### Part C: Play Alex at 07:30 (5 min)
 
 1. Take the vote in your team: fly in the Pune unit, take Poliden's unit, or both?
-2. Open the Work IQ viewer with **`WORKIQ_KEY`** (Alex). Go to **Chats** > **Kolvo press line 2, SD-900**.
+2. Open the Work IQ viewer with **`WorkIQKey`** (Alex). Go to **Chats** > **Kolvo press line 2, SD-900**.
 3. Under **Post as: Alex**, post Alex's decision (adjust it if your team voted differently):
 
    ```text
@@ -138,7 +138,7 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
 
 ### Part F: The 02:13 replay (7 min)
 
-1. Put your team's procurement board (`WORKIQ_BOARD_URL`) on the screen. Select **Run 02:13**.
+1. Put your team's procurement board (`WorkIQBoardUrl`) on the screen. Select **Run 02:13**.
 2. Compare the three supplier cards: **Nordic Drive Parts**, **Hallberg Repair Services** and **Strandvik Drives**. What did each one show, and how fast?
 3. Answer in one sentence each: why is Nordic Drive Parts "fast but can't stand behind it", why is Hallberg too late, and what did Strandvik show that the others could not?
 4. Ask yourselves: which of the three is your company today?
@@ -162,14 +162,19 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
 | Custom rubric scores everything 3 | The rubric was pasted without the criteria list. Paste the whole text box. |
 | **Compare runs** greyed out | Select two runs of the same evaluation. |
 | Trace shows only Alex's agent, no nested spans | Application Insights is not connected to one of the projects. Ask your coach. |
-| Board run fails as a whole | Maria's run fails if any supplier is unreachable. Check that `strandvik-customer-service` still has incoming A2A on (a new agent version can need it again). Re-run notebook 01 for it. |
+| Board run fails as a whole | Maria's run fails if any supplier is unreachable. Check that `strandvik-customer-service` still has incoming A2A on (a new agent version can need it again). Run the Cloud Shell script for it again (challenge 2, Part E). |
 | Board times out with the stretch | The call chain is long and the board waits up to 180 seconds. See the stretch tips. |
 
 ## Go further
 
 **Make the handover real.** Give `strandvik-customer-service` an A2A tool to `alex-agent` so Maria's agent receives the proposal itself.
 
-1. Run notebook 01 with `AGENT_NAME = "alex-agent"`, a card such as "Strandvik Drives internal: Alex's agent, prepares proposals for Kolvo cases. Never commits.", and `CALLER = ("strandvik", "strandvik-customer-service")`. Wait 3 to 6 minutes.
+1. In Cloud Shell (Bash), open `alex-agent` to A2A and let customer service in. The script's default card for `alex-agent` reads "Strandvik Drives internal: Alex's agent, prepares proposals for Kolvo cases. Never commits." Wait 3 to 6 minutes.
+
+   ```bash
+   curl -sO https://raw.githubusercontent.com/microsoft/MicroHack/main/03-Azure/01-04-AI/15_Microsoft_IQ/scripts/enable-a2a.py
+   python3 enable-a2a.py --agent alex-agent --caller strandvik/strandvik-customer-service
+   ```
 2. `strandvik-customer-service` > **Add** > **Add tools** > **Custom** > **Agent2agent (A2A)** > **Create**: name `alex-agent-a2a`, endpoint `.../agents/alex-agent/endpoint/protocols/a2a`, **Microsoft Entra Agent Identity**.
 3. Add to its instructions, in Step 4:
 

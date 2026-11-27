@@ -21,53 +21,42 @@ Open your lab, get to know the Strandvik world, and put its data where the agent
 
 ## Tasks
 
-### Part A: Sign in and fill `.env` (10 min)
+### Part A: Open your lab and get the hack files (10 min)
 
-`create-env.sh` signs you in once with a device code, only reads from Azure, and writes `.env` with every endpoint and key the notebooks need. One person per team is enough; share the links it prints.
+Everything in this hack runs in the browser: the Azure portal, the Foundry portal, the Fabric portal, the Work IQ viewer and Kolvo's board. One step in challenges 2, 6 and 7 runs a short script in **Azure Cloud Shell**, also in the browser. You install nothing.
 
-**Option 1: GitHub Codespace (recommended)**
+1. Open your **lab dashboard** (the lab page your coach gives you). Keep it open all day. It shows your lab user and password, the resource group, and the values you need later:
 
-1. Sign in to GitHub, open the hack repository and select **Code** > **Codespaces** > **...** > **New with options...**.
-2. Under **Dev container configuration**, choose **Azure / AI / Microsoft IQ**. Select **Create codespace**.
-3. Wait until VS Code opens in the browser with the hack folder in the explorer and a terminal whose prompt starts with `(.venv)`. The setup takes a few minutes. Its log is under **View** > **Command Palette** > **Codespaces: View Creation Log**.
+   | Value | Used for |
+   |---|---|
+   | `StrandvikProjectUrl`, `KolvoProjectUrl` | The two Foundry projects (Part B) |
+   | `FabricPortalUrl` | Your Fabric workspace (Part B) |
+   | `StorageAccountName` | The `documents` container (Part C) |
+   | `WorkIQBoardUrl`, `WorkIQViewerUrl` | Kolvo's procurement board (challenge 2) and the Work IQ viewer (challenge 5) |
+   | `WorkIQEmulatorEndpoint`, `WorkIQKey`, `WorkIQKeySam` | Alex's Work IQ tool and the viewer sign-in for Alex and Sam (challenge 5) |
 
-<!-- SHOT: c01-codespace-ready | GitHub Codespaces (VS Code in the browser) | Hack folder open in the explorer, terminal with the (.venv) prompt | Highlight the hack folder and the (.venv) prompt -->
-![Codespace ready](../images/c01-codespace-ready.png)
-
-4. In the terminal (the hack folder is the working folder), run:
-
-   ```bash
-   bash create-env.sh
-   ```
-
-5. When asked, open `https://microsoft.com/devicelogin`, enter the code and sign in with the **lab user**.
-6. The script finds the lab resource group (tagged `microhack=15_Microsoft_IQ`), reads every endpoint and key, and writes `.env`. At the end it prints the Foundry links for **strandvik** and **kolvo**, the Azure portal link, the Fabric workspace link, the Work IQ viewer and the procurement board.
-
-<!-- SHOT: c01-create-env-output | Codespace terminal | Output of bash create-env.sh: "Your lab is ready", the project links, the viewer and board URLs | Highlight "Your lab is ready". Blur the subscription, the account and the links -->
-![create-env.sh output](../images/c01-create-env-output.png)
-
-**Option 2: on your own machine**
-
-Open the hack folder in VS Code with **Dev Containers** (same dev container, then run `bash create-env.sh`), or on Windows without bash run `./create-env.ps1` in PowerShell from the hack folder. Same result.
+2. Open a **private (InPrivate or Incognito) browser window** and sign in to the [Azure portal](https://portal.azure.com) with the **lab user**. A private window keeps your corporate account out of the way.
+3. Get the hack files on your machine: Parts C and D upload the documents and the CSV files from your computer. On the hack's GitHub page select **Code** > **Download ZIP** and unzip it. The hack is in the folder `03-Azure/01-04-AI/15_Microsoft_IQ`; you need its `data/documents` and `data/lakehouse` folders. If a ZIP download is blocked, open each file in [`data/documents/`](../data/documents/) and [`data/lakehouse/`](../data/lakehouse/) on GitHub and select **Download raw file**.
 
 > [!TIP]
-> On a locked-down laptop you can skip `.env` entirely: a teammate runs the script and shares the portal links.
-
-> [!IMPORTANT]
-> Never commit `.env`. It holds your Work IQ keys.
-
-### Part B: Open the three portals (5 min)
-
-1. **Foundry portal**: open the Strandvik project link from the script output (or [ai.azure.com](https://ai.azure.com), switch **New Foundry** on at the top, and pick the project **strandvik** of the `iq-<hash>` resource in the project picker at the top left). Check that **Build** > **Agents** is empty. Open the **kolvo** project the same way and check that `maria-procurement`, `nordic-drive-parts` and `hallberg-repair` are listed.
-2. **Azure portal**: open the resource group link. You see the Foundry resource `iq-<hash>`, the Search service `iq-srch-<hash>`, the storage account `iqst<hash>`, the Fabric capacity `iqcap<hash>`, Application Insights `iq-appi-<hash>` and the emulator `iq-wiq-<hash>`.
-3. **Fabric portal**: open [app.fabric.microsoft.com](https://app.fabric.microsoft.com) with the lab user and go to **Workspaces** > `strandvik-<hash>`.
+> One set of files per team is enough: whoever uploads in Parts C and D needs them. Everyone else can start reading for the map in Part E.
 
 > [!NOTE]
-> **No Fabric workspace?** Fabric portal > **Workspaces** > **+ New workspace**. **Name**: `strandvik-<your initials>`. Expand **Advanced** > **License mode**: **Fabric capacity** > pick `iqcap<hash>`. Select **Apply**. Then run `bash create-env.sh` again so `FABRIC_WORKSPACE_ID` is filled (it looks for a workspace whose name starts with `strandvik`).
+> Developers who want to run the optional notebooks can use a Codespace or a local clone. See [If you run in GitHub Codespaces (optional)](#if-you-run-in-github-codespaces-optional) at the end of the tasks. Nobody needs it.
+
+### Part B: Open the three portals and Cloud Shell (5 min)
+
+1. **Foundry portal**: open `StrandvikProjectUrl` from the lab dashboard (or [ai.azure.com](https://ai.azure.com), switch **New Foundry** on at the top, and pick the project **strandvik** of the `iq-<hash>` resource in the project picker at the top left). Check that **Build** > **Agents** is empty. Open the **kolvo** project the same way (`KolvoProjectUrl`) and check that `maria-procurement`, `nordic-drive-parts` and `hallberg-repair` are listed.
+2. **Azure portal**: open **Resource groups** > your lab resource group (its name is on the lab dashboard). You see the Foundry resource `iq-<hash>`, the Search service `iq-srch-<hash>`, the storage account `iqst<hash>`, the Fabric capacity `iqcap<hash>`, Application Insights `iq-appi-<hash>` and the emulator `iq-wiq-<hash>`.
+3. **Fabric portal**: open `FabricPortalUrl` (or [app.fabric.microsoft.com](https://app.fabric.microsoft.com)) with the lab user and go to **Workspaces** > `strandvik-<hash>`.
+4. **Azure Cloud Shell**: in the Azure portal top bar select the **Cloud Shell** icon (`>_`) and choose **Bash**. If asked about storage, choose **No storage account required** (an ephemeral session is fine) and your lab subscription. When the prompt appears, close it again. You use it in challenge 2; if it does not open, tell your coach now.
+
+> [!NOTE]
+> **No Fabric workspace?** Fabric portal > **Workspaces** > **+ New workspace**. **Name**: `strandvik-<your initials>`. Expand **Advanced** > **License mode**: **Fabric capacity** > pick `iqcap<hash>`. Select **Apply**.
 
 ### Part C: Upload the documents to Blob Storage (5 min)
 
-1. Download the 7 files in [`data/documents/`](../data/documents/) to your machine (in the Codespace: select the files in the explorer > right-click > **Download...**; or download them from GitHub).
+1. Find the 7 files in `data/documents` of the hack files you downloaded in Part A (on GitHub: [`data/documents/`](../data/documents/)).
 2. Azure portal > the lab resource group > the storage account `iqst<hash>` > **Storage browser** > **Blob containers** > `documents`.
 3. If you see "You do not have permissions" or a key error, switch **Authentication method** to **Microsoft Entra user account**. Shared key access is off; the lab user has Storage Blob Data Contributor.
 4. Select **Upload** > drag the 7 files > **Upload**.
@@ -94,7 +83,7 @@ Expected files (do not rename them; later challenges and the evaluation set expe
 <!-- SHOT: c01-fabric-new-lakehouse | Fabric portal, workspace strandvik-<hash> > + New item > Lakehouse dialog | The "New lakehouse" dialog with the name strandvik_lakehouse and schemas unchecked | Highlight the name field and the schemas checkbox -->
 ![New lakehouse](../images/c01-fabric-new-lakehouse.png)
 
-2. In the lakehouse explorer, next to **Files** select **...** > **Upload** > **Upload files**. Select the 14 CSV files from [`data/lakehouse/`](../data/lakehouse/) and select **Upload**.
+2. In the lakehouse explorer, next to **Files** select **...** > **Upload** > **Upload files**. Select the 14 CSV files from `data/lakehouse` in the hack files you downloaded (on GitHub: [`data/lakehouse/`](../data/lakehouse/)) and select **Upload**.
 3. Open **Files**, then for each CSV: **...** > **Load to Tables** > **New table**. Keep the table name (the file name without `.csv`), **Column header** on, **Separator** `,`. Select **Load**.
 
 <!-- SHOT: c01-fabric-load-to-table | Fabric portal, strandvik_lakehouse > Files > drive_units.csv > ... menu | The "Load to Tables" > "New table" dialog for drive_units.csv | Highlight "Load to Tables", the table name and the header option -->
@@ -112,7 +101,7 @@ Expected files (do not rename them; later challenges and the evaluation set expe
 ![14 tables in the lakehouse](../images/c01-lakehouse-tables.png)
 
 > [!TIP]
-> **Prefer a notebook?** [`notebooks/00-load-the-world.ipynb`](../notebooks/00-load-the-world.ipynb) does Parts C and D in one go. Open it in the Codespace, **Select Kernel** > **Jupyter Kernel** > **Python (Microsoft IQ)**, then **Run All** (3 to 8 minutes on F2, safe to run again). Section 1 uploads the documents; section 2 creates the lakehouse, loads every CSV as a table and refreshes the SQL endpoint metadata. Both paths end in the same place.
+> **Running the optional Codespace?** [`notebooks/00-load-the-world.ipynb`](../notebooks/00-load-the-world.ipynb) does Parts C and D in one go. See [If you run in GitHub Codespaces (optional)](#if-you-run-in-github-codespaces-optional). Both paths end in the same place.
 
 ### Part E: Map the Strandvik world (10 min)
 
@@ -131,9 +120,52 @@ Your map shows at least:
 
 Keep the map. You turn it into an ontology in challenge 3 and into instructions in every challenge after that.
 
+### If you run in GitHub Codespaces (optional)
+
+Not needed for the hack. Use it only if you are a developer and want to run the optional notebooks (`00-load-the-world` for Parts C and D, `02-knowledge-graph-stretch` for the challenge 4 stretch), or run the Cloud Shell script from your own terminal.
+
+> [!IMPORTANT]
+> **Fork the hack repository to your own GitHub account** and create the Codespace on your fork (or clone it to your machine). Codespaces are billed to the GitHub account that creates them. Microsoft does not pay for them.
+
+**In a Codespace**
+
+1. On **your fork**, select **Code** > **Codespaces** > **...** > **New with options...**.
+2. Under **Dev container configuration**, choose **Azure / AI / Microsoft IQ**. Select **Create codespace**.
+3. Wait until VS Code opens in the browser with the hack folder in the explorer and a terminal whose prompt starts with `(.venv)`. The setup takes a few minutes. Its log is under **View** > **Command Palette** > **Codespaces: View Creation Log**.
+
+<!-- SHOT: c01-codespace-ready | GitHub Codespaces (VS Code in the browser) | Hack folder open in the explorer, terminal with the (.venv) prompt | Highlight the hack folder and the (.venv) prompt -->
+![Codespace ready](../images/c01-codespace-ready.png)
+
+4. In the terminal (the hack folder is the working folder), run:
+
+   ```bash
+   bash create-env.sh
+   ```
+
+5. When asked, open `https://microsoft.com/devicelogin`, enter the code and sign in with the **lab user**.
+6. The script finds the lab resource group (tagged `microhack=15_Microsoft_IQ`), only reads from Azure, and writes `.env` with every endpoint and key the notebooks need. At the end it prints the Foundry links for **strandvik** and **kolvo**, the Azure portal link, the Fabric workspace link, the Work IQ viewer and the procurement board.
+
+<!-- SHOT: c01-create-env-output | Codespace terminal | Output of bash create-env.sh: "Your lab is ready", the project links, the viewer and board URLs | Highlight "Your lab is ready". Blur the subscription, the account and the links -->
+![create-env.sh output](../images/c01-create-env-output.png)
+
+7. To run a notebook: open it, **Select Kernel** > **Jupyter Kernel** > **Python (Microsoft IQ)**, then **Run All**. Notebook 00 takes 3 to 8 minutes on F2 and is safe to run again: section 1 uploads the documents; section 2 creates the lakehouse, loads every CSV as a table and refreshes the SQL endpoint metadata.
+
+**On your own machine**
+
+Clone the repository (your fork or the original). You need Python 3.11 or later and the Azure CLI. Run `az login` with the lab user, then from the hack folder run `bash create-env.sh` (on Windows without bash: `./create-env.ps1` in PowerShell). Install the notebook packages with `pip install jupyter -r notebooks/requirements.txt`. VS Code with **Dev Containers** and the same dev container works too.
+
+> [!IMPORTANT]
+> Never commit `.env`. It holds your Work IQ keys.
+
+| Symptom | Fix |
+|---|---|
+| `create-env.sh` says "no Microsoft IQ lab found" | You signed in with the wrong account. Run `az logout`, then run the script again and sign in with the lab user. Or pass the resource group: `bash create-env.sh <rg>`. |
+| `FABRIC_WORKSPACE_ID` stays empty | Create the workspace (name starting with `strandvik`) on the lab capacity (Part B), then run the script again. |
+
 ## Success criteria
 
-- [ ] `.env` exists and `PROJECT_ENDPOINT_STRANDVIK`, `STORAGE_ACCOUNT`, `WORKIQ_VIEWER_URL` and `WORKIQ_KEY` have values.
+- [ ] Every team member can open the lab dashboard and has signed in to the three portals with the lab user.
+- [ ] The team has the hack files (`data/documents`, `data/lakehouse`) on at least one machine.
 - [ ] The coach sees 7 `.md` files in the `documents` container (Azure portal > storage account > Storage browser).
 - [ ] The coach sees 14 tables in `strandvik_lakehouse` in Fabric, and a preview of `reservations` shows `RSV-2291`.
 - [ ] Your paper map answers, without a laptop: *Which unit runs press line 2? Which two SD-900s could replace it? Who owns the Rotterdam one?*
@@ -143,8 +175,10 @@ Keep the map. You turn it into an ontology in challenge 3 and into instructions 
 
 | Symptom | Fix |
 |---|---|
-| `create-env.sh` says "no Microsoft IQ lab found" | You signed in with the wrong account. Run `az logout`, then run the script again and sign in with the lab user. Or pass the resource group: `bash create-env.sh <rg>`. |
-| `FABRIC_WORKSPACE_ID` stays empty | Create the workspace (name starting with `strandvik`) on the lab capacity, then run the script again. |
+| The portals show no lab resources, or "You don't have access" | You are signed in with your corporate account. Use a private browser window and sign in with the lab user from the lab dashboard. |
+| The ZIP download is blocked or very slow | Open the files in `data/documents` and `data/lakehouse` on GitHub one by one and select **Download raw file**. |
+| No `strandvik-<hash>` workspace in Fabric | Create it on the lab capacity (Part B note). |
+| Cloud Shell does not open, or is blocked by a policy | Tell your coach. A teammate who runs the optional Codespace (or a local clone with the Azure CLI) can run the same script for the team in challenges 2, 6 and 7. |
 | Storage browser: "This request is not authorized" | Switch **Authentication method** to **Microsoft Entra user account**. Right after the lab is created, wait a minute for the role to apply. |
 | Fabric: **Load to Tables** is greyed out | You selected a folder or a non-CSV file. Select one CSV file. |
 | Fabric: HTTP 430 | The F2 capacity is busy. Wait 20 seconds and try again. |

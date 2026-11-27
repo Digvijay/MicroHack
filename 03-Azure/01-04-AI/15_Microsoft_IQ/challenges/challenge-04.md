@@ -178,7 +178,7 @@ Give times as weekday and clock time (for example Wednesday 09:00). Never write 
 
 ## Go further
 
-- **Knowledge graph.** Build a knowledge graph over the same documents with your own ontology, using [`notebooks/02-knowledge-graph-stretch.ipynb`](../notebooks/02-knowledge-graph-stretch.ipynb):
+- **Knowledge graph** (developers, needs the optional Codespace or a local clone from challenge 1). Build a knowledge graph over the same documents with your own ontology, using [`notebooks/02-knowledge-graph-stretch.ipynb`](../notebooks/02-knowledge-graph-stretch.ipynb):
   1. Open [`data/foundry-iq/strandvik-ontology.jsonld`](../data/foundry-iq/strandvik-ontology.jsonld), read the class comments and decide whether to change anything (for example add a `Technician` class). Save a copy and set `ONTOLOGY_FILE` in the first cell.
   2. Open the notebook, kernel **Python (Microsoft IQ)**, set `VERSION = "v1"` and select **Run All**. It creates the knowledge source `strandvik-graph-v1` and the knowledge base `strandvik-graph-v1-kb`, then asks who must approve moving the Rotterdam unit, and in what form.
   3. In the Foundry portal, **Build** > **Knowledge** > the new knowledge base > **Use in an agent** > `strandvik-service`, and compare its answer to "who must approve moving SD9-R-0733, and in what form?" with the plain knowledge base.

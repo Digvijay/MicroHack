@@ -89,61 +89,29 @@ You will find these decisions in the instructions in Parts B and D. Compare, and
 
 ### Part C: Open the three specialists to A2A (10 min)
 
-The same lock as Maria's door in challenge 2: each target agent needs incoming A2A, and the **calling** agent (now `alex-agent`) needs **Foundry Agent Consumer** on it. The portals cannot grant a role to an agent identity yet, so the notebook does both.
+The same lock as Maria's door in challenge 2: each target agent needs incoming A2A, and the **calling** agent (now `alex-agent`) needs **Foundry Agent Consumer** on it. The portals cannot grant a role to an agent identity yet, so the Cloud Shell script from challenge 2 does both.
 
-1. Open `notebooks/01-enable-incoming-a2a.ipynb`.
-2. Run it three times. Each time replace only the first code cell with one block below, then **Run All** and check that the agent card prints.
+1. Open Cloud Shell: Azure portal (lab user) > top bar > the **Cloud Shell** icon (`>_`) > **Bash** (**No storage account required** is fine).
+2. Run the script three times, once per specialist. The caller is now `alex-agent` in the strandvik project. The script has a default agent card for each specialist built in; add `--description "<your text>"` if your team wrote its own.
 
-   **Parts**
-
-   ```python
-   AGENT_NAME = "strandvik-parts"
-   CARD_DESCRIPTION = ("Strandvik Drives internal Parts agent. Read-only view of the ERP: drive units, stock, "
-                       "replacement candidates, reservations and their owners. Never sells, reserves or moves a unit.")
-   SKILLS = [
-       {"id": "find-replacement", "name": "Find replacement units",
-        "description": "Given a machine or a failing unit, lists the in-stock units of the required model, with reservations and owners."},
-       {"id": "reservation-owner", "name": "Reservation and owner",
-        "description": "Given a unit or reservation id, returns the reservation, the reserved customer, the needed-by date and the owner."},
-   ]
-   CALLER = ("strandvik", "alex-agent")
+   ```bash
+   curl -sO https://raw.githubusercontent.com/microsoft/MicroHack/main/03-Azure/01-04-AI/15_Microsoft_IQ/scripts/enable-a2a.py
+   python3 enable-a2a.py --agent strandvik-parts --caller strandvik/alex-agent
+   python3 enable-a2a.py --agent strandvik-logistics --caller strandvik/alex-agent
+   python3 enable-a2a.py --agent strandvik-service --caller strandvik/alex-agent
    ```
 
-   **Logistics**
+   In an ephemeral Cloud Shell session the file from challenge 2 is gone, so download it again. In a kept session the `curl` line simply replaces it.
 
-   ```python
-   AGENT_NAME = "strandvik-logistics"
-   CARD_DESCRIPTION = ("Strandvik Drives internal Logistics agent. Routes, transit times, costs and flight holds for drive units "
-                       "(LOG-03). Places holds, never books: bookings need the key account manager's approval.")
-   SKILLS = [
-       {"id": "route-options", "name": "Route options",
-        "description": "Compares routes from a site to a customer: departure, arrival, transit time, cost, approval needed, risk."},
-       {"id": "hold-flight", "name": "Hold a flight",
-        "description": "Places a free 6-hour flight hold and reports until when it runs. Not a booking."},
-   ]
-   CALLER = ("strandvik", "alex-agent")
-   ```
+<!-- SHOT: c06-cloudshell-grant | Azure portal, Cloud Shell (Bash) | A run of enable-a2a.py for another target and caller (--agent alex-agent --caller strandvik/strandvik-customer-service): card published, caller identity found, "granted" | Highlight the command (target first, then caller as project/agent) and "granted" -->
+![The same script for another target and caller](../images/c06-cloudshell-grant.png)
 
-   **Service**
-
-   ```python
-   AGENT_NAME = "strandvik-service"
-   CARD_DESCRIPTION = ("Strandvik Drives internal Service agent. Contracts, policies and technician slots, with citations "
-                       "(SC-KOL-2024, SC-POL-2025, RES-02, EAP-01, FS-04). Never changes a contract or books a technician.")
-   SKILLS = [
-       {"id": "contract-terms", "name": "Contract terms", "description": "Replacement targets, uptime credits, who may order, how changes are confirmed."},
-       {"id": "policy-check", "name": "Policy check", "description": "What a policy allows, for example whether a reserved unit may be reallocated and what is needed."},
-       {"id": "technician-slots", "name": "Technician slots", "description": "Free certified technician slots at a customer site and the notice they need."},
-   ]
-   CALLER = ("strandvik", "alex-agent")
-   ```
-
-3. In each run, check the line `Granted Foundry Agent Consumer to alex-agent on agent : ...` (or `already has` on a second run).
-4. Write down each A2A base URL it prints:
+3. In each run, check that the card prints and that the line under **Foundry Agent Consumer for alex-agent on agent ...** says `granted` (or `already granted, nothing to do` on a second run). The screenshot shows the same pattern for another pair: target first with `--agent`, then the caller as `project/agent`.
+4. Write down each A2A endpoint it prints:
    `https://iq-<hash>.services.ai.azure.com/api/projects/strandvik/agents/<agent-name>/endpoint/protocols/a2a`
 
 > [!NOTE]
-> `CALLER = ("strandvik", "alex-agent")` makes the notebook look up `alex-agent`'s agent identity and grant it **Foundry Agent Consumer** on that one specialist (least privilege). The role takes 3 to 6 minutes to work: do Part D meanwhile.
+> `--caller strandvik/alex-agent` makes the script look up `alex-agent`'s agent identity and grant it **Foundry Agent Consumer** on that one specialist (`--scope agent`, the default: least privilege). The role takes 3 to 6 minutes to work: do Part D meanwhile.
 
 ### Part D: Give Alex's agent the full instructions (5 min)
 
@@ -291,7 +259,7 @@ Start a **new chat** in the `alex-agent` playground. Keep Sam (a teammate in the
 | Symptom | Fix |
 |---|---|
 | `tool_user_error` on every `alex-agent` run | One specialist is unreachable, or the role is younger than about 4 minutes. Remove A2A tools until it works, then add them back one at a time. Wait and retry. |
-| A2A tool works for one specialist, not another | That specialist has no incoming A2A. Run notebook 01 for it (Part C) and check the card prints. |
+| A2A tool works for one specialist, not another | That specialist has no incoming A2A. Run the Cloud Shell script for it (Part C) and check the card prints. |
 | `tool_server_error` from the Parts agent | The Parts A2A tool uses agent identity; Fabric needs a person. Recreate `strandvik-parts-a2a` with **OAuth Identity Passthrough**. |
 | Parts answers "no data found for SD9-K-0412" | Ask with the customer and machine ("Kolvo AB press line 2, SD-900 serial SD9-K-0412"). The full turn 1 prompt works. |
 | Alex's agent answers from memory instead of calling specialists | Keep "Who knows what" and "Order of work" in the instructions, with the exact tool names. |

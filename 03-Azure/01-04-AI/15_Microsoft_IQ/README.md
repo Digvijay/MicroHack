@@ -73,10 +73,10 @@ Every company has access to the same frontier models. What makes Strandvik's age
 ## Who this hack is for
 
 - **Business people** (account managers, service and supply chain leads, architects who talk to the business): you design the agents, write their instructions and guardrails, play Sam and Alex, and judge the answers. You never need to write code.
-- **Developers and data people**: you load the data, wire the tools, run the helper notebooks and make the agents talk to each other.
+- **Developers and data people**: you load the data, wire the tools, run the one Cloud Shell script and make the agents talk to each other.
 - **Teams of two to four** split the roles and must talk, which is the point. **Solo hackers** do both roles; an "auto-Sam" answers for you when nobody can play Sam.
 
-There is no CLI to learn. Everything is built in the **Azure portal**, the **Foundry portal** (ai.azure.com, New Foundry) and the **Fabric portal**, plus three short helper notebooks.
+There is no CLI to learn. Everything is built in the **Azure portal**, the **Foundry portal** (ai.azure.com, New Foundry) and the **Fabric portal**, plus one short script in Azure Cloud Shell. You install nothing.
 
 ## The clock and the challenges
 
@@ -102,7 +102,7 @@ Every challenge has the same shape: a story beat, a **goal**, a **business task*
 | Role | You own | Typical tasks |
 |---|---|---|
 | **Business** | What the agents may do, and whether they did it well | Map the world, write instructions and agent cards, pick guardrails, design the ontology, play Sam and Alex, write the rubric, judge |
-| **Builder** | That the agents exist, are wired and can be seen | Load data, create agents and tools, run the notebooks, assign roles, connect knowledge, run evaluations, read traces |
+| **Builder** | That the agents exist, are wired and can be seen | Load data, create agents and tools, run the Cloud Shell script that assigns the A2A roles, connect knowledge, run evaluations, read traces |
 | **Clock keeper** (optional) | The story | Calls the clock time at each challenge, runs the votes, keeps the team honest about what only Alex may do |
 
 Solo? You are all three. Switch hats out loud; it helps.
@@ -111,7 +111,9 @@ Solo? You are all three. Switch hats out loud; it helps.
 
 - A lab from the MicroHack platform (your coach gives you the sign-in). The lab user has a Fabric licence.
 - A modern browser. Three portals stay open all day: [Azure portal](https://portal.azure.com), [Foundry portal](https://ai.azure.com) (switch **New Foundry** on) and [Fabric portal](https://app.fabric.microsoft.com).
-- For the builder role: a GitHub account with Codespaces, or VS Code with Dev Containers. The dev container **Azure / AI / Microsoft IQ** has Python, Jupyter and the Azure CLI.
+- **Nothing to install, no Codespace.** One step in challenges 2, 6 and 7 runs a short script in **Azure Cloud Shell** (Azure portal top bar, the `>_` icon, **Bash**), which is in the browser and already signed in.
+- The hack files on your machine for the uploads in challenge 1: on GitHub, **Code** > **Download ZIP**.
+- Optional, for developers who want to run the notebooks: a GitHub Codespace or a local clone. **Fork the repository to your own GitHub account** and create the Codespace on your fork (or clone it locally with Python, the Azure CLI and `az login`, then run `create-env.ps1` or `create-env.sh`). Codespaces are billed to the GitHub account that creates them; Microsoft does not pay for them. See [challenge 1](challenges/challenge-01.md#if-you-run-in-github-codespaces-optional).
 - Useful, not required: you have built one agent or one Power BI report before.
 
 ## Your lab environment
@@ -127,7 +129,7 @@ Your lab is one resource group, built for you before the day. You build everythi
 | Work IQ emulator | Seeded with Alex's and Sam's Microsoft 365 world | Connect Alex's agent, play Sam in the viewer, run Kolvo's procurement board |
 | Application Insights | Connected to both projects | Read the traces of the whole night |
 
-`create-env.sh` (or `create-env.ps1`) reads all names, endpoints and keys from your lab and writes `.env`, used by both roles. Details for coaches and platform owners are in [labautomation/README.md](labautomation/README.md).
+Your **lab dashboard** shows every name, endpoint and key you need (project links, the Work IQ viewer, board, endpoint and keys). In the optional Codespace, `create-env.sh` (or `create-env.ps1`) reads the same values and writes `.env` for the notebooks. Details for coaches and platform owners are in [labautomation/README.md](labautomation/README.md).
 
 > **Why a Work IQ emulator?** Real Work IQ needs Microsoft 365 Copilot licences that lab users do not have. The emulator speaks the same MCP contract, so only the URL and the key change. See [the emulator's README](labautomation/workiq-emulator/README.md).
 
@@ -156,11 +158,12 @@ Your lab is one resource group, built for you before the day. You build everythi
 ├── challenges/          The challenges (participants)
 ├── walkthrough/         Coach guide, step-by-step solutions, scenario facts
 ├── data/                Lakehouse CSVs, documents, Work IQ seed, evaluation set, ontology
-├── notebooks/           00 load the world, 01 enable incoming A2A, 02 knowledge graph (stretch)
+├── scripts/             enable-a2a.py, run in Azure Cloud Shell (challenges 2, 6, 7)
+├── notebooks/           Optional (Codespace or local): 00 load the world, 02 knowledge graph (stretch)
 ├── labautomation/       Lab provisioning, Kolvo pre-build, Work IQ emulator and procurement board
 ├── techtalk/            Day-opener talk "02:13": 15 animated slides with a timed script, and its PDF
 ├── images/              Diagrams and screenshots
-├── create-env.sh        Fills .env from your lab (create-env.ps1 on Windows)
+├── create-env.sh        Optional: fills .env for the notebooks (create-env.ps1 on Windows)
 └── .env.example         What .env looks like
 ```
 

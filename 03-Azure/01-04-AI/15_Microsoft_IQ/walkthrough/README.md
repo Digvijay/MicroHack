@@ -7,8 +7,8 @@ This folder is for coaches. It has the full, click-by-click solutions, the exact
 | File | Purpose |
 |---|---|
 | [scenario-facts.md](scenario-facts.md) | Single source of truth for every name, serial, time, price, rule and the right answer. Read it first. |
-| [Solution 1](challenge-01/solution-01.md) | Lights on: `.env`, the portals, documents to Blob, lakehouse in Fabric, the paper map |
-| [Solution 2](challenge-02/solution-02.md) | Who's asking: `strandvik-customer-service`, agent card, incoming A2A, the IAM role, the board |
+| [Solution 1](challenge-01/solution-01.md) | Lights on: the lab dashboard, the portals and Cloud Shell, documents to Blob, lakehouse in Fabric, the paper map |
+| [Solution 2](challenge-02/solution-02.md) | Who's asking: `strandvik-customer-service`, agent card, incoming A2A and the role with the Cloud Shell script, the board |
 | [Solution 3](challenge-03/solution-03.md) | Know the business: ontology (and the fallback), Fabric data agent, `strandvik-parts` |
 | [Solution 4](challenge-04/solution-04.md) | Why didn't it take the unit: Foundry IQ knowledge base, `strandvik-service`, knowledge graph stretch |
 | [Solution 5](challenge-05/solution-05.md) | Sam in Singapore: `alex-agent` with the Work IQ emulator, playing Sam, auto-Sam, trimming |
@@ -29,7 +29,7 @@ About 7 hours of challenges. A full day with breaks:
 | Time | Block | Length | Story clock | Coach focus |
 |---|---|---|---|---|
 | 09:00 | Welcome, the story so far (read the 02:10 and 02:13 beats from Johan Wallquist's keynote), form teams | 15 min | | Mix business and builder profiles in each team. Solo hackers are fine. |
-| 09:15 | [Challenge 1](../challenges/challenge-01.md): Lights on | 45 min | 02:10 | Everyone has `.env` and all three portals. Fabric workspace exists. |
+| 09:15 | [Challenge 1](../challenges/challenge-01.md): Lights on | 45 min | 02:10 | Everyone is in all three portals with the lab user and has opened Cloud Shell once. Fabric workspace exists. |
 | 10:00 | [Challenge 2](../challenges/challenge-02.md): Who's asking? | 45 min | 02:13 | Make every team run the board **before** the fix. Watch the 3 to 5 minute role wait. |
 | 10:45 | Break | 10 min | | Check every lab's board shows Strandvik answering. |
 | 10:55 | [Challenge 3](../challenges/challenge-03.md): Know the business | 75 min | 03:10 | Ontology tenant setting: decide on the fallback in the first 10 minutes. |
@@ -54,7 +54,15 @@ In the **Fabric admin portal** > **Tenant settings**, for the lab users or the w
 - [ ] **Users can create and share Data agent item types (preview)**
 - [ ] **Users can use Copilot and other features powered by Azure OpenAI** (and, if the capacity region differs from the Azure OpenAI region, **Data sent to Azure OpenAI can be processed outside your capacity's geographic region**)
 
-Lab users must be in the groups from [`lab-defaults.json`](../labautomation/lab-defaults.json) (Fabric licence through Microsoft 365 E5, Codespaces).
+Lab users must be in the groups from [`lab-defaults.json`](../labautomation/lab-defaults.json) (Fabric licence through Microsoft 365 E5).
+
+### What participants need
+
+- **Only a browser.** No Codespace, no local install. They work in the Azure portal, the Foundry portal, the Fabric portal, the Work IQ viewer and board, and **Azure Cloud Shell** for the one scripted step (`scripts/enable-a2a.py`, challenges 2, 6 and 7).
+- The lab dashboard with the lab user and the outputs (project links, `WorkIQBoardUrl`, `WorkIQViewerUrl`, `WorkIQEmulatorEndpoint`, `WorkIQKey`, `WorkIQKeySam`).
+- The hack files as a ZIP (GitHub **Code** > **Download ZIP**) for the uploads in challenge 1.
+- **Check Cloud Shell before the day.** Some tenants block Cloud Shell by policy. Sign in as a lab user, open Cloud Shell (Bash, **No storage account required**) and run `python3 --version` and `az account show`. If it is blocked, plan B: one person per team runs the same script from a GitHub Codespace on **their own fork** or a local clone with the Azure CLI, after `az login` with the lab user. Codespaces are billed to the GitHub account that creates them; Microsoft does not pay for them.
+- Developers may use the optional Codespace or a local clone to run notebooks 00 and 02 (challenge 1, "If you run in GitHub Codespaces (optional)").
 
 ### Per lab (the evening before)
 
@@ -65,6 +73,7 @@ Sign in with one lab user and check:
 - [ ] The board (`/board` on the emulator host) loads after sign-in. **Run 02:13** fails with the red hint about Strandvik: that is the correct starting state.
 - [ ] The Fabric capacity is **Active** (Azure portal > the `iqcap...` resource). Resume it if it was paused.
 - [ ] The `documents` container is empty, and Storage browser opens it with your Entra account.
+- [ ] Cloud Shell (Bash) opens for the lab user in the lab subscription.
 
 ### In the room
 
@@ -89,7 +98,7 @@ The clock is the story's spine. At the start of every challenge:
 
 Sam is Strandvik's key account manager for Poliden, at a trade fair in Singapore (UTC+8, 10:52 when the agent asks). Sam is friendly, busy and protective of Poliden.
 
-1. Open the viewer (`WORKIQ_VIEWER_URL` from the team's `.env`, or the emulator host + `/viewer`) in a **private window**, and sign in with the team's **Sam key** (`WORKIQ_KEY_SAM`).
+1. Open the viewer (`WorkIQViewerUrl` from the team's lab dashboard, or the emulator host + `/viewer`) in a **private window**, and sign in with the team's **Sam key** (`WorkIQKeySam`).
 2. Open **Chats** > **Kolvo press line 2, SD-900**. The thread refreshes every 4 seconds; agent posts are highlighted and say "Alex's agent (on behalf of Alex)".
 3. When the agent asks, reply under **Post as: Sam**. The scripted answer:
 
@@ -126,10 +135,10 @@ Kolvo's procurement board is at the emulator host + `/board`. Sign in with any l
 | To reset | Do this |
 |---|---|
 | Chat posts in the Kolvo thread (after evaluations or a messy rehearsal) | Coach page `/viewer/coach` > **Reset the thread** (admin key in the form), or `POST /manage/thread/reset`: removes the live posts, stops the story clock. `POST /manage/reset` also reloads the whole seed. To stamp a beat at its story time, set the clock first (coach page, or `POST /manage/clock` with `{"time": "07:30"}`). The admin key is `WORKIQ_ADMIN_KEY` in the Function App's **Environment variables** (Azure portal > lab resource group > `iq-wiq-...` > Settings). |
-| A Strandvik agent | Delete it in the Foundry portal (strandvik project > Agents > the agent > Delete) and create it again. Re-run notebook 01 for it (it switches on incoming A2A and grants the caller's role for the new identity). |
+| A Strandvik agent | Delete it in the Foundry portal (strandvik project > Agents > the agent > Delete) and create it again. Re-run `enable-a2a.py` in Cloud Shell for it with the same `--agent` and `--caller` (it switches on incoming A2A and grants the caller's role for the new identity). If you re-create a **caller** (`alex-agent`), re-run the script for every target it calls: the new agent has a new identity. |
 | The whole Strandvik side | Delete all agents in the strandvik project, the knowledge base and its source. Nothing in the automation depends on them. |
 | Kolvo's agents (someone edited them) | Run `labautomation/setup-kolvo.ps1` (needs an Az PowerShell context with Owner on the resource group). It is idempotent. |
-| Fabric | Delete the lakehouse, ontology and data agent items, then load again (portal or notebook 00). |
+| Fabric | Delete the lakehouse, ontology and data agent items, then load again (portal, or notebook 00 in the optional Codespace). |
 
 ```powershell
 # Reset the Work IQ emulator (coach). $adminKey from the Function App's environment variables.
@@ -144,7 +153,8 @@ The emulator keeps its state in memory: a restart of the Function App also clear
 |---|---|---|
 | Board or Maria's playground: `tool_user_error` ("A user error occurred while executing a tool call") | `strandvik-customer-service` missing, incoming A2A off, or Maria's identity has no **Foundry Agent Consumer** on the strandvik project | Fix the missing piece, then **wait 3 to 5 minutes** (about 4 in testing) |
 | Agent card check returns `Project not found` | Brand-new project, public A2A endpoint not ready yet | Wait a few minutes |
-| Role assigned on the wrong scope or to the wrong identity | Granted on the kolvo project, or to the target agent instead of the caller | The **caller** needs **Foundry Agent Consumer** on the **target** (agent or strandvik project). Re-run notebook 01 with the right `AGENT_NAME` (target) and `CALLER`; portals cannot pick agent identities yet |
+| Cloud Shell blocked, or `enable-a2a.py` says "No lab found" | Tenant policy on Cloud Shell, or Cloud Shell on another subscription or account | Blocked: run the script from a Codespace on the participant's own fork or a local clone after `az login`. Wrong subscription: `az account set -s <lab subscription>`; several labs: `--resource-group <rg>` |
+| Role assigned on the wrong scope or to the wrong identity | Granted on the kolvo project, or to the target agent instead of the caller | The **caller** needs **Foundry Agent Consumer** on the **target** (agent or strandvik project). Re-run `enable-a2a.py` with the right `--agent` (target) and `--caller` (project/agent); portals cannot pick agent identities yet |
 | Parts agent fails only when called by another agent (`tool_server_error`) | Fabric IQ needs a person; the A2A tool used agent identity | Use **OAuth Identity Passthrough** on the `strandvik-parts-a2a` tool (solution 6) |
 | Alex's whole run fails after adding A2A tools | One specialist unreachable (no incoming A2A, or `alex-agent` identity lacks the role) | Add and test one A2A tool at a time |
 | Embedding model missing in the knowledge source form | The form only lists deployments that existed when the page loaded | Reload the page |
@@ -154,7 +164,7 @@ The emulator keeps its state in memory: a restart of the Function App also clear
 | Data agent cannot see a new table | SQL analytics endpoint metadata not synced | Refresh the SQL endpoint metadata |
 | No **Ontology** item in Fabric, or `FeatureNotAvailable` | Tenant setting off | Fallback in [solution 3](challenge-03/solution-03.md#fallback-ontology-on-paper) |
 | `strandvik-parts` works alone, fails when `alex-agent` calls it | Fabric IQ tool needs a signed-in user; over A2A there is none | Fallback in [solution 6](challenge-06/solution-06.md#if-the-parts-agent-fails-over-a2a) |
-| MCP tool returns 401 | Header value missing `Bearer ` or wrong key | `Authorization: Bearer <WORKIQ_KEY>` (Alex's key) |
+| MCP tool returns 401 | Header value missing `Bearer ` or wrong key | `Authorization: Bearer <WorkIQKey>` (Alex's key) |
 | Agent post never appears in the thread | Agent posted to the wrong chat id, or did not call `create_entity` | Check the tool call output; tell the agent the exact path in its instructions |
 | Evaluation wizard rejects synthetic data | Minimum is 15 rows | Use 15 or more, or the provided dataset (27 rows) |
 | Monitor > Cost is empty | Cost views lag 8 to 24 hours | Use token counts in traces and the evaluation grid |
