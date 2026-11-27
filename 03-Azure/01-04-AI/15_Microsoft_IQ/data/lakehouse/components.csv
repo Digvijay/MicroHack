@@ -1,6 +1,0 @@
-component_id,name,primary_supplier_id,backup_supplier_id,on_hand_boras,unit_cost_eur,pressure_bearing
-HX-220,Aluminium valve housing,SUP-01,SUP-02,1200,38,true
-SL-12,Seal kit,SUP-03,,9000,4,false
-ST-50,Valve stem,SUP-04,,7000,11,false
-FX-8,Fastener kit,SUP-05,,20000,1.5,false
-AC-3,Electric actuator,SUP-04,,2500,95,false

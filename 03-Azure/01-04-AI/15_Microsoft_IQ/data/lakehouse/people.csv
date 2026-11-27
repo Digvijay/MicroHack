@@ -1,0 +1,9 @@
+person_id,first_name,company,role,email,base_location,current_location,time_zone
+P-ALEX,Alex,Strandvik Drives AB,Key account manager for Kolvo,alex@strandvik.example,Gothenburg,Gothenburg,Europe/Stockholm
+P-SAM,Sam,Strandvik Drives AB,Key account manager for Poliden,sam@strandvik.example,Gothenburg,Singapore (trade fair this week),Asia/Singapore
+P-LINA,Lina,Strandvik Drives AB,Key account manager for Varnhem Paper and Arkona Steel,lina@strandvik.example,Gothenburg,Gothenburg,Europe/Stockholm
+P-ERIK,Erik,Strandvik Drives AB,Key account manager for Holmstad Cement and Delfzijl Port Cranes,erik@strandvik.example,Rotterdam,Rotterdam,Europe/Amsterdam
+P-JONNA,Jonna,Strandvik Drives AB,Head of sales Europe,jonna@strandvik.example,Gothenburg,Gothenburg,Europe/Stockholm
+P-NOOR,Noor,Strandvik Drives AB,Field service coordinator,noor@strandvik.example,Gothenburg,Gothenburg,Europe/Stockholm
+P-MARIA,Maria,Kolvo AB,Production manager press shop,maria@kolvo.example,Gothenburg,Gothenburg,Europe/Stockholm
+P-POLPLAN,Poliden maintenance planner,Poliden AB,Maintenance planner crusher line C3,planner@poliden.example,Skelleftehamn,Skelleftehamn,Europe/Stockholm

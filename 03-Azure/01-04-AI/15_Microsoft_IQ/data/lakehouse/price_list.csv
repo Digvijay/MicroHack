@@ -1,0 +1,9 @@
+item_code,description,model,list_price_eur,unit,valid_from,valid_to
+SD-900-NEW,SD-900 drive unit new and factory tested,SD-900,186000,unit,2026-01-01,2026-12-31
+SD-900-EXCH,SD-900 drive unit exchange (refurbished),SD-900,132000,unit,2026-01-01,2026-12-31
+SD-700-NEW,SD-700 drive unit new and factory tested,SD-700,122000,unit,2026-01-01,2026-12-31
+SD-700-EXCH,SD-700 drive unit exchange (refurbished),SD-700,84000,unit,2026-01-01,2026-12-31
+INST-SD900-DAY,Installation of an SD-900 by a certified technician day shift,SD-900,5200,installation,2026-01-01,2026-12-31
+INST-SD900-NIGHT,Installation of an SD-900 by a certified technician night shift 22:00 to 06:00,SD-900,7400,installation,2026-01-01,2026-12-31
+INST-SD700-DAY,Installation of an SD-700 by a certified technician day shift,SD-700,3900,installation,2026-01-01,2026-12-31
+SVC-EXPRESS,Express handling: dispatch from warehouse within 4 hours,,1500,order,2026-01-01,2026-12-31

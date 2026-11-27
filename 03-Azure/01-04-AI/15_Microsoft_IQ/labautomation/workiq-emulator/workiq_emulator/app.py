@@ -1,11 +1,12 @@
-"""Starlette ASGI app: /mcp, /healthz, /admin/* and the read-only /viewer."""
+"""Starlette ASGI app: /mcp, /healthz, /manage/* (alias /admin/*) and the read-only /viewer."""
 
 from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
-from urllib.parse import parse_qs, quote
+from urllib.parse import parse_qs, quote, urlsplit
 
 from starlette.applications import Starlette
 from starlette.concurrency import run_in_threadpool
@@ -14,7 +15,7 @@ from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse, Re
 from starlette.routing import Route
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from . import auth, mcp
+from . import auth, board, chat, mcp
 from .state import AppState, ToolContext
 from .store import PackError
 from .viewer import pages
@@ -27,14 +28,14 @@ MAX_ADMIN_ITEM_BODY = 128 * 1024
 MAX_FORM_BODY = 4 * 1024
 STATIC_DIR = Path(__file__).resolve().parent / "viewer" / "static"
 CSP = (
-    "default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self' data:; object-src 'none'; "
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; "
     "base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 )
 SECURITY_HEADERS = [
     (b"content-security-policy", CSP.encode()),
     (b"x-content-type-options", b"nosniff"),
     (b"x-frame-options", b"DENY"),
-    (b"referrer-policy", b"no-referrer"),
+    (b"referrer-policy", b"same-origin"),  # no-referrer makes browsers post forms with Origin: null
     (b"cache-control", b"no-store"),
 ]
 
@@ -87,11 +88,30 @@ def create_app(state: AppState | None = None) -> Starlette:
         proto = request.headers.get("x-forwarded-proto", request.url.scheme).split(",")[0].strip()
         return f"{proto}://{request.url.netloc}"
 
+    def cookie_domain(request: Request) -> str | None:
+        """On Azure Functions the Python worker re-serialises Set-Cookie and turns a missing Domain into an empty
+        "domain=" attribute, which strict clients such as .NET drop. Set the exact host there instead."""
+        if not os.environ.get("FUNCTIONS_WORKER_RUNTIME"):
+            return None
+        host = (urlsplit(base_url(request)).hostname or "").lower()
+        if not host or host == "localhost" or "." not in host or host.replace(".", "").isdigit():
+            return None
+        return host
+
     def origin_ok(request: Request) -> bool:
+        """Reject cross-site form posts. Compare hosts only: behind Azure Functions the app sees http while the
+        browser sends an https Origin."""
         origin = request.headers.get("origin")
         if not origin:
             return True
-        return origin.rstrip("/") == base_url(request) or origin.rstrip("/") == f"{request.url.scheme}://{request.url.netloc}"
+        origin_host = (urlsplit(origin).netloc or "").lower()
+        allowed = {
+            (urlsplit(base_url(request)).netloc or "").lower(),
+            request.url.netloc.lower(),
+            (request.headers.get("x-forwarded-host") or "").split(",")[0].strip().lower(),
+            (request.headers.get("host") or "").lower(),
+        }
+        return bool(origin_host) and origin_host in allowed - {""}
 
     async def read_body(request: Request, limit: int) -> bytes | None:
         cl = request.headers.get("content-length")
@@ -103,7 +123,8 @@ def create_app(state: AppState | None = None) -> Starlette:
     def resolve_persona(request: Request) -> str | None:
         if st.settings.auth_mode == "keys":
             return auth.persona_for_key(st.settings, auth.parse_bearer(request.headers.get("authorization")))
-        pid = (request.headers.get("x-workiq-persona") or "").strip()
+        header = request.headers.get("x-workiq-persona")
+        pid = (header if header is not None else st.settings.default_persona).strip()
         return pid if pid in st.store.personas else None
 
     # -- MCP ------------------------------------------------------------------
@@ -122,6 +143,7 @@ def create_app(state: AppState | None = None) -> Starlette:
         body = await read_body(request, MAX_MCP_BODY)
         if body is None:
             return _json_error(413, "payload_too_large", f"The request body is larger than {MAX_MCP_BODY} bytes.")
+        st.tick()
         store = st.store
         ctx = ToolContext(state=st, store=store, persona=store.personas[pid], base_url=base_url(request))
         result = await run_in_threadpool(mcp.handle, body, ctx)
@@ -139,7 +161,7 @@ def create_app(state: AppState | None = None) -> Starlette:
         return Response(status_code=405, headers={"Allow": "POST"})
 
     async def healthz(request: Request) -> Response:
-        return JSONResponse({"status": "ok", "items": st.store.item_count()})
+        return JSONResponse({"status": "ok", "scenario": st.store.pack.get("scenario"), "items": st.store.item_count()})
 
     # -- Admin ----------------------------------------------------------------
 
@@ -189,6 +211,36 @@ def create_app(state: AppState | None = None) -> Starlette:
         store = st.reset()
         log.info("admin reset: items=%d", store.item_count())
         return JSONResponse({"status": "ok", "items": store.item_count()})
+
+    def clock_json() -> dict:
+        return {"storyTime": st.story_now().isoformat(timespec="seconds"), "running": st.story_clock_running()}
+
+    async def admin_clock_get(request: Request) -> Response:
+        if denied := admin_check(request):
+            return denied
+        return JSONResponse(clock_json())
+
+    async def admin_clock_post(request: Request) -> Response:
+        if denied := admin_check(request):
+            return denied
+        body = await read_body(request, MAX_FORM_BODY)
+        try:
+            data = json.loads(body or b"{}")
+            when = chat.parse_story_time(data.get("time") if isinstance(data, dict) else None, st.store.now)
+        except json.JSONDecodeError:
+            return _json_error(400, "invalid_json", "The body is not valid JSON.")
+        except ValueError as err:
+            return _json_error(400, "invalid_time", str(err))
+        st.set_story_clock(when)
+        log.info("admin story clock set to %s", when.isoformat())
+        return JSONResponse(clock_json())
+
+    async def admin_thread_reset(request: Request) -> Response:
+        if denied := admin_check(request):
+            return denied
+        removed = st.reset_thread()
+        log.info("admin thread reset: removed=%d", removed)
+        return JSONResponse({"status": "ok", "removed": removed} | clock_json())
 
     async def admin_pack(request: Request) -> Response:
         if denied := admin_check(request):
@@ -244,6 +296,7 @@ def create_app(state: AppState | None = None) -> Starlette:
             auth.make_session(st.settings, pid),
             max_age=auth.SESSION_TTL_SECONDS,
             path="/viewer",
+            domain=cookie_domain(request),
             secure=base_url(request).startswith("https://"),
             httponly=True,
             samesite="strict",
@@ -255,7 +308,7 @@ def create_app(state: AppState | None = None) -> Starlette:
         if not origin_ok(request):
             return HTMLResponse(pages.message_page("Forbidden", "Cross-origin form posts are not allowed."), status_code=403)
         resp = RedirectResponse("/viewer/login", status_code=303)
-        resp.delete_cookie(auth.SESSION_COOKIE, path="/viewer", secure=base_url(request).startswith("https://"), httponly=True, samesite="strict")
+        resp.delete_cookie(auth.SESSION_COOKIE, path="/viewer", domain=cookie_domain(request), secure=base_url(request).startswith("https://"), httponly=True, samesite="strict")
         return resp
 
     def section(kind: str | None, render):
@@ -265,6 +318,7 @@ def create_app(state: AppState | None = None) -> Starlette:
             persona = viewer_persona(request)
             if not persona:
                 return to_login(request)
+            st.tick()
             store = st.store
             selected = None
             gid = request.path_params.get("gid")
@@ -273,9 +327,168 @@ def create_app(state: AppState | None = None) -> Starlette:
                 if selected is None:
                     # Same answer for "missing" and "not yours", so the viewer is no existence oracle.
                     return HTMLResponse(pages.message_page("Not found", "This item does not exist or you do not have access to it.", persona), status_code=404)
+            if kind == "chat":
+                return HTMLResponse(pages.chats_page(store, persona, selected, chat_extras()))
             return HTMLResponse(render(store, persona, selected))
 
         return handler
+
+    def chat_extras() -> dict:
+        thread = chat.kolvo_thread(st.store, st.settings.kolvo_thread)
+        return {"kolvo_gid": thread.gid if thread else None, "auto_sam": st.auto_sam, "story_time": story_label()}
+
+    def story_label() -> str:
+        return st.story_now().strftime("%a %d %b, %H:%M")
+
+    def form_guard(request: Request) -> Response | None:
+        if st.settings.auth_mode == "misconfigured":
+            return misconfigured_page()
+        if not origin_ok(request):
+            return HTMLResponse(pages.message_page("Forbidden", "Cross-origin form posts are not allowed."), status_code=403)
+        return None
+
+    async def read_form(request: Request) -> dict[str, str] | None:
+        body = await read_body(request, MAX_FORM_BODY * 2)
+        if body is None:
+            return None
+        form = parse_qs(body.decode("utf-8", "replace"), max_num_fields=10)
+        return {k: v[0] for k, v in form.items() if v}
+
+    async def reply_post(request: Request) -> Response:
+        """Post into a thread as one of its members. Requires a viewer session (a lab persona key)."""
+        if denied := form_guard(request):
+            return denied
+        persona = viewer_persona(request)
+        if not persona:
+            return HTMLResponse(pages.message_page("Sign in first", "Sign in with a lab persona key to post."), status_code=401)
+        form = await read_form(request)
+        if form is None:
+            return HTMLResponse(pages.message_page("Too large", "The message is too large.", persona), status_code=413)
+        e = st.store.get_visible(form.get("chat", ""), persona.id, "chat")
+        if e is None:
+            return HTMLResponse(pages.message_page("Not found", "This item does not exist or you do not have access to it.", persona), status_code=404)
+        as_pid = form.get("as", "")
+        if as_pid not in e.item["members"]:
+            return HTMLResponse(pages.message_page("Not allowed", "You can only post as a member of this thread.", persona), status_code=403)
+        try:
+            text = chat.clean_text(form.get("text", ""))
+            st.post_chat_message(e.id, as_pid, text)
+        except (ValueError, PackError) as err:
+            return HTMLResponse(pages.message_page("Not posted", str(err), persona), status_code=400)
+        log.info("viewer reply chat=%s as=%s by=%s", e.id, as_pid, persona.id)
+        return RedirectResponse(f"/viewer/chats/{quote(e.gid, safe='')}", status_code=303)
+
+    async def chat_api(request: Request) -> Response:
+        if st.settings.auth_mode == "misconfigured":
+            return _json_error(503, "server_misconfigured", MISCONFIGURED)
+        persona = viewer_persona(request)
+        if not persona:
+            return _unauthorized("Sign in to the viewer first.")
+        st.tick()
+        e = st.store.get_visible(request.query_params.get("id", ""), persona.id, "chat")
+        if e is None:
+            return _json_error(404, "not_found", "This chat does not exist or you do not have access to it.")
+        return JSONResponse(pages.chat_json(st.store, e, st.auto_sam, st.sam_pending(e.id), story_label()))
+
+    async def auto_sam_post(request: Request) -> Response:
+        if denied := form_guard(request):
+            return denied
+        persona = viewer_persona(request)
+        if not persona:
+            return HTMLResponse(pages.message_page("Sign in first", "Sign in with a lab persona key first."), status_code=401)
+        form = await read_form(request) or {}
+        st.set_auto_sam(form.get("on", "").lower() in ("1", "true", "on", "yes"))
+        log.info("auto-sam=%s by=%s", st.auto_sam, persona.id)
+        return RedirectResponse(safe_next(form.get("next")), status_code=303)
+
+    # -- Coach controls (admin key in the form, no session needed) ----------------
+
+    async def coach_get(request: Request) -> Response:
+        if st.settings.auth_mode == "misconfigured":
+            return misconfigured_page()
+        notice = {"clock": "The story clock is set.", "reset": "The Kolvo thread is reset."}.get(request.query_params.get("done", ""), "")
+        return HTMLResponse(pages.coach_page(viewer_persona(request), story_label(), st.story_clock_running(), notice))
+
+    async def coach_form(request: Request) -> tuple[dict | None, Response | None]:
+        if denied := form_guard(request):
+            return None, denied
+        form = await read_form(request)
+        if form is None:
+            return None, HTMLResponse(pages.message_page("Too large", "The form is too large."), status_code=413)
+        if not st.settings.admin_key:
+            return None, HTMLResponse(pages.coach_page(viewer_persona(request), story_label(), st.story_clock_running(),
+                                                       error="Coach controls are disabled because WORKIQ_ADMIN_KEY is not set."), status_code=403)
+        if not auth.is_admin(st.settings, form.get("admin_key", "").strip()):
+            log.info("coach control refused: wrong admin key")
+            return None, HTMLResponse(pages.coach_page(viewer_persona(request), story_label(), st.story_clock_running(),
+                                                       error="That admin key is not valid."), status_code=401)
+        return form, None
+
+    async def coach_clock(request: Request) -> Response:
+        form, denied = await coach_form(request)
+        if denied:
+            return denied
+        try:
+            when = chat.parse_story_time(form.get("time", ""), st.store.now)
+        except ValueError as err:
+            return HTMLResponse(pages.coach_page(viewer_persona(request), story_label(), st.story_clock_running(), error=str(err)), status_code=400)
+        st.set_story_clock(when)
+        log.info("coach story clock set to %s", when.isoformat())
+        return RedirectResponse("/viewer/coach?done=clock", status_code=303)
+
+    async def coach_reset(request: Request) -> Response:
+        form, denied = await coach_form(request)
+        if denied:
+            return denied
+        removed = st.reset_thread()
+        log.info("coach thread reset: removed=%d", removed)
+        return RedirectResponse("/viewer/coach?done=reset", status_code=303)
+
+    # -- Kolvo procurement board ------------------------------------------------
+
+    def board_view(run: dict) -> dict:
+        return {k: run.get(k) for k in ("id", "status", "started", "finished", "agent", "request", "suppliers", "final", "error", "hint")}
+
+    async def board_redirect(request: Request) -> Response:
+        return RedirectResponse("/viewer/board", status_code=303)
+
+    async def board_get(request: Request) -> Response:
+        if st.settings.auth_mode == "misconfigured":
+            return misconfigured_page()
+        persona = viewer_persona(request)
+        if not persona:
+            return to_login(request)
+        run = board.board_status(st)
+        return HTMLResponse(
+            pages.board_page(persona, run, bool(st.settings.kolvo_project_endpoint), st.settings.maria_agent_name,
+                             st.settings.maria_request or board.MARIA_REQUEST)
+        )
+
+    async def board_api(request: Request) -> Response:
+        if not viewer_persona(request):
+            return _unauthorized("Sign in to the viewer first.")
+        return JSONResponse(board_view(board.board_status(st)))
+
+    async def board_run(request: Request) -> Response:
+        """Runs Maria's request synchronously (up to 180 s) inside this request. On Flex Consumption an open request
+        keeps the instance alive, while a background thread after the response could be frozen or recycled."""
+        if denied := form_guard(request):
+            return denied
+        persona = viewer_persona(request)
+        wants_json = "application/json" in request.headers.get("accept", "")
+        if not persona:
+            return _unauthorized("Sign in to the viewer first.") if wants_json else to_login(request)
+        run = board.start_run(st)
+        if run is None:
+            if wants_json:
+                return _json_error(409, "already_running", "A run is already in progress.")
+            return RedirectResponse("/viewer/board", status_code=303)
+        log.info("board run started id=%s by=%s", run["id"], persona.id)
+        result = await run_in_threadpool(board.execute_run, st, run)
+        log.info("board run finished id=%s status=%s", run["id"], result["status"])
+        if wants_json:
+            return JSONResponse(board_view(result))
+        return RedirectResponse("/viewer/board", status_code=303)
 
     async def people(request: Request) -> Response:
         if st.settings.auth_mode == "misconfigured":
@@ -294,9 +507,13 @@ def create_app(state: AppState | None = None) -> Starlette:
         return HTMLResponse(pages.activity_page(persona, st.activity(persona.id)))
 
     css = (STATIC_DIR / "style.css").read_bytes()
+    js = (STATIC_DIR / "viewer.js").read_bytes()
 
     async def static_css(request: Request) -> Response:
         return Response(css, media_type="text/css", headers={"Cache-Control": "public, max-age=3600"})
+
+    async def static_js(request: Request) -> Response:
+        return Response(js, media_type="text/javascript", headers={"Cache-Control": "public, max-age=3600"})
 
     async def root(request: Request) -> Response:
         return RedirectResponse("/viewer", status_code=303)
@@ -306,15 +523,35 @@ def create_app(state: AppState | None = None) -> Starlette:
         Route("/mcp", mcp_post, methods=["POST"]),
         Route("/mcp", mcp_other, methods=["GET", "DELETE", "PUT", "PATCH"]),
         Route("/healthz", healthz, methods=["GET"]),
-        Route("/admin/seed", admin_seed, methods=["POST"]),
-        Route("/admin/items", admin_items, methods=["POST"]),
-        Route("/admin/reset", admin_reset, methods=["POST"]),
-        Route("/admin/pack", admin_pack, methods=["GET"]),
+        # Azure Functions reserves /admin/* for its own host API, so hosted labs use /manage/*.
+        # /admin/* stays as an alias for local runs.
+        *[Route(prefix + path, handler, methods=methods)
+          for prefix in ("/manage", "/admin")
+          for path, handler, methods in (
+              ("/seed", admin_seed, ["POST"]),
+              ("/items", admin_items, ["POST"]),
+              ("/reset", admin_reset, ["POST"]),
+              ("/pack", admin_pack, ["GET"]),
+              ("/clock", admin_clock_get, ["GET"]),
+              ("/clock", admin_clock_post, ["POST"]),
+              ("/thread/reset", admin_thread_reset, ["POST"]),
+          )],
+        Route("/viewer/coach", coach_get, methods=["GET"]),
+        Route("/viewer/coach/clock", coach_clock, methods=["POST"]),
+        Route("/viewer/coach/reset-thread", coach_reset, methods=["POST"]),
         Route("/viewer", viewer_root, methods=["GET"]),
         Route("/viewer/login", login_get, methods=["GET"]),
         Route("/viewer/login", login_post, methods=["POST"]),
         Route("/viewer/logout", logout, methods=["POST"]),
         Route("/viewer/static/style.css", static_css, methods=["GET"]),
+        Route("/viewer/static/viewer.js", static_js, methods=["GET"]),
+        Route("/viewer/reply", reply_post, methods=["POST"]),
+        Route("/viewer/auto-sam", auto_sam_post, methods=["POST"]),
+        Route("/viewer/api/chat", chat_api, methods=["GET"]),
+        Route("/board", board_redirect, methods=["GET"]),
+        Route("/viewer/board", board_get, methods=["GET"]),
+        Route("/viewer/board/run", board_run, methods=["POST"]),
+        Route("/viewer/api/board", board_api, methods=["GET"]),
         Route("/viewer/mail", section("email", pages.mail_page), methods=["GET"]),
         Route("/viewer/mail/{gid}", section("email", pages.mail_page), methods=["GET"]),
         Route("/viewer/chats", section("chat", pages.chats_page), methods=["GET"]),

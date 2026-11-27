@@ -1,0 +1,7 @@
+customer_id,owner_person_id,owner_role,backup_person_id,owner_since
+CUST-KOL,P-ALEX,key_account_manager,P-JONNA,2024-03-01
+CUST-POL,P-SAM,key_account_manager,P-JONNA,2025-01-01
+CUST-VAR,P-LINA,key_account_manager,P-JONNA,2023-06-01
+CUST-ARK,P-LINA,key_account_manager,P-JONNA,2025-02-01
+CUST-HOL,P-ERIK,key_account_manager,P-JONNA,2024-05-01
+CUST-DEL,P-ERIK,key_account_manager,P-JONNA,2026-01-01

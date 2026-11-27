@@ -1,0 +1,23 @@
+serial,model,status,condition,site_id,machine_id,customer_id,manufactured_date,last_test_date,notes
+SD9-K-0398,SD-900,installed,ok,SITE-KOL-HIS,KOL-PL1,CUST-KOL,2021-04-12,2026-09-03,
+SD9-K-0412,SD-900,installed,vibration_alarm,SITE-KOL-HIS,KOL-PL2,CUST-KOL,2021-05-20,2026-06-18,Vibration alarm 2026-12-15 02:10; press cut to half speed
+SD9-K-0455,SD-900,installed,ok,SITE-KOL-HIS,KOL-PL3,CUST-KOL,2022-02-08,2026-06-18,
+SD9-P-0611,SD-900,installed,ok,SITE-POL-SKE,POL-C1,CUST-POL,2023-03-15,2026-08-26,
+SD9-P-0640,SD-900,installed,worn,SITE-POL-SKE,POL-C3,CUST-POL,2020-10-02,2026-08-26,To be swapped at Poliden planned maintenance stop
+SD9-V-0560,SD-900,installed,ok,SITE-VAR-MILL,VAR-PM4,CUST-VAR,2022-09-30,2026-11-19,
+SD9-A-0517,SD-900,installed,ok,SITE-ARK-MILL,ARK-ST2,CUST-ARK,2022-05-11,2026-05-04,
+SD9-D-0601,SD-900,installed,ok,SITE-DEL-PORT,DEL-C7,CUST-DEL,2023-01-24,2026-07-14,
+SD9-P-0981,SD-900,in_stock,new_tested,SITE-PUN-FAC,,,2026-11-27,2026-12-08,New unit; factory test passed
+SD9-R-0733,SD-900,in_stock,new,SITE-RTM-WH,,,2026-09-14,2026-09-30,On the shelf; see reservations
+SD9-R-0750,SD-900,sold,new,SITE-RTM-WH,,CUST-DEL,2026-08-20,2026-09-02,Sold to Delfzijl Port Cranes as a spare; pickup 2026-12-18
+SD9-P-0902,SD-900,in_repair,under_repair,SITE-PUN-FAC,,,2019-07-01,2026-10-22,Gearbox rebuild; expected back in stock 2027-01-20
+SD7-K-0120,SD-700,installed,ok,SITE-KOL-HIS,KOL-SL1,CUST-KOL,2019-11-05,2026-09-03,
+SD7-P-0221,SD-700,installed,ok,SITE-POL-SKE,POL-C2,CUST-POL,2020-02-17,2026-10-15,
+SD7-V-0310,SD-700,installed,ok,SITE-VAR-MILL,VAR-PM2,CUST-VAR,2021-06-09,2026-11-19,
+SD7-A-0275,SD-700,installed,ok,SITE-ARK-MILL,ARK-ST1,CUST-ARK,2020-08-25,2026-05-04,
+SD7-H-0145,SD-700,installed,ok,SITE-HOL-PLANT,HOL-K1,CUST-HOL,2018-04-19,2026-12-09,
+SD7-H-0152,SD-700,installed,worn,SITE-HOL-PLANT,HOL-M2,CUST-HOL,2018-05-02,2026-10-01,
+SD7-D-0333,SD-700,installed,ok,SITE-DEL-PORT,DEL-C3,CUST-DEL,2021-03-30,2026-07-14,
+SD7-R-0388,SD-700,in_stock,new,SITE-RTM-WH,,,2026-07-07,2026-07-21,SD-700; does not fit SD-900 machines
+SD7-R-0391,SD-700,in_stock,new,SITE-RTM-WH,,,2026-07-09,2026-07-21,See reservations
+SD7-P-0402,SD-700,in_repair,under_repair,SITE-PUN-FAC,,,2019-02-14,2026-11-30,Bearing replacement; expected back in stock 2027-01-15

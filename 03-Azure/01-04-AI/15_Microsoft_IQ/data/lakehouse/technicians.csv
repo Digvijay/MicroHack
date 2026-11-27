@@ -1,0 +1,5 @@
+technician_id,first_name,base_site_id,certified_models,email
+T-04,Jonas,SITE-GOT-HQ,SD-700;SD-900,jonas@strandvik.example
+T-09,Pekka,SITE-GOT-HQ,SD-700;SD-900,pekka@strandvik.example
+T-12,Ruud,SITE-RTM-WH,SD-700,ruud@strandvik.example
+T-15,Kristin,SITE-GOT-HQ,SD-700;SD-900,kristin@strandvik.example

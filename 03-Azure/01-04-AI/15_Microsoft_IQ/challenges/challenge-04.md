@@ -1,184 +1,96 @@
-# Challenge 4: Know the rules with Foundry IQ
+# Challenge 4: Why didn't it take the unit?
 
-**[Home](../README.md)** - [Previous Challenge](challenge-03.md) - [Next Challenge](challenge-05.md)
+[Previous Challenge](challenge-03.md) - **[Home](../README.md)** - [Next Challenge](challenge-05.md)
 
-**Time:** 60 minutes. **IQ:** Foundry IQ.
+**Clock: 03:41** · **Time:** 60 minutes · **Products:** Foundry IQ (knowledge bases), Foundry Agent Service; stretch: knowledge graph
 
-## Story beat
+## The story
 
-10:00. The Supply Planner has an idea: "Nordhavn is stuck. Let's buy the HX-220 from Teglbruk, our backup supplier." It sounds sensible. But the answer is hidden in three different documents: the supplier agreement, a quality report from last Friday and a policy about pressure-bearing parts. Your agent needs Caldova's rulebook, and it needs to read across documents.
+03:41. Let's stop the clock here. Alex's agent has found two units. One is brand-new, at Strandvik's factory in India. The other one is on the shelf in Rotterdam. So why doesn't it take that one? It's right there.
 
-## What you learn
+Because it's reserved for Poliden, a mining company and another Strandvik customer, for a maintenance stop next Monday. And the reservation has an owner: Sam. There is even a note from Sam, from last Friday: Poliden's stop will *probably* move two weeks.
 
-- How a **knowledge base** with agentic retrieval answers questions across many documents, with citations.
-- How a **knowledge graph** extracts entities and relationships from the same documents, guided by **your ontology**.
-- Why "you only get what your ontology asks for", and how to version an ontology.
-- When to use plain retrieval, a document graph or the Fabric ontology.
+Quick vote in your team: is that enough to take the unit? Hands up if yes. Then read the policy. **A note is a reason to ask.** It's not a decision.
 
-## Feature status
+## Goal
 
-| Feature | Status |
-|---|---|
-| Foundry IQ knowledge bases (agentic retrieval) | GA |
-| Knowledge base as an MCP tool in Foundry agents | GA |
-| Foundry IQ knowledge graph (entity graph) | Preview, API only |
+A **Service agent** in the strandvik project answers contract, policy and scheduling questions from Strandvik's documents through a **Foundry IQ knowledge base**, cites its sources, and treats a note as a reason to ask.
 
-## The documents
+## Business task
 
-Ten Markdown files in [`data/documents`](../data/documents): four customer agreements, two supplier agreements, the supplier quality policy SQP-04, the allocation policy AP-02, the quality report QR-2026-118 and the product catalogue. See [`data/README.md`](../data/README.md#foundry-iq-documents).
+1. Write the **reservation rule** into the Service agent's instructions, in your own words but true to [`RES-02`](../data/documents/reservation-policy-res-02.md): who may release a reservation, what counts as a release, what does not, and what the reserved customer is still owed.
+2. Add the Service agent's **may / may not**: check contracts and technician slots; never change a contract or book a technician.
+3. **Judge** the answers. Ask the agent at least these three questions and score each answer from 1 to 5: grounded, cites the right document, and does not decide anything it may not decide.
+   - *Sam wrote on Friday that Poliden's stop will probably move two weeks. Can we take the Rotterdam unit for Kolvo?*
+   - *What is the replacement target for Kolvo's press lines?*
+   - *When can a Strandvik technician install at Kolvo this week?*
 
-## Part A: a knowledge base (GA, 35 min)
+## Builder task
 
-### Business path (portal, no code)
+1. In the strandvik project, connect **Foundry IQ** to your lab's Azure AI Search service.
+2. Create a **knowledge base** with one **Azure Blob Storage** knowledge source over the `documents` container, using the `text-embedding-3-large` deployment and content extraction mode **Minimal**. Wait until the source is **Active**.
+3. Create the prompt agent **`strandvik-service`** with the business role's instructions, without web search, and attach the knowledge base to it.
 
-1. Upload the documents. In the Azure portal, open your storage account (`StorageAccountName`) > **Containers** > `caldova-docs` > **Upload**. Select the ten files from `data/documents` (download them from the Codespace first). If the portal says you have no access, select **Switch to Microsoft Entra user account**: the lab disables storage keys.
-2. In the Foundry portal, open **Knowledge** (Foundry IQ). If asked, connect the Azure AI Search service from your dashboard (`SearchEndpoint`).
-3. Create a **knowledge base** named `caldova-docs-kb` with a knowledge source of type **Azure Blob Storage**: your storage account, container `caldova-docs`, embedding model `text-embedding-3-small`, chat model `gpt-5.6-luna`. Wait until ingestion finishes.
-4. Open `caldova-portal` > **Knowledge** > **Add** and select `caldova-docs-kb`. Add this line to the instructions:
+**Stretch:** build a **knowledge graph** over the same documents with your own ontology, using [`notebooks/02-knowledge-graph-stretch.ipynb`](../notebooks/02-knowledge-graph-stretch.ipynb), and compare its answer to "who must approve moving SD9-R-0733, and in what form?" with the plain knowledge base.
 
-   ```text
-   - Foundry IQ (caldova_documents): contracts, policies, quality reports and the catalogue. Use it for rules, obligations, penalties and deadlines, and quote the clause. Before you say an action is allowed, check the policies and quality holds.
-   ```
+## Constraints
 
-5. Ask: `Nordhavn cannot deliver. Can we buy HX-220 from Teglbruk Metall AS to cover the shortfall?`
-
-### Developer path (Codespace)
-
-```bash
-caldova foundry-iq documents
-```
-
-This takes a few minutes. Read [`src/caldova/foundry_iq.py`](../src/caldova/foundry_iq.py) while it runs. The command:
-
-1. Uploads the ten documents to Blob Storage with your Entra token.
-2. Creates a **knowledge source** `caldova-docs` (`PUT knowledgesources('caldova-docs')`, kind `azureBlob`, with the embedding model), and waits until ingestion ends.
-3. Creates a **knowledge base** `caldova-docs-kb` (`PUT knowledgebases('caldova-docs-kb')`) with low retrieval reasoning effort and answer synthesis.
-4. Registers the knowledge base MCP endpoint (`.../knowledgebases/caldova-docs-kb/mcp`) as a Foundry project connection: category `RemoteTool`, auth `ProjectManagedIdentity`. In `agent.py`, an `MCPTool` with `allowed_tools=["knowledge_base_retrieve"]` uses it.
-
-Query the knowledge base directly, without the agent:
-
-```bash
-caldova foundry-iq retrieve "Nordhavn cannot deliver. Can we buy HX-220 from Teglbruk Metall AS to cover the shortfall?"
-```
-
-Then through the agent:
-
-```bash
-caldova ask "Under our agreement with Brennmark Industries GmbH, does a port closure count as force majeure, and how quickly must we notify them?" --iqs foundry
-```
-
-Expected: **No** to Teglbruk (quality hold after QR-2026-118, SQP-04 forbids deviations for pressure-bearing parts, and HX-220 is pressure-bearing). **Yes** to force majeure for Brennmark, with notice **within 48 hours**.
-
-## Part B: a knowledge graph (Preview, 35 min)
-
-Retrieval finds passages. A **graph** finds relationships: which supplier feeds which component, which product, which customer. Foundry IQ extracts the graph from the documents, using an **ontology** you write in JSON-LD.
-
-### Build the graph from ontology v1
-
-Open [`data/foundry-iq/caldova-supply-v1.jsonld`](../data/foundry-iq/caldova-supply-v1.jsonld). It defines five classes (Supplier, Component, Product, Customer, Port) and five relationships (`supplies`, `backupFor`, `usedIn`, `buys`, `shipsFrom`). Read the `rdfs:comment` texts: they tell the extraction model how to name things.
-
-```bash
-caldova foundry-iq graph
-caldova foundry-iq retrieve "Which customers buy products that contain components supplied by Nordhavn Castings A/S?" --kb graph
-```
-
-Expected: exactly **Brennmark Industries GmbH, Solvik Marine AS and Østerdal Pumps AS**, and **not** Ferrovia Systems S.p.A. (it buys BV-200, which has no HX-220). The command also prints the **GQL** query the planner generated. Run your own:
-
-```bash
-caldova foundry-iq gql "MATCH (s:\`Supplier\`)-->(c:\`Component\`)-->(p:\`Product\`)<--(cu:\`Customer\`) WHERE s.name = 'Nordhavn Castings A/S' RETURN DISTINCT s.name AS supplier, c.name AS component, p.name AS product, cu.name AS customer"
-```
-
-> [!NOTE]
-> **Teaching moment: entity resolution.** In an early test, the ontology had no naming guidance. The extractor created two nodes, "PV-400" and "PV-400 pump valve", and the traversal missed customers. The comments in v1 ("Name it by its product code only, for example PV-400, never with a description") fixed it. Ontology text is instructions for the extractor.
-
-### You only get what your ontology asks for
-
-Ask the same question to both knowledge bases:
-
-```bash
-caldova foundry-iq retrieve "Can we buy HX-220 from Teglbruk Metall AS?" --kb graph
-caldova foundry-iq retrieve "Can we buy HX-220 from Teglbruk Metall AS?" --kb documents
-```
-
-The graph sees `Teglbruk Metall AS backupFor HX-220` and nothing else, so it suggests **yes**. The documents say **no**. Ontology v1 has no idea what a quality report or a policy is, so the extractor never captured the hold.
-
-**Your task:** write ontology v2.
-
-1. Copy `data/foundry-iq/caldova-supply-v1.jsonld` to `data/foundry-iq/caldova-supply-v2.jsonld`.
-2. Add two classes: `cal:QualityReport` and `cal:Policy`. Give each a naming comment (by its id, for example QR-2026-118 or SQP-04).
-3. Add three relationships: `cal:placesOnHold` (QualityReport to Supplier), `cal:restricts` (Policy to Component) and `cal:failedLotOf` (QualityReport to Component). Write a clear `rdfs:comment` for each.
-4. Build a **new** graph and ask again:
-
-   ```bash
-   caldova foundry-iq graph --ontology caldova-supply-v2
-   caldova foundry-iq retrieve "Can we buy HX-220 from Teglbruk Metall AS?" --kb graph
-   ```
-
-Now the graph returns Teglbruk as **on quality hold**. The ontology is fixed when a graph source is created, so each version becomes a new knowledge source and knowledge base (`caldova-graph-caldova-supply-v2`). After this command, `--kb graph`, `gql` and the agent use v2.
-
-> [!TIP]
-> **Phrasing matters.** Ask relationship questions plainly. In testing, "Which supplier cannot ship?" was read by the query planner as "has no `shipsFrom` port". "Which supplier is on quality hold?" works.
-
-### Business path for Part B
-
-The knowledge graph is API only in this preview. Run the two copy-paste commands above with a developer teammate, or watch your coach's demo. Optional: the Foundry IQ skills plugin for GitHub Copilot CLI has a **Knowledge Graph Playground** viewer:
-
-```text
-/plugin marketplace add microsoft/azure-skills
-/plugin install foundry-iq-skills@azure-skills
-```
-
-## Which one answers what?
-
-| Question | Plain retrieval (knowledge base) | Knowledge graph (Foundry IQ) | Fabric IQ (tables, data agent, ontology) |
-|---|---|---|---|
-| "Can we buy HX-220 from Teglbruk?" | Yes, reads the policy and the report | Only if the ontology models holds and policies | No, the tables have a status but no policy text |
-| "Which customers depend on Nordhavn?" | Partly, from scattered passages | Yes, a traversal over the documents | Yes, a join over governed tables |
-| "How much money is at risk?" | No | No | Yes, computed from the orders |
-
-## Evaluate (both paths)
-
-```bash
-caldova eval --iqs web,fabric,foundry --label "challenge 4: + Foundry IQ"
-caldova leaderboard
-```
-
-Look at q10 to q13: force majeure and 48 hours, partial deliveries (Brennmark in writing, Solvik none), Teglbruk blocked by SQP-04, and the AP-02 allocation order.
-
-> [!NOTE]
-> **Business-only team?** The evaluation builds its own agent from the `caldova` state. Run `caldova foundry-iq documents` once in the Codespace before the evaluation.
+- No keys pasted into forms when an identity works. The lab has already given the Search service and the projects the roles they need.
+- Answers cite the document (for example RES-02, SC-KOL-2024, FS-04). An answer without a source does not count.
+- The Service agent never says "yes, take it". At most: "ask the owner, and here is what you need from them".
 
 ## Success criteria
 
-- [ ] Your agent answers the Teglbruk question with **no**, and cites QR-2026-118 and SQP-04.
-- [ ] The v1 graph returns three customers for Nordhavn, without Ferrovia.
-- [ ] You wrote ontology v2 and the graph now knows about the quality hold.
-- [ ] You can explain when to use retrieval, a document graph or the Fabric ontology.
-- [ ] The leaderboard shows `challenge 4: + Foundry IQ`.
+- [ ] The knowledge source shows **Active** and the knowledge base is attached to `strandvik-service`.
+- [ ] Asked about Sam's note, the agent says the unit stays reserved until **Sam** releases it, that a note is **not** a release, that written approval (a chat message counts) is needed, and that Poliden must still get an equal unit in time, citing **RES-02**.
+- [ ] It answers **48 hours** for Kolvo's replacement target (SC-KOL-2024) and **Wednesday 16 December 22:00 to Thursday 17 December 06:00** (slot FS-5101, Jonas), with 24 hours' notice, for the technician (FS-04), each with a citation.
+- [ ] The business role shows the team's 1 to 5 scores for the three answers.
 
-## Value card
+<!-- SHOT: c04-service-agent-cites-res02 | Foundry portal, strandvik project, Agents > strandvik-service > Playground | Answer to "Sam wrote on Friday that Poliden's stop will probably move two weeks. Can we take the Rotterdam unit for Kolvo?" with citation chips and the kb tool chip | Highlight "a note is a reason to ask", the RES-02 citation and the knowledge base tool call -->
+![The Service agent cites RES-02](../images/c04-service-agent-cites-res02.png)
 
-| What this IQ is | What it fixed today | Where customers use it |
-|---|---|---|
-| **Foundry IQ**: knowledge bases with agentic retrieval over curated content, plus a knowledge graph extracted with your ontology. | Force majeure, partial delivery rules, the allocation policy and the blocked backup supplier, with clause citations. | Contracts and procurement, policies and compliance, quality and regulatory documents, product knowledge across many files. |
+## Hints
 
-## Troubleshooting
+<details>
+<summary>Hint 1: The embedding model is not in the list</summary>
 
-| Symptom | Fix |
-|---|---|
-| `Foundry IQ is not set up yet` | Run `caldova foundry-iq documents` first. |
-| Upload fails in the Azure portal | Select **Switch to Microsoft Entra user account** in the container view. |
-| `... documents failed` during ingestion | Check the search identity can read the storage account. Ask your coach. |
-| The graph command reports the ontology is locked, or ignores your changes | The ontology is fixed per source. Use a new file name (v2, v3) and run `caldova foundry-iq graph --ontology <new name>`. |
-| `Ontology file not found` | The file must be in `data/foundry-iq` and end in `.jsonld`. Pass the name without the extension. |
-| The graph returns odd or empty results | Ask plainly, name entities as in the ontology comments, and check the printed GQL. |
+The knowledge source form only lists model deployments that existed when the page loaded. The lab deploys `text-embedding-3-large` up front, so just reload the page before you open the form.
+
+</details>
+
+<details>
+<summary>Hint 2: Which authentication should I pick?</summary>
+
+Identity-based: **Project Managed Identity** to connect the Search service, and **System assigned identity** on the Blob source. The lab gave the Search service Storage Blob Data Reader on the storage account and Cognitive Services OpenAI User on the Foundry resource.
+
+</details>
+
+<details>
+<summary>Hint 3: Minimal or Standard extraction?</summary>
+
+**Minimal**. The seven documents are plain text, so Standard is not needed. In this lab Standard fails with "Unable to connect to AI Services using managed identity" (Cognitive Services User), even when that role is granted, because the Foundry resource has key-based (local) authentication disabled.
+
+</details>
+
+<details>
+<summary>Hint 4: The chat completions model dropdown is empty</summary>
+
+That field is optional. It may only show "Browse more models": leave it empty. Retrieval still works.
+
+</details>
+
+<details>
+<summary>Hint 5: The agent answers but does not use the knowledge base</summary>
+
+Tell it to. Instructions such as "always search the knowledge base before you answer a question about a contract, a policy, a reservation or a technician, and cite the document id" make the tool call reliable. Check the tool call chip under the answer. Also remove the default **Web search** tool: the Service agent answers from the policies only.
+
+</details>
 
 ## Learning resources
 
-- [What is Foundry IQ?](https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq)
-- [Create a knowledge base](https://learn.microsoft.com/en-us/azure/search/agentic-retrieval-how-to-create-knowledge-base)
-- [Create and query an entity graph](https://learn.microsoft.com/en-us/azure/search/agentic-knowledge-source-how-to-entity-graph)
+- [What is Foundry IQ?](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/what-is-foundry-iq)
+- [Connect agents to Foundry IQ knowledge bases](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/knowledge-retrieval)
+- [What is a knowledge source?](https://learn.microsoft.com/azure/search/agentic-knowledge-source-overview)
+- [Agentic retrieval overview](https://learn.microsoft.com/azure/search/agentic-retrieval-overview)
 
----
-
-**[Home](../README.md)** - [Previous Challenge](challenge-03.md) - [Next Challenge](challenge-05.md)
+[Previous Challenge](challenge-03.md) - **[Home](../README.md)** - [Next Challenge](challenge-05.md)

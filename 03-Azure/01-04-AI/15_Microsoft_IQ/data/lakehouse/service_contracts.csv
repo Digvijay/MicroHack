@@ -1,0 +1,7 @@
+contract_id,customer_id,document_name,start_date,end_date,annual_value_eur,replacement_target_hours,uptime_credit_pct_per_day,covered_machines
+SC-KOL-2024,CUST-KOL,service-contract-kolvo-sc-kol-2024.md,2024-03-01,2027-02-28,1240000,48,0.5,KOL-PL1;KOL-PL2;KOL-PL3;KOL-SL1
+SC-POL-2025,CUST-POL,service-contract-poliden-sc-pol-2025.md,2025-01-01,2027-12-31,960000,,,POL-C1;POL-C2;POL-C3
+SC-VAR-2023,CUST-VAR,,2023-06-01,2026-12-31,410000,72,,VAR-PM2;VAR-PM4
+SC-ARK-2025,CUST-ARK,,2025-02-01,2028-01-31,520000,72,,ARK-ST1;ARK-ST2
+SC-HOL-2024,CUST-HOL,,2024-05-01,2027-04-30,280000,96,,HOL-K1;HOL-M2
+SC-DEL-2026,CUST-DEL,,2026-01-01,2026-12-31,190000,96,,DEL-C3;DEL-C7

@@ -1,5 +1,7 @@
-customer_id,name,country,tier
-CUS-01,Brennmark Industries GmbH,Germany,strategic
-CUS-02,Solvik Marine AS,Norway,key
-CUS-03,Østerdal Pumps AS,Norway,standard
-CUS-04,Ferrovia Systems S.p.A.,Italy,key
+customer_id,customer_name,industry,country,tier,main_site_id,service_contract_id
+CUST-KOL,Kolvo AB,Truck manufacturing,Sweden,strategic,SITE-KOL-HIS,SC-KOL-2024
+CUST-POL,Poliden AB,Mining,Sweden,strategic,SITE-POL-SKE,SC-POL-2025
+CUST-VAR,Varnhem Paper AB,Pulp and paper,Sweden,key,SITE-VAR-MILL,SC-VAR-2023
+CUST-ARK,Arkona Steel Oy,Steel,Finland,key,SITE-ARK-MILL,SC-ARK-2025
+CUST-HOL,Holmstad Cement AS,Cement,Norway,standard,SITE-HOL-PLANT,SC-HOL-2024
+CUST-DEL,Delfzijl Port Cranes BV,Port logistics,Netherlands,standard,SITE-DEL-PORT,SC-DEL-2026

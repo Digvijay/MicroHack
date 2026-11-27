@@ -1,0 +1,9 @@
+{
+  "error": {
+    "message": "A user error occurred while executing a tool call.",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "tool_user_error",
+    "request_id": "00000000000000000000000000000000"
+  }
+}

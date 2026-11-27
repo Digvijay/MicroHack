@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 from starlette.testclient import TestClient
@@ -8,25 +9,39 @@ from workiq_emulator.config import Settings
 from workiq_emulator.state import AppState
 from workiq_emulator.store import load_pack_file
 
+FIXTURE = Path(__file__).resolve().parent / "fixtures" / "strandvik_test.json"
 KEYS = {
-    "sales-lead": "sl-key-0123456789abcdef",
-    "supply-planner": "sp-key-0123456789abcdef",
-    "quality-head": "qh-key-0123456789abcdef",
-    "plant-manager": "pm-key-0123456789abcdef",
+    "alex": "alex-key-0123456789abcdef",
+    "sam": "sam-key-0123456789abcdef",
+    "sales-leadership": "sl-key-0123456789abcdef",
 }
 ADMIN_KEY = "admin-key-0123456789abcdef"
 
 
+class Clock:
+    """Controllable time source for auto-Sam delays."""
+
+    def __init__(self, start: float = 1_800_000_000.0):
+        self.now = start
+
+    def __call__(self) -> float:
+        return self.now
+
+    def advance(self, seconds: float) -> None:
+        self.now += seconds
+
+
 @pytest.fixture(scope="session")
 def pack():
-    return load_pack_file()
+    return load_pack_file(FIXTURE)
 
 
-def make_state(pack, **overrides) -> AppState:
+def make_state(pack, clock=None, **overrides) -> AppState:
     settings = Settings(persona_keys=dict(KEYS), admin_key=ADMIN_KEY, session_secret="test-session-secret")
     for k, v in overrides.items():
         setattr(settings, k, v)
-    return AppState(settings=settings, pack=json.loads(json.dumps(pack)))
+    kwargs = {"clock": clock} if clock else {}
+    return AppState(settings=settings, pack=json.loads(json.dumps(pack)), **kwargs)
 
 
 @pytest.fixture

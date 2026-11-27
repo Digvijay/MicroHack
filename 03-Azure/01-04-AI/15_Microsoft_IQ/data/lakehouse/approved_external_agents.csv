@@ -1,0 +1,3 @@
+agent_id,agent_name,customer_id,acts_for_person_id,allowed_requests,may_place_orders,approved_date,policy_id
+EXT-KOL-01,maria-procurement,CUST-KOL,P-MARIA,price;delivery,false,2026-10-01,EAP-01
+EXT-POL-01,poliden-maintenance-agent,CUST-POL,P-POLPLAN,price;delivery,false,2026-11-02,EAP-01

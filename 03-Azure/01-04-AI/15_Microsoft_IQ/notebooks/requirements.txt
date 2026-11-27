@@ -1,0 +1,8 @@
+# Notebook dependencies (Python 3.11+). Install through the Microsoft package proxy:
+#   pip install -r requirements.txt --index-url https://packagefeedproxy.microsoft.io/pypi/simple/
+azure-identity
+azure-ai-projects>=2.5.0
+requests
+python-dotenv
+pandas
+ipykernel

@@ -8,8 +8,8 @@ from urllib.parse import quote
 
 from ..store import Entry, Persona, Store, is_transcript, transcript_lines
 
-BANNER = "Work IQ emulator: simulated Microsoft 365 data for the Caldova hack. Not Microsoft 365."
-NAV = [("mail", "Inbox"), ("chats", "Chats"), ("calendar", "Calendar"), ("files", "Files"), ("people", "People"), ("activity", "Agent activity")]
+BANNER = "Work IQ emulator: simulated Microsoft 365 data for the Strandvik hack. Not Microsoft 365."
+NAV = [("mail", "Inbox"), ("chats", "Chats"), ("calendar", "Calendar"), ("files", "Files"), ("people", "People"), ("activity", "Agent activity"), ("board", "Kolvo board")]
 
 
 def h(value: object) -> str:
@@ -24,7 +24,11 @@ def _when(dt) -> str:
     return dt.strftime("%a %d %b %Y, %H:%M")
 
 
-def page(title: str, body: str, persona: Persona | None = None, section: str = "") -> str:
+def _local(store: Store, dt):
+    return dt.astimezone(store.now.tzinfo)
+
+
+def page(title: str, body: str, persona: Persona | None = None, section: str = "", script: str = "") -> str:
     nav = ""
     who = ""
     if persona:
@@ -43,15 +47,15 @@ def page(title: str, body: str, persona: Persona | None = None, section: str = "
         f"<title>{h(title)} | Work IQ emulator</title>"
         '<link rel="stylesheet" href="/viewer/static/style.css"></head><body>'
         f'<div class="banner" role="note">{h(BANNER)}</div>'
-        f'<header class="top"><div class="brand">Caldova Components AB <span class="muted">Work IQ emulator</span></div>{who}</header>'
-        f'{nav}<main id="main">{body}</main></body></html>'
+        f'<header class="top"><div class="brand">Strandvik Drives AB <span class="muted">Work IQ emulator</span></div>{who}</header>'
+        f'{nav}<main id="main">{body}</main>{script}</body></html>'
     )
 
 
 def login_page(error: str = "", next_url: str = "/viewer/mail", dev_hint: bool = False) -> str:
     err = f'<p class="error" role="alert">{h(error)}</p>' if error else ""
     hint = (
-        '<p class="muted">Local development mode: enter a persona id such as <code>sales-lead</code>.</p>' if dev_hint else ""
+        '<p class="muted">Local development mode: enter a persona id such as <code>alex</code> or <code>sam</code>.</p>' if dev_hint else ""
     )
     body = (
         '<section class="card narrow"><h1>Sign in</h1>'
@@ -105,7 +109,8 @@ def mail_page(store: Store, persona: Persona, selected: Entry | None) -> str:
     return page("Mail", _two_pane(list_html, detail), persona, "mail")
 
 
-def chats_page(store: Store, persona: Persona, selected: Entry | None) -> str:
+def chats_page(store: Store, persona: Persona, selected: Entry | None, extras: dict | None = None) -> str:
+    extras = extras or {}
     entries = sorted(store.visible(persona.id, "chat"), key=lambda e: e.extra["messages"][-1]["dt"], reverse=True)
     rows = []
     for e in entries:
@@ -113,21 +118,71 @@ def chats_page(store: Store, persona: Persona, selected: Entry | None) -> str:
         cur = ' aria-current="true"' if selected is e else ""
         rows.append(
             f'<li><a href="/viewer/chats/{_q(e.gid)}"{cur}><span class="row1"><span class="from">{h(store.chat_title(e))}</span>'
-            f'<span class="muted">{h(last["dt"].strftime("%d %b %H:%M"))}</span></span>'
-            f'<span class="subject">{h(store.display_name(last["from"]))}: {h(last["text"][:80])}</span></a></li>'
+            f'<span class="muted">{h(_local(store, last["dt"]).strftime("%d %b %H:%M"))}</span></span>'
+            f'<span class="subject">{h(store.sender_label(last))}: {h(last["text"][:80])}</span></a></li>'
         )
     list_html = f'<h1>Chats</h1><ul class="items">{"".join(rows) or "<li class=muted>No chats.</li>"}</ul>'
+    script = ""
     if selected:
         members = ", ".join(store.display_name(m) for m in selected.item["members"])
-        msgs = "".join(
-            f'<li class="msg"><div class="meta"><strong>{h(store.display_name(m["from"]))}</strong> '
-            f'<span class="muted">{h(_when(m["dt"]))}</span></div><div class="body">{h(m["text"])}</div></li>'
-            for m in selected.extra["messages"]
+        msgs = "".join(_chat_li(store, m) for m in selected.extra["messages"])
+        options = "".join(
+            f'<option value="{h(m)}"{" selected" if m == persona.id else ""}>{h(store.display_name(m))}</option>'
+            for m in selected.item["members"]
         )
-        detail = f'<article><h2>{h(store.chat_title(selected))}</h2><p class="muted">Members: {h(members)}</p><ul class="thread">{msgs}</ul></article>'
+        is_kolvo = extras.get("kolvo_gid") == selected.gid
+        auto = ""
+        if is_kolvo:
+            on = bool(extras.get("auto_sam"))
+            auto = (
+                '<form method="post" action="/viewer/auto-sam" class="inline">'
+                f'<input type="hidden" name="next" value="/viewer/chats/{h(_q(selected.gid))}">'
+                f'<input type="hidden" name="on" value="{"false" if on else "true"}">'
+                f'<span>Auto-Sam is <strong id="auto-sam-state">{"on" if on else "off"}</strong>.</span> '
+                f'<button type="submit" class="secondary">{"Turn auto-Sam off" if on else "Turn auto-Sam on"}</button></form>'
+                f'<p class="muted">Story time: <strong id="story-time">{h(extras.get("story_time", ""))}</strong>. '
+                'Coaches can set it on the <a href="/viewer/coach">coach page</a>.</p>'
+            )
+        reply = (
+            '<form method="post" action="/viewer/reply" class="reply">'
+            f'<input type="hidden" name="chat" value="{h(selected.gid)}">'
+            '<label for="as">Post as</label>'
+            f'<select id="as" name="as">{options}</select>'
+            '<label for="text">Message</label>'
+            '<textarea id="text" name="text" rows="3" maxlength="4000" required></textarea>'
+            '<button type="submit">Post to the thread</button></form>'
+        )
+        detail = (
+            f'<article><h2>{h(store.chat_title(selected))}</h2><p class="muted">Members: {h(members)}</p>{auto}'
+            f'<ul class="thread" id="thread" aria-live="polite" data-src="/viewer/api/chat?id={h(_q(selected.gid))}">{msgs}</ul>'
+            f'<p class="muted" id="thread-status">This thread refreshes every 4 seconds.</p>{reply}</article>'
+        )
+        script = '<script src="/viewer/static/viewer.js" defer></script>'
     else:
         detail = '<p class="muted">Select a chat to read the thread.</p>'
-    return page("Chats", _two_pane(list_html, detail), persona, "chats")
+    return page("Chats", _two_pane(list_html, detail), persona, "chats", script)
+
+
+def _chat_li(store: Store, m: dict) -> str:
+    agent = ' agent' if m.get("via") == "agent" else ""
+    return (
+        f'<li class="msg{agent}"><div class="meta"><strong>{h(store.sender_label(m))}</strong> '
+        f'<span class="muted">{h(_when(_local(store, m["dt"])))}</span></div><div class="body">{h(m["text"])}</div></li>'
+    )
+
+
+def chat_json(store: Store, e: Entry, auto_sam: bool, pending: bool, story_time: str = "") -> dict:
+    return {
+        "chatId": e.gid,
+        "storyTime": story_time,
+        "autoSam": auto_sam,
+        "samTyping": pending,
+        "messages": [
+            {"id": m["id"], "from": store.sender_label(m), "agent": m.get("via") == "agent",
+             "time": _when(_local(store, m["dt"])), "text": m["text"]}
+            for m in e.extra["messages"]
+        ],
+    }
 
 
 def calendar_page(store: Store, persona: Persona, selected: Entry | None) -> str:
@@ -225,3 +280,95 @@ def activity_page(persona: Persona, activity: list[dict]) -> str:
 
 def message_page(title: str, text: str, status_persona: Persona | None = None) -> str:
     return page(title, f'<section class="card narrow"><h1>{h(title)}</h1><p>{h(text)}</p><p><a href="/viewer">Back</a></p></section>', status_persona)
+
+
+SCORE_LABELS = [
+    ("answered", "Answered"),
+    ("inTime", "Answered in time"),
+    ("holdsUnit", "Grounded, holds the unit"),
+    ("quoteOnly", "Respects quote only"),
+    ("personConfirms", "Final confirmation by a person"),
+]
+STATUS_LABELS = {"answered": "Answered", "deferred": "Deferred", "error": "Error", "no answer": "No answer"}
+
+
+def _badge(value: str) -> str:
+    cls = {"Yes": "yes", "No": "no"}.get(value, "na")
+    return f'<span class="badge {cls}">{h(value)}</span>'
+
+
+def board_page(persona: Persona, run: dict, configured: bool, agent_name: str, request_text: str) -> str:
+    status = run.get("status", "idle")
+    suppliers = run.get("suppliers") or []
+    cards = []
+    for s in suppliers:
+        st = s["status"]
+        cards.append(
+            f'<section class="supplier {h(st.replace(" ", "-"))}" aria-labelledby="sup-{h(s["key"])}">'
+            f'<h2 id="sup-{h(s["key"])}">{h(s["name"])}</h2>'
+            f'<p class="status">Status: <strong>{h(STATUS_LABELS.get(st, st))}</strong>. Time to answer: {h(s["timeToAnswer"])}</p>'
+            f'<div class="body answer">{h(s["answer"])}</div></section>'
+        )
+    if not cards:
+        cards.append('<p class="muted">No run yet. Press "Run 02:13" to send Maria\'s request to the three suppliers.</p>')
+    score_rows = "".join(
+        f'<tr><th scope="row">{h(s["name"])}</th>' + "".join(f"<td>{_badge(s['score'][k])}</td>" for k, _ in SCORE_LABELS) + "</tr>"
+        for s in suppliers
+    )
+    scorecard = ""
+    if suppliers:
+        heads = "".join(f'<th scope="col">{h(label)}</th>' for _, label in SCORE_LABELS)
+        scorecard = (
+            '<h2>Scorecard</h2><table class="scorecard"><caption class="sr-only">Supplier scorecard</caption>'
+            f'<thead><tr><th scope="col">Supplier</th>{heads}</tr></thead><tbody>{score_rows}</tbody></table>'
+            '<p class="muted">Scores are simple keyword checks on each answer. Judge them yourself, too.</p>'
+        )
+    final = f'<h2>Maria\'s agent, final message</h2><div class="card body">{h(run["final"])}</div>' if run.get("final") else ""
+    error = f'<p class="error" role="alert">{h(run["error"])}</p>' if run.get("error") else ""
+    if run.get("hint"):
+        error += f'<p class="card hint"><strong>What this means:</strong> {h(run["hint"])}</p>'
+    when = ""
+    if run.get("started"):
+        when = f' Last run started {h(time.strftime("%H:%M:%S", time.gmtime(run["started"])))} UTC.'
+    state_text = {"idle": "No run yet.", "running": "Running: Maria's agent is asking the suppliers. This takes 30 to 90 seconds.",
+                  "done": "Done.", "error": "The run failed."}.get(status, status)
+    disabled = "" if configured and status != "running" else " disabled"
+    hint = "" if configured else '<p class="error">KOLVO_PROJECT_ENDPOINT is not set, so the board cannot run.</p>'
+    body = (
+        '<div class="board">'
+        "<h1>Kolvo AB, procurement board</h1>"
+        f'<div class="card request"><h2>02:13, Maria\'s request</h2><p class="muted">Sent by agent <code>{h(agent_name)}</code> on behalf of Maria, production manager.</p>'
+        f'<div class="body">{h(run.get("request") or request_text)}</div></div>'
+        f'<form method="post" action="/viewer/board/run" id="run-form" class="run"><button type="submit" id="run-button"{disabled}>Run 02:13</button>'
+        f'<span id="board-status" role="status" data-status="{h(status)}" data-run="{h(run.get("id", ""))}">{h(state_text)}{when}</span></form>'
+        f"{hint}{error}"
+        f'<div class="suppliers">{"".join(cards)}</div>{scorecard}{final}</div>'
+    )
+    return page("Kolvo board", body, persona, "board", '<script src="/viewer/static/viewer.js" defer></script>')
+
+
+def coach_page(persona: Persona | None, story_time: str, running: bool, notice: str = "", error: str = "") -> str:
+    note = f'<p class="card" role="status">{h(notice)}</p>' if notice else ""
+    err = f'<p class="error" role="alert">{h(error)}</p>' if error else ""
+    state = "running from the first live post" if running else "stopped, it starts at the first live post in the Kolvo thread"
+    key_field = (
+        '<label for="{id}">Admin key</label>'
+        '<input id="{id}" name="admin_key" type="password" autocomplete="off" required maxlength="512">'
+    )
+    body = (
+        '<section class="card narrow wide"><h1>Coach controls</h1>'
+        f"{note}{err}"
+        f'<p>Story time now: <strong>{h(story_time)}</strong> (clock {h(state)}).</p>'
+        "<p class=\"muted\">Live posts in the Kolvo thread are stamped with the story time. Set it to 03:52 before Sam's challenge "
+        "and to 07:30 before Alex makes the call. Both actions need the lab admin key (WORKIQ_ADMIN_KEY).</p>"
+        '<form method="post" action="/viewer/coach/clock"><h2>Set the story clock</h2>'
+        '<label for="time">Story time, HH:MM on 15 Dec (or an ISO 8601 time)</label>'
+        '<input id="time" name="time" type="text" inputmode="numeric" placeholder="07:30" required maxlength="40">'
+        + key_field.format(id="key-clock")
+        + '<button type="submit">Set the story clock</button></form>'
+        '<form method="post" action="/viewer/coach/reset-thread" class="reply"><h2>Reset the Kolvo thread</h2>'
+        "<p>Removes every live post (agents and people), cancels a pending auto-Sam reply and stops the story clock.</p>"
+        + key_field.format(id="key-reset")
+        + '<button type="submit">Reset the thread</button></form></section>'
+    )
+    return page("Coach controls", body, persona, "")

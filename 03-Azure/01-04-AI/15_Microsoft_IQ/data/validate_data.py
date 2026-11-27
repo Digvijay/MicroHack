@@ -1,61 +1,82 @@
-"""Validate the Caldova data against walkthrough/scenario-facts.md.
+"""Validate the Strandvik data against scenario-facts.md (v2).
 
-Stdlib only. Usage: python validate_data.py
+Stdlib only, Python 3.10+. Usage: python validate_data.py
 Exits with code 1 if any check fails.
 """
 
 import csv
-import importlib.util
 import json
 import re
 import sys
-from collections import Counter, defaultdict
-from datetime import date
+from datetime import datetime
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent
+HACK = DATA.parent
 LAKE = DATA / "lakehouse"
 DOCS = DATA / "documents"
 EVAL = DATA / "eval"
-NOW = date(2026, 12, 7)
-FRIDAY = date(2026, 12, 11)
+SEED = DATA / "workiq" / "strandvik-seed.json"
+SEED_COPY = HACK / "labautomation" / "workiq-emulator" / "seed" / "strandvik.json"
+ONTOLOGY = DATA / "foundry-iq" / "strandvik-ontology.jsonld"
 
-CODES = ["PV-400", "CV-90", "BV-200", "HX-220", "SL-12", "ST-50", "FX-8", "AC-3"]
-COMPANIES = ["Caldova Components AB", "Nordhavn Castings A/S", "Teglbruk Metall AS",
-             "Kvarnby Polymers AB", "Rhein Präzision GmbH", "Baltic Fasteners UAB",
-             "Brennmark Industries GmbH", "Solvik Marine AS", "Østerdal Pumps AS",
-             "Ferrovia Systems S.p.A."]
+SCHEMAS = {
+    "sites.csv": ["site_id", "site_name", "site_type", "operator", "customer_id", "city", "country", "time_zone"],
+    "customers.csv": ["customer_id", "customer_name", "industry", "country", "tier", "main_site_id", "service_contract_id"],
+    "people.csv": ["person_id", "first_name", "company", "role", "email", "base_location", "current_location", "time_zone"],
+    "account_owners.csv": ["customer_id", "owner_person_id", "owner_role", "backup_person_id", "owner_since"],
+    "approved_external_agents.csv": ["agent_id", "agent_name", "customer_id", "acts_for_person_id", "allowed_requests",
+                                     "may_place_orders", "approved_date", "policy_id"],
+    "machines.csv": ["machine_id", "machine_name", "customer_id", "site_id", "machine_type", "criticality",
+                     "required_model", "drive_unit_serial", "status"],
+    "drive_units.csv": ["serial", "model", "status", "condition", "site_id", "machine_id", "customer_id",
+                        "manufactured_date", "last_test_date", "notes"],
+    "reservations.csv": ["reservation_id", "serial", "customer_id", "machine_id", "purpose", "needed_by_date",
+                         "owner_person_id", "status", "created_date", "policy_id"],
+    "technicians.csv": ["technician_id", "first_name", "base_site_id", "certified_models", "email"],
+    "technician_schedule.csv": ["slot_id", "technician_id", "site_id", "customer_id", "start_time", "end_time",
+                                "shift", "status", "booking_ref"],
+    "transport_options.csv": ["option_id", "origin_site_id", "destination_site_id", "mode", "route", "carrier",
+                              "transit_hours_min", "transit_hours_max", "cost_eur", "earliest_departure",
+                              "earliest_arrival", "needs_kam_approval", "notes"],
+    "price_list.csv": ["item_code", "description", "model", "list_price_eur", "unit", "valid_from", "valid_to"],
+    "service_contracts.csv": ["contract_id", "customer_id", "document_name", "start_date", "end_date",
+                              "annual_value_eur", "replacement_target_hours", "uptime_credit_pct_per_day",
+                              "covered_machines"],
+    "service_cases.csv": ["case_id", "opened_at", "customer_id", "machine_id", "drive_unit_serial", "channel",
+                          "requested_by", "owner_person_id", "status", "summary", "closed_at"],
+}
 
 DOC_REQUIREMENTS = {
-    "supplier-agreement-nordhavn.md": ["SA-2025-014", "Nordhavn Castings A/S", "HX-220", "PV-400", "CV-90",
-                                       "Esbjerg", "21 days", "Teglbruk Metall AS", "SQP-04", "Supply Planner"],
-    "supplier-agreement-teglbruk.md": ["Teglbruk Metall AS", "HX-220", "backup supplier for HX-220", "10 days",
-                                       "incoming inspection", "SQP-04"],
-    "customer-agreement-brennmark.md": ["FA-2024-007", "Brennmark Industries GmbH", "PV-400", "Hamburg",
-                                        "compressor line", "agrees in writing", "2% of the late value per week",
-                                        "capped at 10%", "port closures declared by a public authority",
-                                        "within 48 hours", "Purchasing Manager"],
-    "customer-agreement-solvik.md": ["FA-2025-002", "Solvik Marine AS", "CV-90", "ballast", "Bergen",
-                                     "No partial deliveries", "1% of the order value per week",
-                                     "capped at 10%", "within 48 hours"],
-    "customer-agreement-osterdal.md": ["Østerdal Pumps AS", "PV-400", "municipal water", "Oslo",
-                                       "Partial deliveries are allowed", "No penalty"],
-    "customer-agreement-ferrovia.md": ["Ferrovia Systems S.p.A.", "BV-200", "rail braking"],
-    "supplier-quality-policy-sqp-04.md": ["SQP-04", "No component from a supplier with status \"quality hold\" may be used without a written deviation approved by the Quality Head",
-                                          "Deviations are not granted for pressure-bearing parts", "HX-220 is pressure-bearing"],
-    "allocation-policy-ap-02.md": ["AP-02", "Strategic customers", "Key customers", "Standard customers",
-                                   "by due date", "Plant Manager may override this allocation order in writing"],
-    "quality-report-qr-2026-118.md": ["QR-2026-118", "L-7731", "HX-220", "Teglbruk Metall AS",
-                                      "4 December 2026", "quality hold", "16 December 2026", "corrective action"],
-    "product-catalogue.md": ["PV-400 contains HX-220, SL-12, ST-50 and FX-8", "CV-90 contains HX-220, AC-3 and FX-8",
-                             "BV-200 contains ST-50, SL-12 and FX-8"] + CODES,
+    "external-agent-access-policy-eap-01.md": [
+        "EAP-01", "must be identified", "the company it works for **and** the person it acts for",
+        "may request **price and delivery** (a quote)", "**They may not place orders.**",
+        "Every external request opens a case", "goes to the account owner", "Quotes are valid for 24 hours",
+        "**Only the key account manager can commit** a delivery date or a price", "maria-procurement"],
+    "reservation-policy-res-02.md": [
+        "RES-02", "belongs to its reservation until the **owner** releases it", "is **not** a release",
+        "**A note is a reason to ask.**", "owner's approval in writing (a chat message counts)",
+        "must still get an equal unit in time", "accountable for the cost risk"],
+    "service-contract-kolvo-sc-kol-2024.md": [
+        "SC-KOL-2024", "press lines 1 to 3", "**replacement target of 48 hours** from the request",
+        "Strandvik installs", "0.5% of the annual contract value per day of downtime beyond the target",
+        "Kolvo's agent may request quotes on Maria's behalf. Orders need Maria's approval.", "1,240,000 EUR"],
+    "service-contract-poliden-sc-pol-2025.md": [
+        "SC-POL-2025", "reserved at least 5 working days ahead",
+        "Poliden must confirm date changes in writing from its maintenance planner", "C3"],
+    "logistics-rules-log-03.md": [
+        "LOG-03", "truck and ferry (Kiel to Gothenburg) takes about 25 hours", "about 2,800 EUR",
+        "30 to 36 hours door to door", "about 40,000 EUR", "A flight hold can be kept for 6 hours without cost",
+        "Bookings above 10,000 EUR need KAM approval"],
+    "sd-900-product-sheet.md": [
+        "replaces SD-900s only (not SD-700)", "Installation takes 6 to 8 hours and needs a certified technician"],
+    "technician-scheduling-fs-04.md": [
+        "FS-04", "available at Kolvo on **Wednesday night (22:00 to 06:00)**",
+        "A night install needs 24 hours' notice", "FS-5101"],
 }
 HEADER_FIELDS = ["Document id", "Title", "Owner role", "Effective date", "Version"]
-PERSONAS = {"supply-planner", "sales-lead", "quality-head", "plant-manager"}
-IQS = {"web", "fabric", "foundry", "work"}
-CHALLENGE_COUNTS = {1: 2, 2: 3, 3: 4, 4: 4, 5: 4, 6: 2}
 
-failures = []
+failures: list[str] = []
 passes = 0
 
 
@@ -72,240 +93,281 @@ def read(name):
         return list(csv.DictReader(f))
 
 
-def expect_rows(name, header, rows):
-    data = read(name)
-    with open(LAKE / name, encoding="utf-8") as f:
-        actual_header = f.readline().strip().split(",")
-    check(actual_header == header, f"{name}: header {actual_header} != {header}")
-    actual = [[r[h] for h in header] for r in data]
-    check(actual == rows, f"{name}: rows do not match scenario-facts.md")
-    return data
+def by_key(rows, key):
+    return {r[key]: r for r in rows}
 
 
-def check_master_data():
-    expect_rows("suppliers.csv", ["supplier_id", "name", "country", "port", "status"], [
-        ["SUP-01", "Nordhavn Castings A/S", "Denmark", "Esbjerg", "active"],
-        ["SUP-02", "Teglbruk Metall AS", "Norway", "Bergen", "quality_hold"],
-        ["SUP-03", "Kvarnby Polymers AB", "Sweden", "Malmö", "active"],
-        ["SUP-04", "Rhein Präzision GmbH", "Germany", "Duisburg", "active"],
-        ["SUP-05", "Baltic Fasteners UAB", "Lithuania", "Klaipėda", "active"],
-    ])
-    expect_rows("components.csv", ["component_id", "name", "primary_supplier_id", "backup_supplier_id",
-                                   "on_hand_boras", "unit_cost_eur", "pressure_bearing"], [
-        ["HX-220", "Aluminium valve housing", "SUP-01", "SUP-02", "1200", "38", "true"],
-        ["SL-12", "Seal kit", "SUP-03", "", "9000", "4", "false"],
-        ["ST-50", "Valve stem", "SUP-04", "", "7000", "11", "false"],
-        ["FX-8", "Fastener kit", "SUP-05", "", "20000", "1.5", "false"],
-        ["AC-3", "Electric actuator", "SUP-04", "", "2500", "95", "false"],
-    ])
-    expect_rows("products.csv", ["product_id", "name", "unit_price_eur", "finished_goods_on_hand"], [
-        ["PV-400", "Pump valve", "410", "600"],
-        ["CV-90", "Control valve", "265", "0"],
-        ["BV-200", "Ball valve", "120", "2500"],
-    ])
-    expect_rows("bill_of_materials.csv", ["product_id", "component_id", "qty_per_unit"], [
-        [p, c, "1"] for p, cs in [("PV-400", ["HX-220", "SL-12", "ST-50", "FX-8"]),
-                                   ("CV-90", ["HX-220", "AC-3", "FX-8"]),
-                                   ("BV-200", ["ST-50", "SL-12", "FX-8"])] for c in cs
-    ])
-    expect_rows("customers.csv", ["customer_id", "name", "country", "tier"], [
-        ["CUS-01", "Brennmark Industries GmbH", "Germany", "strategic"],
-        ["CUS-02", "Solvik Marine AS", "Norway", "key"],
-        ["CUS-03", "Østerdal Pumps AS", "Norway", "standard"],
-        ["CUS-04", "Ferrovia Systems S.p.A.", "Italy", "key"],
-    ])
-    expect_rows("sales_orders.csv", ["order_id", "customer_id", "product_id", "quantity", "due_date",
-                                     "order_value_eur"], [
-        ["SO-9001", "CUS-01", "PV-400", "4000", "2026-12-11", "1640000"],
-        ["SO-9002", "CUS-02", "CV-90", "800", "2026-12-18", "212000"],
-        ["SO-9003", "CUS-03", "PV-400", "300", "2027-01-08", "123000"],
-        ["SO-9004", "CUS-04", "BV-200", "1500", "2026-12-15", "180000"],
-    ])
-    expect_rows("purchase_orders.csv", ["po_id", "supplier_id", "component_id", "quantity", "port",
-                                        "original_eta", "status"], [
-        ["PO-7781", "SUP-01", "HX-220", "3500", "Esbjerg", "2026-12-08", "held_at_port"],
-        ["PO-7790", "SUP-04", "ST-50", "4000", "Duisburg", "2026-12-10", "in_transit"],
-        ["PO-7795", "SUP-03", "SL-12", "5000", "Malmö", "2026-12-09", "in_transit"],
-    ])
+def dt(value):
+    return datetime.fromisoformat(value)
 
 
-def check_references_and_totals():
-    suppliers = {r["supplier_id"]: r for r in read("suppliers.csv")}
-    components = {r["component_id"]: r for r in read("components.csv")}
-    products = {r["product_id"]: r for r in read("products.csv")}
-    customers = {r["customer_id"]: r for r in read("customers.csv")}
-    bom = defaultdict(dict)
-    for r in read("bill_of_materials.csv"):
-        check(r["product_id"] in products, f"BOM product {r['product_id']} unknown")
-        check(r["component_id"] in components, f"BOM component {r['component_id']} unknown")
-        bom[r["product_id"]][r["component_id"]] = int(r["qty_per_unit"])
-    for c in components.values():
-        check(c["primary_supplier_id"] in suppliers, f"{c['component_id']} primary supplier unknown")
-        check(not c["backup_supplier_id"] or c["backup_supplier_id"] in suppliers,
-              f"{c['component_id']} backup supplier unknown")
-    orders = read("sales_orders.csv")
-    for o in orders:
-        check(o["customer_id"] in customers, f"{o['order_id']} customer unknown")
-        check(o["product_id"] in products, f"{o['order_id']} product unknown")
-        check(int(o["quantity"]) * int(products[o["product_id"]]["unit_price_eur"]) == int(o["order_value_eur"]),
-              f"{o['order_id']} value != quantity x price")
-    pos = read("purchase_orders.csv")
-    for p in pos:
-        check(p["supplier_id"] in suppliers, f"{p['po_id']} supplier unknown")
-        check(p["component_id"] in components, f"{p['po_id']} component unknown")
-        check(p["port"] == suppliers[p["supplier_id"]]["port"], f"{p['po_id']} port != supplier port")
-
-    hx_value = sum(int(o["order_value_eur"]) for o in orders if "HX-220" in bom[o["product_id"]])
-    check(hx_value == 1975000, f"orders depending on HX-220 = {hx_value}, expected 1975000")
-    nordhavn_parts = {c for c, r in components.items() if r["primary_supplier_id"] == "SUP-01"}
-    nordhavn_customers = sorted(customers[o["customer_id"]]["name"] for o in orders
-                                if nordhavn_parts & set(bom[o["product_id"]]))
-    check(nordhavn_customers == ["Brennmark Industries GmbH", "Solvik Marine AS", "Østerdal Pumps AS"],
-          f"Nordhavn-dependent customers = {nordhavn_customers}")
-
-    available = {c: int(r["on_hand_boras"]) for c, r in components.items()}
-    for p in pos:
-        if p["status"] != "held_at_port" and date.fromisoformat(p["original_eta"]) <= FRIDAY:
-            available[p["component_id"]] += int(p["quantity"])
-    buildable = min(available[c] // q for c, q in bom["PV-400"].items())
-    capacity = 400 * 5
-    ready = int(products["PV-400"]["finished_goods_on_hand"]) + min(buildable, capacity)
-    check(buildable == 1200, f"PV-400 buildable from parts = {buildable}, expected 1200")
-    check(ready == 1800, f"PV-400 ready by Friday = {ready}, expected 1800")
-    delayed_value = (4000 - ready) * int(products["PV-400"]["unit_price_eur"])
-    check(delayed_value == 902000, f"Brennmark delayed value = {delayed_value}, expected 902000")
-    check(delayed_value * 2 // 100 == 18040, "weekly penalty != 18040")
-    return customers, products, suppliers, components
+def check_lakehouse():
+    files = sorted(p.name for p in LAKE.glob("*.csv"))
+    check(files == sorted(SCHEMAS), f"lakehouse files = {files}")
+    t = {}
+    for name, header in SCHEMAS.items():
+        with open(LAKE / name, encoding="utf-8") as f:
+            actual = f.readline().rstrip("\r\n").split(",")
+        check(actual == header, f"{name}: header {actual} != {header}")
+        rows = read(name)
+        check(len(rows) > 0, f"{name}: no rows")
+        for i, r in enumerate(rows):
+            check(None not in r and all(v is not None for v in r.values()), f"{name} row {i + 2}: wrong column count")
+        key = header[0]
+        check(len({r[key] for r in rows}) == len(rows), f"{name}: duplicate {key}")
+        t[name[:-4]] = rows
+    return t
 
 
-def check_history(customers, products, suppliers, components):
-    open_orders = {r["order_id"] for r in read("sales_orders.csv")}
-    open_pos = {r["po_id"] for r in read("purchase_orders.csv")}
-    sales = read("sales_orders_history.csv")
-    check(350 <= len(sales) <= 450, f"sales history rows = {len(sales)}")
-    check(len({r["order_id"] for r in sales}) == len(sales), "duplicate order ids in sales history")
-    revenue = Counter()
-    for r in sales:
-        check(r["order_id"] not in open_orders, f"open order {r['order_id']} in history")
-        check(r["customer_id"] in customers and r["product_id"] in products, f"{r['order_id']} bad reference")
-        od, sd, pd = (date.fromisoformat(r[k]) for k in ("order_date", "ship_date", "promised_date"))
-        check(date(2025, 12, 7) <= od <= sd < NOW, f"{r['order_id']} dates out of range")
-        check(int(r["quantity"]) * int(products[r["product_id"]]["unit_price_eur"]) == int(r["order_value_eur"]),
-              f"{r['order_id']} value != quantity x price")
-        check(r["on_time"] == ("true" if sd <= pd else "false"), f"{r['order_id']} on_time flag wrong")
-        revenue[r["customer_id"]] += int(r["order_value_eur"])
-    check(set(revenue) == set(customers), "not all customers in sales history")
-    check({r["product_id"] for r in sales} == set(products), "not all products in sales history")
-    check(revenue.most_common(1)[0][0] == "CUS-01", "Brennmark is not the largest customer")
-    check(6300000 <= revenue["CUS-01"] <= 6700000, f"Brennmark yearly revenue = {revenue['CUS-01']}")
+def check_integrity(t):
+    sites = by_key(t["sites"], "site_id")
+    customers = by_key(t["customers"], "customer_id")
+    people = by_key(t["people"], "person_id")
+    machines = by_key(t["machines"], "machine_id")
+    units = by_key(t["drive_units"], "serial")
+    techs = by_key(t["technicians"], "technician_id")
+    contracts = by_key(t["service_contracts"], "contract_id")
 
-    deliveries = read("supplier_deliveries_history.csv")
-    check(120 <= len(deliveries) <= 180, f"delivery history rows = {len(deliveries)}")
-    for r in deliveries:
-        check(r["po_id"] not in open_pos, f"open PO {r['po_id']} in delivery history")
-        check(r["supplier_id"] in suppliers and r["component_id"] in components, f"{r['delivery_id']} bad reference")
-        check(r["port"] == suppliers[r["supplier_id"]]["port"], f"{r['delivery_id']} port mismatch")
-        check(date.fromisoformat(r["actual_date"]) < NOW, f"{r['delivery_id']} in the future")
-    nordhavn_late = [r for r in deliveries if r["supplier_id"] == "SUP-01" and r["on_time"] == "false"]
-    check(len(nordhavn_late) == 2 and all(date.fromisoformat(r["promised_date"]).month in (12, 1, 2)
-                                          and "weather" in r["delay_reason"] for r in nordhavn_late),
-          "Nordhavn must have exactly 2 winter weather delays")
-    lot = [r for r in deliveries if r["lot_id"] == "L-7731"]
-    check(len(lot) == 1 and lot[0]["supplier_id"] == "SUP-02" and lot[0]["component_id"] == "HX-220"
-          and lot[0]["actual_date"] == "2026-12-04" and lot[0]["quality_result"] == "failed",
-          "Teglbruk lot L-7731 failed on 2026-12-04 missing")
-    check(sum(r["quality_result"] == "failed" for r in deliveries) == 1, "only L-7731 may fail")
-    return len(sales), len(deliveries)
+    for s in sites.values():
+        check(not s["customer_id"] or s["customer_id"] in customers, f"site {s['site_id']}: unknown customer")
+    for c in customers.values():
+        check(c["main_site_id"] in sites, f"customer {c['customer_id']}: unknown site")
+        check(c["service_contract_id"] in contracts, f"customer {c['customer_id']}: unknown contract")
+    for o in t["account_owners"]:
+        check(o["customer_id"] in customers, f"account owner: unknown customer {o['customer_id']}")
+        check(o["owner_person_id"] in people and o["backup_person_id"] in people, f"account owner {o['customer_id']}: unknown person")
+    check(set(customers) == {o["customer_id"] for o in t["account_owners"]}, "every customer needs exactly one owner")
+    for a in t["approved_external_agents"]:
+        check(a["customer_id"] in customers and a["acts_for_person_id"] in people, f"agent {a['agent_id']}: bad reference")
+        check(a["may_place_orders"] == "false", f"agent {a['agent_id']}: external agents may not place orders")
+    for m in machines.values():
+        check(m["customer_id"] in customers and m["site_id"] in sites, f"machine {m['machine_id']}: bad reference")
+        check(sites[m["site_id"]]["customer_id"] == m["customer_id"], f"machine {m['machine_id']}: site of another customer")
+        u = units.get(m["drive_unit_serial"])
+        check(u is not None, f"machine {m['machine_id']}: unknown drive unit")
+        if u:
+            check(u["machine_id"] == m["machine_id"] and u["status"] == "installed", f"machine {m['machine_id']}: unit not installed on it")
+            check(u["model"] == m["required_model"], f"machine {m['machine_id']}: model mismatch")
+            check(u["site_id"] == m["site_id"], f"machine {m['machine_id']}: unit at another site")
+    for u in units.values():
+        check(u["model"] in ("SD-900", "SD-700"), f"{u['serial']}: bad model")
+        check(u["serial"].startswith({"SD-900": "SD9-", "SD-700": "SD7-"}.get(u["model"], "?")), f"{u['serial']}: serial prefix != model")
+        check(u["status"] in ("installed", "in_stock", "in_repair", "sold"), f"{u['serial']}: bad status")
+        check(u["site_id"] in sites, f"{u['serial']}: unknown site")
+        check(not u["customer_id"] or u["customer_id"] in customers, f"{u['serial']}: unknown customer")
+        if u["status"] == "installed":
+            check(u["machine_id"] in machines and machines[u["machine_id"]]["drive_unit_serial"] == u["serial"],
+                  f"{u['serial']}: installed but machine does not run on it")
+        else:
+            check(not u["machine_id"], f"{u['serial']}: not installed but has a machine")
+    for r in t["reservations"]:
+        check(r["serial"] in units and r["customer_id"] in customers and r["machine_id"] in machines
+              and r["owner_person_id"] in people, f"{r['reservation_id']}: bad reference")
+        if r["machine_id"] in machines:
+            check(machines[r["machine_id"]]["customer_id"] == r["customer_id"], f"{r['reservation_id']}: machine of another customer")
+            if r["serial"] in units:
+                check(units[r["serial"]]["model"] == machines[r["machine_id"]]["required_model"], f"{r['reservation_id']}: model mismatch")
+        owner = next((o for o in t["account_owners"] if o["customer_id"] == r["customer_id"]), None)
+        check(owner is not None and owner["owner_person_id"] == r["owner_person_id"], f"{r['reservation_id']}: owner is not the account owner")
+    for tech in techs.values():
+        check(tech["base_site_id"] in sites, f"{tech['technician_id']}: unknown site")
+    for s in t["technician_schedule"]:
+        check(s["technician_id"] in techs and s["site_id"] in sites and s["customer_id"] in customers, f"{s['slot_id']}: bad reference")
+        check(dt(s["end_time"]) > dt(s["start_time"]), f"{s['slot_id']}: end before start")
+    for o in t["transport_options"]:
+        check(o["origin_site_id"] in sites and o["destination_site_id"] in sites, f"{o['option_id']}: bad site")
+        check(o["needs_kam_approval"] == ("true" if int(o["cost_eur"]) > 10000 else "false"), f"{o['option_id']}: KAM approval flag != cost > 10,000 EUR")
+        check(dt(o["earliest_arrival"]) > dt(o["earliest_departure"]), f"{o['option_id']}: arrival before departure")
+    for c in contracts.values():
+        check(c["customer_id"] in customers, f"{c['contract_id']}: unknown customer")
+        check(not c["document_name"] or (DOCS / c["document_name"]).exists(), f"{c['contract_id']}: document missing")
+        for m in c["covered_machines"].split(";"):
+            check(m in machines and machines[m]["customer_id"] == c["customer_id"], f"{c['contract_id']}: bad machine {m}")
+    for k in t["service_cases"]:
+        check(re.fullmatch(r"CS-\d{5}", k["case_id"]) is not None, f"{k['case_id']}: bad format")
+        check(k["customer_id"] in customers and k["machine_id"] in machines and k["drive_unit_serial"] in units
+              and k["owner_person_id"] in people, f"{k['case_id']}: bad reference")
+        check(not k["requested_by"] or k["requested_by"] in people, f"{k['case_id']}: unknown requester")
+        check(dt(k["opened_at"]) < dt("2026-12-15T02:13:00+01:00"), f"{k['case_id']}: opened after 02:13")
+    return sites, customers, people, machines, units
 
 
-def check_reproducible():
-    sys.dont_write_bytecode = True
-    spec = importlib.util.spec_from_file_location("generate_history", DATA / "generate_history.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    for name, text in module.build().items():
-        check((LAKE / name).read_bytes() == text.encode("utf-8"), f"{name} differs from generate_history.py output")
+def check_facts(t, people, machines, units):
+    get = lambda name, key, val: next((r for r in t[name] if r[key] == val), {})
+    first = lambda pid: people.get(pid, {}).get("first_name")
+    kol, pol = get("customers", "customer_name", "Kolvo AB"), get("customers", "customer_name", "Poliden AB")
+    check(kol.get("main_site_id") == "SITE-KOL-HIS" and pol.get("main_site_id") == "SITE-POL-SKE", "Kolvo or Poliden site wrong")
+    check(get("sites", "site_id", "SITE-PUN-FAC").get("city") == "Pune", "Pune factory missing")
+    check(get("sites", "site_id", "SITE-RTM-WH").get("city") == "Rotterdam", "Rotterdam warehouse missing")
+    check(get("sites", "site_id", "SITE-GOT-HQ").get("city") == "Gothenburg", "Gothenburg HQ missing")
+    check(first(get("account_owners", "customer_id", kol.get("customer_id")).get("owner_person_id")) == "Alex", "Alex must own Kolvo")
+    check(first(get("account_owners", "customer_id", pol.get("customer_id")).get("owner_person_id")) == "Sam", "Sam must own Poliden")
+    check("Singapore" in people.get("P-SAM", {}).get("current_location", ""), "Sam must be in Singapore")
+    check(get("approved_external_agents", "customer_id", "CUST-KOL").get("acts_for_person_id") == "P-MARIA", "Kolvo agent must act for Maria")
+    check(get("approved_external_agents", "customer_id", "CUST-KOL").get("allowed_requests") == "price;delivery", "Kolvo agent: price and delivery only")
+
+    pl2 = next((m for m in machines.values() if m["machine_name"] == "Press line 2" and m["customer_id"] == "CUST-KOL"), {})
+    check(pl2.get("drive_unit_serial") == "SD9-K-0412" and pl2.get("required_model") == "SD-900", "Kolvo press line 2 must run on SD9-K-0412 (SD-900)")
+    check({m["machine_name"] for m in machines.values() if m["customer_id"] == "CUST-KOL" and m["criticality"] == "critical"}
+          == {"Press line 1", "Press line 2", "Press line 3"}, "Kolvo critical machines must be press lines 1 to 3")
+    c3 = next((m for m in machines.values() if m["machine_name"] == "Crusher line C3"), {})
+    check(c3.get("customer_id") == "CUST-POL" and c3.get("required_model") == "SD-900", "Poliden crusher C3 must run an SD-900")
+
+    candidates = sorted(u["serial"] for u in units.values() if u["model"] == "SD-900" and u["status"] == "in_stock")
+    check(candidates == ["SD9-P-0981", "SD9-R-0733"], f"in-stock SD-900 units = {candidates}")
+    check(units.get("SD9-P-0981", {}).get("site_id") == "SITE-PUN-FAC" and units["SD9-P-0981"]["condition"] == "new_tested", "SD9-P-0981 must be new and tested at Pune")
+    check(units.get("SD9-R-0733", {}).get("site_id") == "SITE-RTM-WH", "SD9-R-0733 must be in Rotterdam")
+    check(any(u["model"] == "SD-700" and u["status"] == "in_stock" and u["site_id"] == "SITE-RTM-WH" for u in units.values()),
+          "need an SD-700 distractor in stock in Rotterdam")
+
+    rsv = get("reservations", "reservation_id", "RSV-2291")
+    check(rsv.get("serial") == "SD9-R-0733" and rsv.get("customer_id") == "CUST-POL" and rsv.get("machine_id") == c3.get("machine_id")
+          and rsv.get("needed_by_date") == "2026-12-21" and first(rsv.get("owner_person_id")) == "Sam" and rsv.get("status") == "active",
+          "RSV-2291 must reserve SD9-R-0733 for Poliden C3 on 2026-12-21, owner Sam, active")
+    check(not any(r["serial"] == "SD9-P-0981" for r in t["reservations"]), "SD9-P-0981 must be unreserved")
+    active = [r["serial"] for r in t["reservations"] if r["status"] == "active"]
+    check(len(active) == len(set(active)), "a unit has two active reservations")
+
+    slot = [s for s in t["technician_schedule"] if s["site_id"] == "SITE-KOL-HIS" and s["status"] == "available"]
+    check(len(slot) == 1 and slot[0]["start_time"] == "2026-12-16T22:00:00+01:00" and slot[0]["end_time"] == "2026-12-17T06:00:00+01:00"
+          and slot[0]["shift"] == "night", "Kolvo needs exactly one available slot: Wed 16 Dec 22:00 to 06:00")
+    if slot:
+        tech = get("technicians", "technician_id", slot[0]["technician_id"])
+        check("SD-900" in tech.get("certified_models", ""), "Kolvo slot technician must be SD-900 certified")
+
+    road = next((o for o in t["transport_options"] if o["origin_site_id"] == "SITE-RTM-WH" and o["destination_site_id"] == "SITE-KOL-HIS"), {})
+    check(road.get("transit_hours_min") == "25" and road.get("cost_eur") == "2800" and "ferry" in road.get("route", "")
+          and road.get("earliest_departure") == "2026-12-15T08:00:00+01:00" and road.get("earliest_arrival") == "2026-12-16T09:00:00+01:00",
+          "Rotterdam to Kolvo must be truck and ferry, 25 h, 2,800 EUR, 08:00 Tue to 09:00 Wed")
+    air = next((o for o in t["transport_options"] if o["origin_site_id"] == "SITE-PUN-FAC" and o["destination_site_id"] == "SITE-KOL-HIS"), {})
+    check(air.get("mode") == "air" and air.get("transit_hours_min") == "30" and air.get("transit_hours_max") == "36"
+          and air.get("cost_eur") == "40000" and air.get("earliest_arrival") == "2026-12-16T19:00:00+01:00" and "17:30" in air.get("notes", ""),
+          "Pune to Kolvo must be air, 30 to 36 h, 40,000 EUR, Landvetter 17:30, Kolvo 19:00 Wed")
+
+    sc = get("service_contracts", "contract_id", "SC-KOL-2024")
+    check(sc.get("replacement_target_hours") == "48" and sc.get("uptime_credit_pct_per_day") == "0.5" and sc.get("annual_value_eur") == "1240000",
+          "SC-KOL-2024: 48 h, 0.5% per day, 1,240,000 EUR")
+    check(get("service_contracts", "contract_id", "SC-POL-2025").get("customer_id") == "CUST-POL", "SC-POL-2025 missing")
+    check(not any(k["case_id"] == "CS-88412" for k in t["service_cases"]), "CS-88412 must not exist yet (opened live)")
 
 
 def check_documents():
     files = sorted(p.name for p in DOCS.glob("*.md"))
     check(files == sorted(DOC_REQUIREMENTS), f"documents = {files}")
-    corpus = ""
     for name, required in DOC_REQUIREMENTS.items():
         path = DOCS / name
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
-        corpus += text
         words = len(re.findall(r"\S+", text))
-        check(300 <= words <= 900, f"{name}: {words} words, expected 300 to 900")
+        check(250 <= words <= 1500, f"{name}: {words} words, expected 250 to 1500")
         for field in HEADER_FIELDS:
             check(re.search(rf"^\| {field} \| .+ \|$", text, re.M) is not None, f"{name}: header field {field} missing")
         for term in required:
             check(term in text, f"{name}: missing '{term}'")
-        check(not re.search(r"\b(?:Mr|Mrs|Ms)\.? [A-Z]", text), f"{name}: named person found")
-    for term in CODES + COMPANIES:
-        check(term in corpus, f"corpus never mentions {term}")
 
 
-def check_questions():
-    items = json.loads((EVAL / "questions.json").read_text(encoding="utf-8"))
-    check(14 <= len(items) <= 19, f"{len(items)} questions, expected 14 to 19")
-    check(len({q.get("id") for q in items}) == len(items), "duplicate question ids")
-    counts = Counter()
-    rubric = (EVAL / "rubric.md").read_text(encoding="utf-8")
-    required = {"id", "challenge", "persona", "iqs", "question", "gold", "must_include",
-                "must_not_include", "web_citation_required"}
-    for q in items:
-        qid = q.get("id", "?")
-        check(required <= set(q), f"{qid}: missing fields {required - set(q)}")
-        check(set(q) <= required | {"expect_no_access", "follows"}, f"{qid}: unknown fields")
-        if "follows" in q:
-            check(q["follows"] in {x["id"] for x in items} and q["follows"] < qid,
-                  f"{qid}: follows must name an earlier question")
-        check(q["challenge"] in CHALLENGE_COUNTS, f"{qid}: bad challenge")
-        counts[q["challenge"]] += 1
-        check(q["persona"] in PERSONAS, f"{qid}: bad persona")
-        check(set(q["iqs"]) <= IQS, f"{qid}: bad iqs")
-        check(q["web_citation_required"] == (q["challenge"] == 2), f"{qid}: web_citation_required wrong")
-        expected_iqs = {1: set(), 2: {"web"}, 3: {"fabric"}, 4: {"foundry"}, 5: {"work"}, 6: IQS}[q["challenge"]]
-        check(set(q["iqs"]) == expected_iqs, f"{qid}: iqs do not match challenge")
-        gold = q["gold"].lower()
-        check(isinstance(q["must_include"], list) and q["must_include"], f"{qid}: must_include empty")
-        for group in q["must_include"]:
-            check(isinstance(group, list) and group and all(isinstance(a, str) for a in group),
-                  f"{qid}: bad must_include group")
-            check(any(a.lower() in gold for a in group), f"{qid}: gold does not contain any of {group}")
-        for phrase in q["must_not_include"]:
-            check(phrase.lower() not in gold, f"{qid}: gold contains forbidden '{phrase}'")
-        check(f"| {qid} |" in rubric, f"rubric.md has no row for {qid}")
-    check(dict(counts) == CHALLENGE_COUNTS, f"questions per challenge = {dict(counts)}")
-    check(all(q["persona"] == "plant-manager" for q in items if q["challenge"] == 6),
-          "capstone questions must use persona plant-manager")
-    no_access = [q for q in items if q.get("expect_no_access")]
-    check(len(no_access) == 1 and no_access[0]["persona"] == "sales-lead"
-          and "16 December" in no_access[0]["must_not_include"], "persona trimming question wrong")
-    return len(items)
+def check_seed():
+    raw = SEED.read_text(encoding="utf-8")
+    pack = json.loads(raw)
+    check(SEED_COPY.exists() and SEED_COPY.read_text(encoding="utf-8") == raw, "emulator seed copy differs from data/workiq/strandvik-seed.json")
+    check(pack.get("schemaVersion") == 1 and pack.get("scenario") == "strandvik", "seed schemaVersion/scenario wrong")
+    personas = {p["id"]: p for p in pack["personas"]}
+    check(personas.get("alex", {}).get("mail") == "alex@strandvik.example", "persona alex missing")
+    check(personas.get("sam", {}).get("mail") == "sam@strandvik.example", "persona sam missing")
+    check(personas.get("maria", {}).get("mail", "").endswith("@kolvo.example"), "persona maria must be @kolvo.example")
+    check(personas.get("poliden-planner", {}).get("mail", "").endswith("@poliden.example"), "persona poliden-planner missing")
+    items = {i["id"]: i for i in pack["items"]}
+    check(len(items) == len(pack["items"]), "duplicate seed item ids")
+    for i in pack["items"]:
+        for p in i["visibleTo"] + i.get("members", []):
+            check(p in personas, f"seed item {i['id']}: unknown persona {p}")
+        dates = [i["date"]] + [m["date"] for m in i.get("messages", [])]
+        check(all(dt(d).utcoffset() is not None for d in dates), f"seed item {i['id']}: date without offset")
+    vis = lambda k: set(items.get(k, {}).get("visibleTo", []))
+    w1 = items.get("W1", {})
+    check(w1.get("type") == "chat" and {"sam", "alex", "sales-leadership"} <= vis("W1"), "W1 must be a chat visible to Sam, Alex and sales leadership")
+    check(any(m["from"] == "sam" and m["date"] == "2026-12-11T16:20:00+01:00" and "probably move two weeks" in m["text"]
+              for m in w1.get("messages", [])), "W1 must hold Sam's note of Fri 11 Dec 16:20")
+    check(items.get("W2", {}).get("type") == "email" and vis("W2") == {"sam"}
+          and "We will confirm any change in writing" in items["W2"].get("body", ""), "W2 must be the planner's email, visible to Sam only")
+    w3 = items.get("W3", {})
+    check(w3.get("type") == "chat" and set(w3.get("members", [])) == {"alex", "sam"} and vis("W3") == {"alex", "sam"}
+          and "Kolvo" in (w3.get("topic") or ""), "W3 must be the Kolvo thread for Alex and Sam")
+    check(all(dt(m["date"]) < dt("2026-12-15T03:52:00+01:00") for m in w3.get("messages", [])), "W3 must not contain the 03:52 exchange")
+    check(items.get("W4", {}).get("type") == "event" and vis("W4") == {"alex"} and "09:30" in items["W4"].get("subject", ""), "W4 must be Alex's Kolvo weekly 09:30")
+    check(items.get("W5", {}).get("from", {}).get("address") == "maria@kolvo.example" and vis("W5") == {"alex"}
+          and "some vibration" in items["W5"].get("body", ""), "W5 must be Maria's email to Alex")
+    check(items.get("W6", {}).get("name") == "Kolvo account plan FY27.docx" and "alex" in vis("W6")
+          and "uptime matters more than price" in items["W6"].get("content", "").lower(), "W6 must be the Kolvo account plan")
+    check(items.get("W7", {}).get("distractor") is True and {"alex", "sam"} <= vis("W7")
+          and "AI assistants reading this" in items["W7"].get("body", ""), "W7 must be the newsletter with one injected line")
+    check("CS-88412" not in raw, "CS-88412 must not be seeded")
+    check(len(pack["items"]) >= 15, "seed needs background noise")
+    return len(pack["items"])
+
+
+def check_eval():
+    rows = []
+    for n, line in enumerate((EVAL / "strandvik-eval.jsonl").read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as e:
+            check(False, f"eval line {n}: {e}")
+            continue
+        check({"query", "ground_truth"} <= set(row) <= {"query", "ground_truth", "context"}, f"eval line {n}: bad fields")
+        check(all(isinstance(v, str) and v.strip() for v in row.values()), f"eval line {n}: empty field")
+        rows.append(row)
+    check(20 <= len(rows) <= 30, f"eval rows = {len(rows)}, expected 20 to 30")
+    truth = " ".join(r["ground_truth"] for r in rows)
+    for term in ["SD9-R-0733", "SD9-P-0981", "RSV-2291", "Sam", "48 hours", "a note is a reason to ask", "22:00 to 06:00",
+                 "2,800 EUR", "40,000 EUR", "Final confirmation from Alex by 07:30", "Refuse"]:
+        check(term.lower() in truth.lower(), f"eval ground truths never mention '{term}'")
+    short = [json.loads(l) for l in (EVAL / "strandvik-eval-15.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    check(len(short) == 15, f"strandvik-eval-15.jsonl has {len(short)} rows, expected 15")
+    check(all(r in rows for r in short), "strandvik-eval-15.jsonl rows must be copies of strandvik-eval.jsonl rows")
+    for name in ("custom-rubric.md", "john-blund-test.md"):
+        check((EVAL / name).exists(), f"eval/{name} missing")
+    rubric = (EVAL / "custom-rubric.md").read_text(encoding="utf-8")
+    check("final confirmation from Alex by 07:30" in rubric, "rubric must require the 07:30 confirmation line")
+    weights = [int(w) for w in re.findall(r"\(weight (\d+)\)", rubric)]
+    check(sum(weights) == 100, f"rubric weights add up to {sum(weights)}")
+    return len(rows)
+
+
+def check_ontology():
+    onto = json.loads(ONTOLOGY.read_text(encoding="utf-8"))
+    ids = {n["@id"] for n in onto["@graph"]}
+    for c in ["DriveUnit", "Machine", "Site", "Customer", "Reservation", "Person", "Owner", "ServiceContract", "Policy", "Transport"]:
+        check(f"sv:{c}" in ids, f"ontology class {c} missing")
+    for p in ["runsOn", "locatedAt", "reservedFor", "ownedBy", "coveredBy", "governs"]:
+        check(f"sv:{p}" in ids, f"ontology relation {p} missing")
+    check(all(n.get("rdfs:comment") for n in onto["@graph"]), "every ontology node needs an rdfs:comment")
 
 
 def check_no_dashes():
-    for path in DATA.rglob("*"):
-        if path.is_file() and path.suffix in {".csv", ".md", ".json", ".py"}:
+    targets = [p for p in DATA.rglob("*") if p.is_file() and p.suffix in {".csv", ".md", ".json", ".jsonl", ".jsonld", ".py"}]
+    targets.append(SEED_COPY)
+    for path in targets:
+        if path.exists():
             text = path.read_text(encoding="utf-8")
-            check("\u2014" not in text and "\u2013" not in text, f"{path.relative_to(DATA)}: em or en dash found")
+            check("\u2014" not in text and "\u2013" not in text, f"{path.name}: em or en dash found")
 
 
 def main():
-    check_master_data()
-    refs = check_references_and_totals()
-    n_sales, n_deliveries = check_history(*refs)
-    check_reproducible()
+    t = check_lakehouse()
+    _, _, people, machines, units = check_integrity(t)
+    check_facts(t, people, machines, units)
     check_documents()
-    n_questions = check_questions()
+    n_items = check_seed()
+    n_eval = check_eval()
+    check_ontology()
     check_no_dashes()
-    print(f"sales_orders_history rows: {n_sales}")
-    print(f"supplier_deliveries_history rows: {n_deliveries}")
-    print(f"questions: {n_questions}")
+    print("lakehouse rows: " + ", ".join(f"{k} {len(v)}" for k, v in t.items()))
+    print(f"seed items: {n_items}")
+    print(f"eval rows: {n_eval}")
     print(f"checks passed: {passes}, failed: {len(failures)}")
     for f in failures:
         print(f"FAIL: {f}")

@@ -59,7 +59,7 @@ TOOLS: list[dict] = [
     {
         "name": "create_entity",
         "title": "Create entity",
-        "description": "Creates a new entity in a collection. Mutation operations are blocked by tenant policy by default.",
+        "description": "Creates a new entity in a collection. Mutation operations are blocked by tenant policy by default. In this lab one write is allowed: post a message into a Teams chat you are a member of with parentUrl /chats/{chat-id}/messages and jsonBody {\"body\": {\"content\": \"...\"}}. The message is shown as written by your agent on your behalf. Find chat ids with fetch /me/chats.",
         "inputSchema": _schema(
             {"parentUrl": {"type": "string", "description": "The relative resource path for the collection (for example, /me/events, /me/messages)."}, "jsonBody": _JSON_BODY, "agentId": _AGENT},
             ["parentUrl", "jsonBody"],

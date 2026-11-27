@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 import re
 from datetime import datetime
+from urllib.parse import unquote
 
-from .. import graph
+from .. import chat, graph
 from ..state import MAX_DRAFTS_PER_PERSONA, ToolContext
 from ..store import PackError
 from .common import DEFAULT_AGENT_ID, POLICY_BLOCKED, ToolError, error_result, json_result, opt_str, text_result
@@ -222,14 +223,48 @@ def _json_body(args: dict, required: bool = True) -> dict:
     return value
 
 
+_CHAT_MESSAGES_RE = re.compile(r"^/(?:me/)?chats/([^/]+)/messages$", re.I)
+
+
 def tool_create_entity(ctx: ToolContext, args: dict) -> dict:
     path = _check_path(opt_str(args, "parentUrl", 2048), "parentUrl")
     body = _json_body(args)
+    chat_match = _CHAT_MESSAGES_RE.match(path)
+    if chat_match and ctx.state.settings.allow_chat_write:
+        return _post_chat_message(ctx, unquote(chat_match.group(1)), body)
     if not ctx.state.settings.allow_mutations:
         return _policy_denied(path, "create_entity")
     if path.lower() != "/me/messages":
         return error_result(f"{POLICY_BLOCKED} Only draft messages under /me/messages can be created when WORKIQ_ALLOW_MUTATIONS is true.", {"statusCode": 403})
     return _create_draft(ctx, body)
+
+
+def _post_chat_message(ctx: ToolContext, chat_gid: str, body: dict) -> dict:
+    """POST /chats/{chat-id}/messages: the one write path this lab allows. The message is posted by the
+    caller's agent on behalf of the caller, and only into chats the caller is a member of."""
+    e = ctx.store.get_visible(chat_gid, ctx.persona.id, "chat")
+    if e is None:
+        return error_result("404 NotFound: The chat does not exist or you are not a member of it.", {"statusCode": 404})
+    if ctx.persona.id not in e.item["members"]:
+        return error_result("403 Forbidden: Only chat members can post messages.", {"statusCode": 403})
+    content = body.get("body")
+    if isinstance(content, dict):
+        raw, ctype = content.get("content"), str(content.get("contentType") or "text")
+    else:
+        raw, ctype = body.get("content", content), "text"
+    try:
+        text = chat.clean_text(raw, ctype)
+    except ValueError as err:
+        raise ToolError(f"Invalid input: {err} Send jsonBody like {{\"body\": {{\"content\": \"Hello\"}}}}.") from None
+    try:
+        msg = ctx.state.post_chat_message(e.id, ctx.persona.id, text, via="agent")
+    except PackError as err:
+        return error_result(f"409 Conflict: the message was not posted ({err}).", {"statusCode": 409})
+    store = ctx.state.store
+    data = graph.chat_message(store, store.by_item_id[e.id], msg)
+    out = json_result({"statusCode": 201, "data": data})
+    out["_resultIds"] = [e.gid]
+    return out
 
 
 def _addr_list(value, where: str) -> list[dict]:

@@ -1,217 +1,81 @@
-# Challenge 3: Know the business with Fabric IQ
+# Challenge 3: Know the business
 
-**[Home](../README.md)** - [Previous Challenge](challenge-02.md) - [Next Challenge](challenge-04.md)
+[Previous Challenge](challenge-02.md) - **[Home](../README.md)** - [Next Challenge](challenge-04.md)
 
-**Time:** 60 minutes. **IQ:** Fabric IQ.
+**Clock: 03:10** · **Time:** 75 minutes · **Products:** Fabric IQ (lakehouse, ontology, data agent), Foundry Agent Service
 
-## Story beat
+## The story
 
-09:00. The Supply Planner opens five spreadsheets to answer three questions: how many HX-220 housings are in Borås, which orders depend on Nordhavn Castings A/S, and how much money is at risk. The answers are in Caldova's tables, but nobody can join them fast enough. You give your agent the business data, through a governed **Fabric data agent** that sees only what the signed-in user may see.
+03:10. The case is with Alex's agent now. When it needs to check something in another part of the business, it brings in the agent that knows that part. First up: the parts agent. Where is there an SD-900 that could replace Kolvo's?
 
-## What you learn
+The ERP knows the stock. But the ERP is a pile of tables, and a pile of tables doesn't know that a unit on a shelf can still belong to somebody else. Strandvik has described how its business fits together: which unit is on which machine, at which customer, and **who owns the reservation** when a unit is promised to someone.
 
-- How to turn CSV files into lakehouse tables and a **Fabric data agent**.
-- Why a data agent needs **example queries** and table semantics, not just tables.
-- How the **Fabric IQ tool** connects a Foundry agent to Fabric **on behalf of the user**.
-- What an **ontology** adds: business entities and relationships on top of tables.
+That's the ontology. A map of the business that agents can read. You drew it on paper in challenge 1. Now make it real.
 
-## Feature status
+## Goal
 
-| Feature | Status |
-|---|---|
-| Fabric lakehouse and Load to Tables | GA |
-| Fabric data agent | GA |
-| Fabric IQ MCP (data agent MCP endpoint) | GA |
-| Fabric IQ tool in Foundry agents | Preview |
-| Fabric IQ ontology | Preview |
+A **Parts agent** in the strandvik project answers stock questions from Strandvik's business data through **Fabric IQ**, and it knows that a reserved unit has an owner.
 
-> [!NOTE]
-> The older **Fabric data agent** tool in Foundry was deprecated on 6 November 2026 in favour of the **Fabric IQ** tool. Use the Fabric IQ tool in this hack.
+## Business task
 
-## The data
+1. Turn your paper map into an **ontology design**: entity types (for example Drive unit, Machine, Site, Customer, Reservation, Person), their key properties, and the **relationships** between them. Mark which relationship tells an agent "ask this person first".
+2. Write three to five **example questions** with the answer you expect, for the data agent. One must be: *Which SD-900 units could replace SD9-K-0412 on Kolvo press line 2?*
+3. Write the Parts agent's **may / may not**: check stock, units and reservations; never sell, release or move a reserved unit.
 
-Nine CSV files in [`data/lakehouse`](../data/lakehouse) become nine tables: `suppliers`, `components`, `products`, `bill_of_materials`, `customers`, `sales_orders` (open orders), `purchase_orders` (open POs), `sales_orders_history` and `supplier_deliveries_history`. See [`data/README.md`](../data/README.md) for each file.
+## Builder task
 
-## Business path (portal, no code)
+1. From `strandvik_lakehouse`, create a **Fabric data agent** named `strandvik_parts_data` over the lakehouse tables. Put the business role's ontology design into its instructions as an "ontology on paper", and load the example questions. Test it in Fabric, then **publish** it.
+2. In the strandvik project, create the prompt agent **`strandvik-parts`** with the **Fabric IQ** tool pointing at your data agent, and the business role's instructions.
 
-### A. Lakehouse (20 min)
+## Constraints
 
-1. Download the nine CSV files: in the Codespace explorer, select the files in `data/lakehouse`, right-click and choose **Download**. Or download them from the repository on GitHub.
-2. Open `FabricPortalUrl` from your dashboard (or [app.fabric.microsoft.com](https://app.fabric.microsoft.com)) and sign in with your lab account.
-3. Select **Workspaces** > **New workspace**. Name it `caldova-iq`. Under **Advanced**, choose **Fabric capacity** and your lab capacity (`FabricCapacityName`). Select **Apply**.
-4. In the workspace, select **New item** > **Lakehouse**. Name it `caldova_lakehouse`.
-5. Under **Files**, select **Upload** > **Upload files** and upload the nine CSV files.
-6. For each file, select **...** > **Load to Tables** > **New table**. Keep the file name as the table name (for example `components`), header row on, separator comma.
-7. Open the `components` table and check: HX-220 has `on_hand_boras` = 1200.
-
-### B. Data agent (20 min)
-
-1. In the workspace, select **New item** > **Data agent**. Name it `CaldovaOperations`.
-2. **Add data** > choose `caldova_lakehouse` > select all nine tables.
-3. In **Agent instructions**, paste the text of `AGENT_INSTRUCTIONS` from [`src/caldova/fabric_iq.py`](../src/caldova/fabric_iq.py).
-4. In the lakehouse data source, open **Data source instructions** and paste `SOURCE_INSTRUCTIONS` from the same file. It explains which table holds what, and to filter on codes such as `PV-400`, not on names.
-5. Test it first **without** example queries. Ask in the data agent chat:
-
-   ```text
-   How many HX-220 housings do we have on hand in Boras right now?
-   If we can ship only 1,800 PV-400 to Brennmark Industries GmbH by Friday, how many units of SO-9001 are delayed and what is their value?
-   ```
-
-   Look at the SQL it generated. Does it filter on the `name` column with "HX-220 housing"? Does it look for the exact name "Brennmark"?
-
-6. Open **Example queries** for the lakehouse and add these two (from `FEW_SHOTS` in `fabric_iq.py`):
-
-   | Question | SQL query |
-   |---|---|
-   | How many HX-220 do we have on hand in Boras? | `SELECT component_id, name, on_hand_boras FROM dbo.components WHERE component_id = 'HX-220'` |
-   | Show the open orders of Solvik. | `SELECT so.order_id, c.name AS customer, so.product_id, so.quantity, so.due_date, so.order_value_eur FROM dbo.sales_orders so JOIN dbo.customers c ON c.customer_id = so.customer_id WHERE c.name LIKE '%Solvik%'` |
-
-7. Ask the two questions again. Expect **1,200** HX-220, and **2,200** units delayed worth **902,000 EUR**.
-8. Select **Publish**.
-
-### C. Connect it to your Foundry agent (10 min)
-
-1. In the Foundry portal, open `caldova-portal` > **Tools** > **Add** > **Fabric IQ**.
-2. Browse the **OneLake catalog** and select the `CaldovaOperations` data agent. Create the connection.
-3. Add this line to the instructions:
-
-   ```text
-   - Fabric IQ (Caldova data agent): numbers from Caldova's business data: stock, orders, order values, suppliers, bill of materials, purchase orders. Use it for any quantity or money question.
-   ```
-
-4. Ask in the playground: `Which customers have open sales orders that depend on components from Nordhavn Castings A/S, and what is the total value of those orders?`
-
-## Developer path (Codespace)
-
-### A. Load the lakehouse
-
-```bash
-caldova fabric-iq load
-```
-
-This calls the Fabric REST API (`https://api.fabric.microsoft.com/v1`): it finds or creates the workspace `caldova-iq` on your capacity, creates the lakehouse `caldova_lakehouse`, uploads each CSV to OneLake (`Files/caldova/`) and calls the **Load Table** API for each one. It prints the workspace id, the lakehouse id and the nine tables.
-
-### B. A data agent without examples
-
-```bash
-caldova fabric-iq agent --no-examples
-caldova ask "How many HX-220 housings do we have on hand in Borås right now?" --iqs fabric
-caldova ask "If we can ship only 1,800 PV-400 to Brennmark Industries GmbH by Friday, how many units of SO-9001 are delayed and what is their value?" --iqs fabric
-```
-
-`fabric-iq agent` writes the data agent definition (instructions, the lakehouse data source, its tables) as parts of a Fabric item definition, publishes it, and saves its MCP endpoint `https://api.fabric.microsoft.com/v1/mcp/workspaces/<workspace>/dataagents/<id>/agent`. Run each question twice. Watch for "no rows", a wrong number, or a filter like `name = 'HX-220 housing'` or `name = 'Brennmark'`.
-
-### C. Teach it with examples
-
-```bash
-caldova fabric-iq agent
-caldova ask "How many HX-220 housings do we have on hand in Borås right now?" --iqs fabric
-caldova ask "If we can ship only 1,800 PV-400 to Brennmark Industries GmbH by Friday, how many units of SO-9001 are delayed and what is their value?" --iqs fabric
-```
-
-Now the definition also contains `fewshots.json` with the four `FEW_SHOTS` from [`src/caldova/fabric_iq.py`](../src/caldova/fabric_iq.py). Compare the answers.
-
-> [!IMPORTANT]
-> **Teaching moment.** A data agent turns a question into SQL. Without examples it guesses how people name things: "HX-220 housings" is not a value in any column, and "Brennmark" is not the full name "Brennmark Industries GmbH". Example queries and table semantics (filter on codes, match company names with `LIKE`) are what make it reliable. This is true for every natural language to SQL system.
-
-### D. How the agent reaches Fabric
-
-Read `connect_fabric_iq()`. It creates a Foundry project connection with:
-
-| Property | Value | Why |
-|---|---|---|
-| `category` | `RemoteTool` | An MCP server the agent calls. |
-| `authType` | `UserEntraToken` | The call runs **on behalf of the signed-in user**. |
-| `audience` | `https://analysis.windows.net/powerbi/api` | The token is for Fabric (Power BI) APIs. |
-| `target` | the data agent MCP URL | Where the tool lives. |
-
-In `agent.py`, `FabricIQPreviewTool(project_connection_id=..., server_url=...)` adds the tool. Because the token is the user's, the agent sees only the data that user may see in Fabric. No service account with access to everything.
-
-### E. The ontology (preview)
-
-```bash
-caldova fabric-iq ontology
-```
-
-This generates an ontology definition from the tables (`ontology_definition()`) and creates the item `CaldovaSupply`. It has six entities (Supplier, Component, Product, Customer, SalesOrder, PurchaseOrder) and five relationships. A generated entity looks like this:
-
-```text
-/// A company that supplies parts to Caldova.
-entity Supplier
-	lineageTag: <guid>
-	backingTable: suppliers
-	keyProperty: supplier_id
-
-	property name
-		dataType: string
-		backingConfiguration
-			valueColumn: suppliers.name
-```
-
-And a relationship, in `entityRelationships.tmdl`:
-
-```text
-entityRelationship 'Component Supplied By'
-	fromEntity: Component
-	toEntity: Supplier
-	backingConfiguration
-		relationship: rel_0
-```
-
-If the tenant setting for ontology is off, the command prints "Ontology (preview) is turned off in this tenant". Tell your coach and continue: the data agent is all you need for the score.
-
-**Business path:** in the workspace, select **New item** > **Ontology (preview)**, and create entity types bound to the lakehouse tables (Supplier to `suppliers`, Component to `components`, and so on), then add relationships.
-
-## Evaluate (both paths)
-
-```bash
-caldova eval --iqs web,fabric --label "challenge 3: + Fabric IQ"
-caldova leaderboard
-```
-
-Look at q06 to q09: 1,200 HX-220; Brennmark, Solvik and Østerdal worth 1,975,000 EUR; 1,800 PV-400 by Friday; 2,200 units delayed worth 902,000 EUR. Language models vary, so run it twice before you draw conclusions.
-
-> [!NOTE]
-> **Business-only team?** The evaluation builds its own agent from the `caldova` state. Run `caldova fabric-iq load` and `caldova fabric-iq agent` once in the Codespace before the evaluation. If you used the names above, they reuse your workspace, lakehouse and data agent, and replace the data agent's definition with the reference one.
+- The Parts agent answers from data, not from memory. Every serial it names must come from a tool call.
+- It may report a reservation and its owner. It may never say a reserved unit is "available" without the reservation.
+- The main path is the **ontology on paper**: the data agent reads the lakehouse tables, and the business design lives in its instructions. **If your tenant shows an Ontology item** (Fabric IQ, preview), you may build the design as a real ontology and put the data agent over it. Tell the coach which path you used.
 
 ## Success criteria
 
-- [ ] Nine tables are in `caldova_lakehouse`.
-- [ ] The published data agent answers 1,200 HX-220 and 902,000 EUR delayed.
-- [ ] You saw an answer fail without example queries, and get fixed with them.
-- [ ] Your Foundry agent calls the Fabric IQ tool for quantity and money questions.
-- [ ] You can explain why the connection uses the user's token.
-- [ ] The leaderboard shows `challenge 3: + Fabric IQ`.
+- [ ] The data agent in Fabric answers the replacement question with **SD9-P-0981** (new, tested, Pune) and **SD9-R-0733** (Rotterdam, **reserved** for Poliden, **RSV-2291**, owner **Sam**).
+- [ ] It does **not** offer SD9-R-0750 (sold), SD9-P-0902 (in repair) or SD7-R-0388 (an SD-700, which does not fit).
+- [ ] `strandvik-parts` gives the same answer in the Foundry playground, with a Fabric tool call visible in the response.
+- [ ] The business role can show the ontology on paper (or the ontology item) and point at the relationship that leads to Sam.
 
-## Stretch
+## Hints
 
-- Point the data agent at the ontology instead of the tables: `caldova fabric-iq agent --source ontology`. Ask q07 again. Look at the relationships in `RELATIONSHIPS`: which one is missing to go from a supplier to a customer? How would you model the bill of materials?
-- Ask a history question: "Which supplier had the most late deliveries in the last 12 months?"
+<details>
+<summary>Hint 1: Where do I create the data agent?</summary>
 
-## Value card
+Start from the lakehouse, not from the workspace **New item** list. The lakehouse ribbon has **Add to data agent**. The ontology on paper goes into the data agent's instructions, so the agent speaks in business terms (a Reservation is *owned by* a Person) and not only in joins. If the Fabric capacity is paused, ask the coach to resume it.
 
-| What this IQ is | What it fixed today | Where customers use it |
-|---|---|---|
-| **Fabric IQ**: governed business data in OneLake, a data agent that answers in business terms, and an ontology of entities and relationships. | Stock, buildable quantity, affected orders and money at risk, computed from the real tables. | Supply chain and inventory, finance (revenue at risk), sales operations, any "how many" or "how much" question over governed data. |
+</details>
 
-## Troubleshooting
+<details>
+<summary>Hint 2: The data agent gives wrong or vague answers</summary>
 
-| Symptom | Fix |
-|---|---|
-| `No active Fabric F-SKU capacity found` | The capacity is paused or `FABRIC_CAPACITY_NAME` is wrong. Azure portal > resource group > Fabric capacity > **Resume**, or ask your coach. |
-| You cannot create a workspace in the Fabric portal | Your user needs a Fabric license and the tenant setting "Users can create Fabric items". Ask your coach. |
-| The data agent returns "no rows" or a wrong number | Rerun with examples (`caldova fabric-iq agent`), check the data source instructions, ask with codes (`HX-220`). |
-| `Fabric IQ is not connected yet` | Run `caldova fabric-iq agent` first. |
-| `Ontology (preview) is turned off in this tenant` | A Fabric admin must enable "Users can create ontology (preview) items". Continue without it. |
-| The first answer after publishing is slow or fails | Wait one minute after publishing and ask again. |
+Add instructions that explain the business meaning of columns (`status = in_stock` is not the same as free; a reservation with `status = active` blocks the unit). Example queries with their exact answers help more than long prose. The repo has ready ones in `data/fabric/data-agent-example-queries.json`: the data agent can import that file. If the agent cannot see a table you just loaded, refresh the SQL analytics endpoint metadata.
+
+</details>
+
+<details>
+<summary>Hint 3: Connecting Fabric to Foundry</summary>
+
+In the agent: **Add > Add tools > Configured**. Look for **Fabric IQ (OneLake Catalog)** (preview). The data agent must be **published** first. The catalog picker opens filtered to semantic models: change the type filter to **Data agent**. The first call can take a minute or more. The tool runs with the signed-in user's permissions, so your lab user needs access to the workspace.
+
+</details>
+
+<details>
+<summary>Hint 4: Fit, not just stock</summary>
+
+`machines.csv` says which model each machine requires. A unit in stock is only a candidate if its model matches the `required_model` of press line 2.
+
+</details>
 
 ## Learning resources
 
-- [What is Fabric IQ?](https://learn.microsoft.com/en-us/fabric/iq/overview)
-- [What is ontology (preview)?](https://learn.microsoft.com/en-us/fabric/iq/ontology/overview)
-- [Fabric data agent](https://learn.microsoft.com/en-us/fabric/data-science/concept-data-agent)
-- [Connect agents to Microsoft Fabric with Fabric IQ (preview)](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/fabric-iq)
+- [What is Fabric IQ?](https://learn.microsoft.com/fabric/iq/overview)
+- [What is ontology (preview)?](https://learn.microsoft.com/fabric/iq/ontology/overview) and the [ontology tutorial](https://learn.microsoft.com/fabric/iq/ontology/tutorial-0-introduction)
+- [Fabric data agent concepts](https://learn.microsoft.com/fabric/data-science/concept-data-agent) and [create a Fabric data agent](https://learn.microsoft.com/fabric/data-science/how-to-create-data-agent)
+- [Data agent example queries](https://learn.microsoft.com/fabric/data-science/data-agent-example-queries)
+- [Use the Microsoft Fabric data agent with Foundry agents](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/fabric)
 
----
-
-**[Home](../README.md)** - [Previous Challenge](challenge-02.md) - [Next Challenge](challenge-04.md)
+[Previous Challenge](challenge-02.md) - **[Home](../README.md)** - [Next Challenge](challenge-04.md)

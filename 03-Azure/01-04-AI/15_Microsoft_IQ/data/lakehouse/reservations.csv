@@ -1,0 +1,6 @@
+reservation_id,serial,customer_id,machine_id,purpose,needed_by_date,owner_person_id,status,created_date,policy_id
+RSV-2291,SD9-R-0733,CUST-POL,POL-C3,Planned maintenance stop: swap the SD-900 on crusher line C3,2026-12-21,P-SAM,active,2026-11-16,RES-02
+RSV-2288,SD7-R-0391,CUST-HOL,HOL-M2,Planned swap of the worn SD-700 on cement mill M2,2027-01-12,P-ERIK,active,2026-12-01,RES-02
+RSV-2295,SD7-P-0402,CUST-ARK,ARK-ST1,Spare for rolling stand 1 after repair,2027-02-01,P-LINA,active,2026-12-03,RES-02
+RSV-2276,SD9-R-0750,CUST-DEL,DEL-C7,Spare unit for container crane C7,2026-12-18,P-ERIK,fulfilled,2026-10-12,RES-02
+RSV-2240,SD7-H-0145,CUST-HOL,HOL-K1,Replacement for kiln drive K1,2026-09-28,P-ERIK,fulfilled,2026-09-07,RES-02

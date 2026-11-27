@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # Runs once when the Codespace / Dev Container is created (postCreateCommand).
 # Safe to re-run manually:  bash .devcontainer/post-create.sh
+# Installs Jupyter and the notebook packages (through the Microsoft package proxy)
+# into .venv. The Azure CLI comes from the dev container feature.
 set -euo pipefail
 
 HACK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$HACK_DIR"
+INDEX_URL="https://packagefeedproxy.microsoft.io/pypi/simple/"
 
 PYTHON_BIN="$(command -v python3 || command -v python || true)"
 if [ -z "$PYTHON_BIN" ]; then
@@ -13,33 +16,20 @@ if [ -z "$PYTHON_BIN" ]; then
 fi
 "$PYTHON_BIN" --version
 
-echo "==> Installing uv"
-export PATH="$HOME/.local/bin:$PATH"
-if ! command -v uv >/dev/null 2>&1; then
-  "$PYTHON_BIN" -m pip install --quiet --upgrade uv \
-    || curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="$HOME/.local/bin" UV_NO_MODIFY_PATH=1 sh
+echo "==> Creating .venv and installing the notebook packages"
+if [ -d .venv ] && [ ! -w .venv ]; then
+  sudo chown "$(id -u):$(id -g)" .venv
 fi
-grep -q 'HOME/.local/bin' "$HOME/.bashrc" 2>/dev/null || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-
-echo "==> Installing dependencies (uv sync)"
-if [ -d src/.venv ] && [ ! -w src/.venv ]; then
-  sudo chown "$(id -u):$(id -g)" src/.venv
+if [ ! -x .venv/bin/python ]; then
+  "$PYTHON_BIN" -m venv .venv
 fi
-( cd src && uv sync --python "$PYTHON_BIN" --link-mode=copy )
-grep -q 'src/.venv/bin' "$HOME/.bashrc" 2>/dev/null || echo "export PATH=\"$HACK_DIR/src/.venv/bin:\$PATH\"" >> "$HOME/.bashrc"
-
-echo "==> Seeding src/.env"
-if [ ! -f src/.env ]; then
-  cp .env.example src/.env
-  echo "    Created src/.env from .env.example"
-else
-  echo "    src/.env already exists, leaving it unchanged"
-fi
+.venv/bin/python -m pip install --quiet --upgrade pip --index-url "$INDEX_URL"
+.venv/bin/python -m pip install --quiet --index-url "$INDEX_URL" jupyter -r notebooks/requirements.txt
+.venv/bin/python -m ipykernel install --user --name microsoft-iq --display-name "Python (Microsoft IQ)" >/dev/null
+grep -q "$HACK_DIR/.venv/bin" "$HOME/.bashrc" 2>/dev/null || echo "export PATH=\"$HACK_DIR/.venv/bin:\$PATH\"" >> "$HOME/.bashrc"
 
 echo ""
 echo "============================================================"
-echo " Ready. Next steps (challenges/challenge-01.md):"
-echo "   1. az login --use-device-code   (your lab account)"
-echo "   2. Paste your lab values into src/.env"
-echo "   3. caldova check"
+echo " Ready. Next step (challenges/challenge-01.md):"
+echo "   bash create-env.sh     (signs you in once and fills .env)"
 echo "============================================================"

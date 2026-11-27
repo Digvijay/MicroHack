@@ -138,7 +138,7 @@ def build_result(ctx: ToolContext, hit: Entry | Persona, n: int, score: float, m
             idx = msgs.index(best)
             window = msgs[max(0, idx - 4): idx + 6]
             lines = [f"- **{title}**", "  - **snippet:**"] + [
-                f"    - {store.display_name(m['from'])} ({_local(m['dt'])}): {_flat(m['text'])}" for m in window
+                f"    - {store.sender_label(m)} ({_local(m['dt'])}): {_flat(m['text'])}" for m in window
             ]
             result = {
                 "resourceId": f"{e.gid}/{best['id']}",

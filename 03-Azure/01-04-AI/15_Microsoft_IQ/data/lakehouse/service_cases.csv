@@ -1,0 +1,6 @@
+case_id,opened_at,customer_id,machine_id,drive_unit_serial,channel,requested_by,owner_person_id,status,summary,closed_at
+CS-87650,2026-09-03T07:42:00+02:00,CUST-KOL,KOL-PL1,SD9-K-0398,phone,P-MARIA,P-ALEX,closed,Bearing noise on press line 1; lubricant changed on site,2026-09-03T15:10:00+02:00
+CS-87902,2026-10-14T10:05:00+02:00,CUST-POL,POL-C2,SD7-P-0221,email,P-POLPLAN,P-SAM,closed,Oil temperature alarm on crusher C2; sensor replaced,2026-10-15T13:30:00+02:00
+CS-88150,2026-11-19T09:20:00+01:00,CUST-VAR,VAR-PM4,SD9-V-0560,phone,,P-LINA,closed,Annual condition check on paper machine PM4,2026-11-19T16:00:00+01:00
+CS-88377,2026-12-09T11:15:00+01:00,CUST-HOL,HOL-K1,SD7-H-0145,email,,P-ERIK,open,Gearbox inspection requested after noise report,
+CS-88411,2026-12-14T14:02:00+01:00,CUST-DEL,DEL-C7,SD9-D-0601,email,,P-ERIK,open,Commissioning support requested for spare unit SD9-R-0750,

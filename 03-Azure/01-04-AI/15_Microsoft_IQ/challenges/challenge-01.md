@@ -1,186 +1,94 @@
-# Challenge 1: Meet Caldova, the blind agent
+# Challenge 1: Lights on
 
 **[Home](../README.md)** - [Next Challenge](challenge-02.md)
 
-**Time:** 30 minutes. **IQ:** none.
+**Clock: 02:10** · **Time:** 45 minutes · **Products:** your lab, Azure portal, Foundry portal, Fabric portal
 
-## Story beat
+## The story
 
-It is Monday 7 December 2026, 08:00, in Borås. The Plant Manager walks in with a coffee and one question: "Can we ship Brennmark's order by Friday, and what should we tell them?" You open a brand new AI agent and type the question. The agent has a frontier model, but nothing else. It does not know about the storm, the stock, the contract or the promise Sales made last Thursday. Today you find out what an agent without context can do, and what it cannot.
+It's ten past two. At Kolvo's cab plant on Hisingen, the drive unit on press line 2 starts shaking, and the vibration sensors go red. The night shift cuts the press to half speed. That buys time until Thursday morning at 06:00. Then the press stops, and the cab line with it.
 
-## What you learn
+Alex is asleep. Alex works at Strandvik Drives, which builds and services the drive units that keep heavy machines running. Customers pay Strandvik for uptime.
 
-- How to set up your workspace: the Codespace, the sign-in and the lab values.
-- What a Foundry prompt agent is: a model, instructions and (soon) tools.
-- Why a good model without context gives an honest "I can't know", and why that is the right behaviour.
-- How the 19 evaluation questions and the leaderboard measure your progress all day.
+In three minutes, Maria's agent will knock on Strandvik's door. Before anyone can answer it, someone has to switch the lights on: know what Strandvik owns, where it is, and **who owns what**. That someone is your team.
 
-## Feature status
+## Goal
 
-| Feature | Status |
-|---|---|
-| Foundry prompt agents (Foundry Agent Service) | GA |
-| Agent playground in the Foundry portal | GA |
+Your lab is open, your team knows the Strandvik world, and the world's data is where the agents will need it: the documents in Blob Storage and the business tables in a Fabric lakehouse.
 
-See [What is GA and what is preview](../README.md#what-is-ga-and-what-is-preview) for the full table.
+## Business task
 
-## Set up your workspace (everyone, 15 min)
+Map the Strandvik world **on paper** (a whiteboard, a sheet, a Loop page, anything). Use [`data/README.md`](../data/README.md), the CSV files in [`data/lakehouse/`](../data/lakehouse/) and the documents in [`data/documents/`](../data/documents/).
 
-Both paths use the Codespace terminal for the scoring step, so everyone sets it up once. Business participants can use it only as a terminal.
+Your map shows at least:
 
-### 1. Start the Codespace
+- The **units** that matter tonight (by serial), and where each one is.
+- The **machines** they run on, and at which **customer** and **site**.
+- The **reservations**, and the **person who owns** each one.
+- Who owns the **Kolvo** account and who owns the **Poliden** account.
+- One line per agent you expect to build: what it **may** do and what it **may not** do.
 
-1. Sign in to GitHub with your lab account and open the hack repository your coach shares.
-2. Select **Code** > **Codespaces** > **...** > **New with options...**.
-3. Under **Dev container configuration**, choose **Azure / AI / Microsoft IQ**. Select **Create codespace**.
-4. Wait until the terminal prints `Ready. Next steps`. The setup installs Python 3.12, `uv`, the `caldova` command line, and creates `src/.env`.
+Keep the map. You will turn it into an ontology in challenge 3 and into instructions in every challenge after that.
 
-> [!TIP]
-> If `caldova` is not found, open a new terminal (the setup adds it to your `PATH`), or run `cd src && uv run caldova --help`.
+## Builder task
 
-### 2. Sign in to Azure
+1. Fill `.env` for your lab with `create-env.sh` (or `create-env.ps1` on Windows). Share the three portal links it prints with your team.
+2. Open the three portals with your lab user: the **strandvik** and **kolvo** projects in the Foundry portal, your resource group in the Azure portal, and your Fabric workspace.
+3. Put the **seven Strandvik documents** into the `documents` container of your lab's storage account.
+4. Put the **fourteen CSV files** into a Fabric lakehouse named `strandvik_lakehouse`, each as a table.
 
-```bash
-az login --use-device-code
-```
+You may do steps 3 and 4 by hand in the portals, or with the helper notebook [`notebooks/00-load-the-world.ipynb`](../notebooks/00-load-the-world.ipynb). Both end in the same place.
 
-Open the link, enter the code and sign in with your **lab account** (not your personal or work account). If you are asked for a subscription, pick the one on your lab dashboard.
+## Constraints
 
-### 3. Paste your lab values into `src/.env`
-
-Open `src/.env` in the editor. Copy each value from your lab dashboard:
-
-| Dashboard credential | `src/.env` variable |
-|---|---|
-| Subscription ID | `AZURE_SUBSCRIPTION_ID` |
-| Resource Group Name | `AZURE_RESOURCE_GROUP` |
-| FoundryProjectEndpoint | `PROJECT_ENDPOINT` |
-| ModelDeploymentName | `MODEL_DEPLOYMENT_NAME` |
-| GraphModelDeploymentName | `GRAPH_MODEL_DEPLOYMENT_NAME` |
-| EmbeddingDeploymentName | `EMBEDDING_DEPLOYMENT_NAME` |
-| SearchEndpoint | `SEARCH_ENDPOINT` |
-| StorageAccountName | `STORAGE_ACCOUNT_NAME` |
-| StorageContainer | `STORAGE_CONTAINER` |
-| FabricCapacityName | `FABRIC_CAPACITY_NAME` |
-| WorkIQEmulatorEndpoint | `WORKIQ_ENDPOINT` |
-| WorkIQKeySalesLead | `WORKIQ_KEY_SALES_LEAD` |
-| WorkIQKeySupplyPlanner | `WORKIQ_KEY_SUPPLY_PLANNER` |
-| WorkIQKeyQualityHead | `WORKIQ_KEY_QUALITY_HEAD` |
-| WorkIQKeyPlantManager | `WORKIQ_KEY_PLANT_MANAGER` |
-
-Keep `FABRIC_WORKSPACE_NAME=caldova-iq`. You use `FoundryProjectUrl`, `FabricPortalUrl` and `WorkIQViewerUrl` in the browser, not in the file.
-
-> [!IMPORTANT]
-> `src/.env` holds your Work IQ keys. Never commit it. It is already in `.gitignore`.
-
-### 4. Check the setup
-
-```bash
-caldova check
-```
-
-You see a table of your settings (none should say `missing`) and the line `Signed in. Foundry project reachable`.
-
-## Business path (portal, no code)
-
-1. Open `FoundryProjectUrl` from your dashboard, or go to [ai.azure.com](https://ai.azure.com) and open the `caldova-iq` project. Sign in with your lab account.
-2. Select **Agents** > **Create agent**. Name it `caldova-portal`. Choose the model `gpt-5.4-mini`.
-3. Paste these instructions:
-
-   ```text
-   You are the operations assistant of Caldova Components AB, a Swedish maker of industrial
-   valves (plant in Boras). Today is Monday 7 December 2026, 08:00 CET. "Friday" means 11 December 2026.
-   Answer in short, plain business English. Show the numbers you used.
-   Never invent facts, names, quantities or dates. If you do not have a source for something, say what you
-   could not find and which system would know it.
-   ```
-
-4. Look at **Tools** and **Knowledge**. If the new agent already has a **Web search** tool, remove it for now. You add it back in Challenge 2.
-5. Save, open the **playground** and ask the Plant Manager's question:
-
-   ```text
-   Can we ship Brennmark's order by Friday, and what should we tell them?
-   ```
-
-6. Read the answer. A good blind agent says it does not have the stock, the order, the contract or the latest news, and tells you which system would know. It does not invent a number.
-
-## Developer path (Codespace)
-
-1. Ask the agent the Plant Manager's question with no IQ:
-
-   ```bash
-   caldova ask "Can we ship Brennmark's order by Friday, and what should we tell them?" --iqs none --persona plant-manager
-   ```
-
-   `--iqs none` creates a new version of the prompt agent `caldova-plant-manager` with no tools, then asks it through the Responses API. The last line, `Tools used: none`, proves it.
-
-2. Open [`src/caldova/agent.py`](../src/caldova/agent.py) and find:
-   - `BASE_INSTRUCTIONS`: the same text as the business path. Note the last rule: never invent, say what you could not find.
-   - `instructions(iqs)`: with no IQ, the agent is told "You have no tools. Answer only from general knowledge."
-   - `build()`: `PromptAgentDefinition(model, instructions, tools)` and `create_version`. Every `--iqs` change makes a new agent version, so you can compare versions in the portal.
-3. Ask a general knowledge question. It should do fine:
-
-   ```bash
-   caldova ask "In two sentences, what is a force majeure clause in a commercial supply contract?"
-   ```
-
-## Evaluate (both paths)
-
-The evaluation asks the agent **19 questions** ([`data/eval/questions.json`](../data/eval/questions.json)) and scores each from 0 to 10, so the maximum is 190.
-
-| Questions | Challenge | What they need |
-|---|---|---|
-| q01, q02 | 1 | General knowledge only |
-| q03 to q05 | 2 | Live web (weather, exchange rate, holidays), with citations |
-| q06 to q09 | 3 | Business data: stock, orders, money |
-| q10 to q13 | 4 | Contracts and policies |
-| q14 to q17 | 5 | Emails, chats, meetings, and who may see them |
-| q18, q19 | 6 | All four IQs. q19 continues the q18 conversation. |
-
-Each answer gets up to 4 points for required facts, up to 5 from an AI judge that compares it with the reference answer, and 1 grounding point when the agent actually used the IQ the question needs (with a cited URL for web questions). Dangerous answers, such as "4,000 by Friday", lose the fact points and are capped by the judge.
-
-Run the baseline in the Codespace terminal (business participants: run it yourself, or ask your developer teammate or coach):
-
-```bash
-caldova eval --iqs none --label "challenge 1: no IQ"
-```
-
-Then show the leaderboard:
-
-```bash
-caldova leaderboard
-```
-
-Expect a **low** score. Only q01 and q02 pass fully. Honest "I cannot know" answers earn a few judge points, so the total is not zero. You run the same command after every challenge, with one more IQ each time, and watch the bar grow.
+- Use your **lab user** everywhere. Your own corporate account will not see the lab.
+- Build in the **strandvik** project only. The **kolvo** project belongs to Kolvo: look, don't touch.
+- Do not rename the documents or the tables. Later challenges (and the evaluation set) expect these names.
+- Never commit `.env`. It holds your Work IQ keys.
 
 ## Success criteria
 
-- [ ] `caldova check` shows no `missing` value and reaches your Foundry project.
-- [ ] Your agent (portal or code) answers the Plant Manager's question without inventing numbers.
-- [ ] You can explain why it cannot answer: it has no source for stock, contracts, news or promises.
-- [ ] The leaderboard shows a run called `challenge 1: no IQ`.
+- [ ] `.env` exists and `PROJECT_ENDPOINT_STRANDVIK`, `STORAGE_ACCOUNT`, `WORKIQ_VIEWER_URL` and `WORKIQ_KEY` have values.
+- [ ] The coach sees 7 `.md` files in the `documents` container (Azure portal > storage account > Storage browser).
+- [ ] The coach sees 14 tables in `strandvik_lakehouse` in Fabric, and a preview of `reservations` shows `RSV-2291`.
+- [ ] Your paper map answers, without a laptop: *Which unit runs press line 2? Which two SD-900s could replace it? Who owns the Rotterdam one?*
+- [ ] Every team member can open the Kolvo project and see `maria-procurement`.
 
-## Value card
+## Hints
 
-| What this IQ is | What it fixed today | Where customers use it |
-|---|---|---|
-| No IQ yet: a frontier model with instructions only. | Nothing, on purpose. It set the baseline and showed that honesty ("I can't know") beats a confident guess. | Every agent project starts here. Measure the model alone first, so you can prove what each source of context adds. |
+<details>
+<summary>Hint 1: Where do I start?</summary>
 
-## Troubleshooting
+In a Codespace (dev container **Azure / AI / Microsoft IQ**), open a terminal in the hack folder and run `bash create-env.sh`. It signs you in once with a device code and only reads from Azure. At the end it prints the links you need.
 
-| Symptom | Fix |
-|---|---|
-| `caldova: command not found` | Open a new terminal, or run `cd src && uv run caldova check`. Check that you created the Codespace with **New with options...** and the **Azure / AI / Microsoft IQ** configuration. |
-| `Missing settings in src/.env: ...` | Paste the named values from the dashboard. Save the file. |
-| `AzureCliCredential` or `Please run 'az login'` | Run `az login --use-device-code` again with the lab account. |
-| HTTP 401 or 403 from the Foundry project | You signed in with the wrong account, or the role assignment is still new. Wait 5 minutes and retry. |
-| Strange characters in the output on Windows | Set `PYTHONIOENCODING=utf-8`. The Codespace already sets it. |
+</details>
+
+<details>
+<summary>Hint 2: No Fabric workspace?</summary>
+
+The lab tries to create a workspace named `strandvik-...` for you. If `create-env.sh` says there is none, create a workspace in the Fabric portal, assign it to your lab's Fabric capacity (`iqcap...`), then run `create-env.sh` again so `FABRIC_WORKSPACE_ID` is filled.
+
+</details>
+
+<details>
+<summary>Hint 3: Loading tables in the Fabric portal</summary>
+
+Create the lakehouse, upload the CSV files to **Files**, then use **Load to Tables** on each file. On a small F2 capacity a load can be refused with HTTP 430 when another load is still running: wait a few seconds and try again. If a new table is missing in the SQL analytics endpoint, refresh its metadata.
+
+</details>
+
+<details>
+<summary>Hint 4: Reading the map</summary>
+
+Start from `machines.csv` (press line 2 is `KOL-PL2`), follow `drive_unit_serial` into `drive_units.csv`, then look for SD-900s with status `in_stock`. For each one, check `reservations.csv` and follow `owner_person_id` into `people.csv`. Watch out: not every SD-900 on a shelf is free, and not every drive unit fits a press.
+
+</details>
 
 ## Learning resources
 
-- [Microsoft IQ documentation](https://learn.microsoft.com/en-us/microsoft-iq/)
-- [Agent optimizer in Foundry Agent Service](https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/agent-optimizer-overview) (you use it in Challenge 6)
-
----
+- [What is Microsoft Foundry Agent Service?](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+- [Upload, download and list blobs in the Azure portal](https://learn.microsoft.com/azure/storage/blobs/storage-quickstart-blobs-portal)
+- [Lakehouse: Load to Delta Lake tables](https://learn.microsoft.com/fabric/data-engineering/load-to-tables)
+- [What is Fabric IQ?](https://learn.microsoft.com/fabric/iq/overview)
 
 **[Home](../README.md)** - [Next Challenge](challenge-02.md)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from urllib.parse import quote
 
-from .store import Entry, Persona, Store, drive_id, iso_utc
+from .store import Entry, Persona, Store, drive_id, iso_utc, stable_guid
 
 GRAPH_CONTEXT = "https://graph.microsoft.com/v1.0/$metadata#"
 
@@ -144,6 +144,15 @@ def chat(store: Store, e: Entry, base: str) -> dict:
 def chat_message(store: Store, e: Entry, m: dict) -> dict:
     p = store.personas[m["from"]]
     ts = iso_utc(m["dt"])
+    application = None
+    if m.get("via") == "agent":
+        # Emulator convention for agent posts: the app is the agent, the user is the person it acts for.
+        application = {
+            "@odata.type": "#microsoft.graph.teamworkApplicationIdentity",
+            "id": stable_guid("agent", m["from"]),
+            "displayName": f"{p.display_name}'s agent",
+            "applicationIdentityType": "bot",
+        }
     return {
         "id": m["id"],
         "replyToId": None,
@@ -161,12 +170,12 @@ def chat_message(store: Store, e: Entry, m: dict) -> dict:
         "webUrl": None,
         "channelIdentity": None,
         "from": {
-            "application": None,
+            "application": application,
             "device": None,
             "user": {
                 "@odata.type": "#microsoft.graph.teamworkUserIdentity",
                 "id": p.user_id,
-                "displayName": p.display_name,
+                "displayName": store.sender_label(m),
                 "userIdentityType": "aadUser",
                 "tenantId": store.tenant["tenantId"],
             },

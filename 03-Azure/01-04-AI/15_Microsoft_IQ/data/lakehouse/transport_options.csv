@@ -1,0 +1,7 @@
+option_id,origin_site_id,destination_site_id,mode,route,carrier,transit_hours_min,transit_hours_max,cost_eur,earliest_departure,earliest_arrival,needs_kam_approval,notes
+TR-01,SITE-RTM-WH,SITE-KOL-HIS,road_ferry,Truck Rotterdam to Kiel then ferry Kiel to Gothenburg,Baltic Road and Ferry,25,25,2800,2026-12-15T08:00:00+01:00,2026-12-16T09:00:00+01:00,false,Dedicated truck; about 25 hours door to door
+TR-02,SITE-PUN-FAC,SITE-KOL-HIS,air,Air freight Pune to Gothenburg Landvetter then truck to Hisingen,IndoNordic Air Cargo,30,36,40000,2026-12-15T08:00:00+01:00,2026-12-16T19:00:00+01:00,true,Lands Landvetter 2026-12-16 17:30; flight hold free of charge for 6 hours
+TR-03,SITE-PUN-FAC,SITE-POL-SKE,air_road,Regular consolidated air freight Pune to Stockholm Arlanda then truck to Skelleftehamn,IndoNordic Air Cargo,144,192,9800,2026-12-16T08:00:00+01:00,2026-12-22T08:00:00+01:00,false,Regular freight; 6 to 8 days door to door
+TR-04,SITE-RTM-WH,SITE-POL-SKE,road_ferry,Truck Rotterdam to Kiel then ferry to Gothenburg then truck to Skelleftehamn,Baltic Road and Ferry,52,60,4100,2026-12-15T08:00:00+01:00,2026-12-17T12:00:00+01:00,false,
+TR-05,SITE-PUN-FAC,SITE-RTM-WH,sea,Sea freight Nhava Sheva to Rotterdam,Arabian Sea Lines,552,624,3500,2026-12-18T08:00:00+01:00,2027-01-10T08:00:00+01:00,false,Container; 23 to 26 days
+TR-06,SITE-RTM-WH,SITE-DEL-PORT,road,Truck Rotterdam to Delfzijl,Baltic Road and Ferry,4,5,650,2026-12-18T07:00:00+01:00,2026-12-18T12:00:00+01:00,false,Pickup for RSV-2276

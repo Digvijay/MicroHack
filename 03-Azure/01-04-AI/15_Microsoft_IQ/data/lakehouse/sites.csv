@@ -1,0 +1,10 @@
+site_id,site_name,site_type,operator,customer_id,city,country,time_zone
+SITE-GOT-HQ,Strandvik Drives head office,headquarters,Strandvik Drives AB,,Gothenburg,Sweden,Europe/Stockholm
+SITE-PUN-FAC,Strandvik Drives factory Pune,factory,Strandvik Drives AB,,Pune,India,Asia/Kolkata
+SITE-RTM-WH,Strandvik Drives spare-parts warehouse Rotterdam,warehouse,Strandvik Drives AB,,Rotterdam,Netherlands,Europe/Amsterdam
+SITE-KOL-HIS,Kolvo cab plant Hisingen,customer_plant,Kolvo AB,CUST-KOL,Gothenburg,Sweden,Europe/Stockholm
+SITE-POL-SKE,Poliden Skelleftehamn crusher site,customer_plant,Poliden AB,CUST-POL,Skelleftehamn,Sweden,Europe/Stockholm
+SITE-VAR-MILL,Varnhem Paper mill,customer_plant,Varnhem Paper AB,CUST-VAR,Lidkoping,Sweden,Europe/Stockholm
+SITE-ARK-MILL,Arkona Steel rolling mill,customer_plant,Arkona Steel Oy,CUST-ARK,Kemi,Finland,Europe/Helsinki
+SITE-HOL-PLANT,Holmstad Cement plant,customer_plant,Holmstad Cement AS,CUST-HOL,Larvik,Norway,Europe/Oslo
+SITE-DEL-PORT,Delfzijl Port Cranes terminal,customer_plant,Delfzijl Port Cranes BV,CUST-DEL,Delfzijl,Netherlands,Europe/Amsterdam

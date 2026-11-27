@@ -14,13 +14,17 @@ from typing import Any
 
 from . import ranking
 
-DEFAULT_SEED_PATH = Path(__file__).resolve().parent.parent / "seed" / "caldova.json"
+SEED_DIR = Path(__file__).resolve().parent.parent / "seed"
+DEFAULT_SEED = "strandvik"
+SEED_NAME_RE = re.compile(r"^[a-z][a-z0-9-]{0,40}$")
 
 MAX_ITEMS = 500
 MAX_ITEM_BYTES = 64 * 1024
 MAX_PERSONAS = 20
 MAX_SITES = 20
-MAX_CHAT_MESSAGES = 50
+MAX_CHAT_MESSAGES = 200
+CHAT_MESSAGE_KEYS = {"date", "from", "text"}
+CHAT_MESSAGE_VIA = ("agent",)
 ITEM_TYPES = ("email", "event", "chat", "file", "person")
 PERSONA_ID_RE = re.compile(r"^[a-z][a-z0-9-]{1,30}$")
 ITEM_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
@@ -199,8 +203,10 @@ def validate_item(item: Any, persona_ids: set[str], site_ids: set[str], where: s
             _fail(f"{where}.messages", f"must have 1 to {MAX_CHAT_MESSAGES} messages")
         for i, m in enumerate(msgs):
             w = f"{where}.messages[{i}]"
-            if not isinstance(m, dict) or set(m) != {"date", "from", "text"}:
-                _fail(w, "must be an object with exactly 'date', 'from' and 'text'")
+            if not isinstance(m, dict) or not CHAT_MESSAGE_KEYS <= set(m) <= CHAT_MESSAGE_KEYS | {"via"}:
+                _fail(w, "must be an object with 'date', 'from' and 'text' (and optionally 'via')")
+            if "via" in m and m["via"] not in CHAT_MESSAGE_VIA:
+                _fail(f"{w}.via", "must be 'agent'")
             _check_dt(f"{w}.date", m["date"])
             if m["from"] not in members:
                 _fail(f"{w}.from", "must be one of the chat members")
@@ -292,8 +298,16 @@ def validate_pack(pack: Any) -> None:
                 _fail(f"item '{it['id']}'.{ref_key}", f"must reference a {ref_type} item")
 
 
-def load_pack_file(path: str | Path | None = None) -> dict:
-    p = Path(path) if path else DEFAULT_SEED_PATH
+def seed_file(name: str | None = None) -> Path:
+    """Path of a bundled scenario pack, for example 'strandvik' for seed/strandvik.json."""
+    name = (name or DEFAULT_SEED).strip().lower()
+    if not SEED_NAME_RE.match(name):
+        raise PackError(f"WORKIQ_SEED '{name}' is not a valid seed name")
+    return SEED_DIR / f"{name}.json"
+
+
+def load_pack_file(path: str | Path | None = None, seed: str | None = None) -> dict:
+    p = Path(path) if path else seed_file(seed)
     with p.open("r", encoding="utf-8") as fh:
         pack = json.load(fh)
     validate_pack(pack)
@@ -427,7 +441,7 @@ class Store:
             msgs = []
             for m in item["messages"]:
                 mdt = parse_dt(m["date"])
-                msgs.append({"id": str(epoch_ms(mdt)), "dt": mdt, "from": m["from"], "text": m["text"]})
+                msgs.append({"id": str(epoch_ms(mdt)), "dt": mdt, "from": m["from"], "text": m["text"], "via": m.get("via")})
             msgs.sort(key=lambda m: m["dt"])
             extra["messages"] = msgs
         elif kind == "file":
@@ -451,7 +465,7 @@ class Store:
             people = " ".join(a.get("name", "") for a in [it["organizer"], *it["attendees"]])
             fields = {"title": it["subject"], "body": it.get("body", "") + " " + it.get("location", ""), "people": people}
         elif e.kind == "chat":
-            body = "\n".join(f"{self.display_name(m['from'])}: {m['text']}" for m in e.extra["messages"])
+            body = "\n".join(f"{self.sender_label(m)}: {m['text']}" for m in e.extra["messages"])
             fields = {"title": self.chat_title(e), "body": body}
         elif e.kind == "file":
             fields = {"title": it["name"].rsplit(".", 1)[0], "body": transcript_text(it["content"]) if is_transcript(it) else it["content"]}
@@ -469,6 +483,13 @@ class Store:
     def display_name(self, persona_id: str) -> str:
         p = self.personas.get(persona_id)
         return p.display_name if p else persona_id
+
+    def sender_label(self, m: dict) -> str:
+        """Display name of a chat message sender. Agent posts say whose agent wrote them."""
+        name = self.display_name(m["from"])
+        if m.get("via") == "agent":
+            return f"{name}'s agent (on behalf of {name})"
+        return name
 
     def chat_title(self, e: Entry) -> str:
         topic = e.item.get("topic")

@@ -1,22 +1,28 @@
 <#
 .SYNOPSIS
-    Deploys the per-attendee lab for the "Microsoft IQ" MicroHack (Caldova Components).
+    Deploys the per-lab environment for the "Microsoft IQ" MicroHack v2
+    (Strandvik Drives, "Alex sleeps through 02:13").
 
 .DESCRIPTION
-    Called by the MicroHack platform once per attendee, in parallel. Each run builds
-    one complete, isolated lab in the attendee's resource group:
+    Called by the MicroHack platform once per lab (one team or one solo hacker), in
+    parallel. Each run builds one complete, isolated lab in the lab resource group:
 
-      - Log Analytics workspace + workspace-based Application Insights
-      - Foundry account (AIServices, keyless) + Foundry project
-      - Model deployments: gpt-5.4-mini (agent chat), gpt-5.6-luna (Foundry IQ
-        knowledge graph extraction and query planning), text-embedding-3-small
+      - Log Analytics workspace + workspace-based Application Insights, connected to
+        both Foundry projects (connections 'appinsights-strandvik', 'appinsights-kolvo')
+      - Foundry account (AIServices, S0, keyless) with two projects:
+          strandvik  empty, the participants build every Strandvik agent here
+          kolvo      pre-built by setup-kolvo.ps1: 'maria-procurement' plus the rival
+                     suppliers 'nordic-drive-parts' and 'hallberg-repair' (incoming A2A
+                     enabled) and A2A connections to the rivals and to Strandvik
+      - Model deployments (GlobalStandard): gpt-5.4-mini (agents), gpt-5.6-luna (judge,
+        graph extraction), text-embedding-3-large (Foundry IQ knowledge sources)
       - Azure AI Search (Foundry IQ), Basic tier, Entra auth + semantic ranker
-      - Storage account + container 'caldova-docs' for the knowledge corpus
-        (blob soft delete on, versioning off, as the Foundry IQ entity graph needs)
-      - Fabric capacity (default F2) with the attendee as capacity admin
-      - Work IQ emulator (Azure Functions Flex Consumption, MCP server) with four
-        persona keys and one admin key
-      - Data-plane RBAC for the attendee and the service identities
+      - Storage account with an EMPTY 'documents' container (participants upload)
+      - Fabric capacity (default F2) with the lab user as capacity admin, plus a
+        Fabric workspace for the lab user on that capacity (best effort)
+      - Work IQ emulator (Azure Functions Flex Consumption, MCP server, viewer and
+        Kolvo's procurement board) with the persona keys 'alex' and 'sam'
+      - RBAC for the lab user and for every service identity
 
     Everything except Fabric lives in one region: the first region from
     $PreferredLocation that offers Search Basic with semantic ranker and has enough
@@ -36,14 +42,14 @@
 .PARAMETER AllowedEntraUserIds
     Entra user object IDs for this lab, passed in by the platform.
 .PARAMETER FabricSkuName
-    Per-attendee Fabric capacity SKU. Default F2. If you change it, also change
+    Per-lab Fabric capacity SKU. Default F2. If you change it, also change
     estimatedDailyCostsUsd and labsPerSubscription in lab-defaults.json.
 .PARAMETER ChatModelCapacity
     gpt-5.4-mini GlobalStandard capacity in thousands of tokens per minute. Default 100.
 .PARAMETER GraphModelCapacity
     gpt-5.6-luna GlobalStandard capacity in thousands of tokens per minute. Default 50.
 .PARAMETER EmbeddingModelCapacity
-    text-embedding-3-small GlobalStandard capacity in thousands of tokens per minute. Default 50.
+    text-embedding-3-large GlobalStandard capacity in thousands of tokens per minute. Default 50.
 #>
 param(
     [Parameter(Mandatory=$true)]
@@ -90,15 +96,21 @@ $labTags = @{ SecurityControl = "Ignore"; microhack = "15_Microsoft_IQ" }
 
 $chatModel      = "gpt-5.4-mini"
 $graphModel     = "gpt-5.6-luna"
-$embeddingModel = "text-embedding-3-small"
+$embeddingModel = "text-embedding-3-large"
 $modelPlan = @(
     [pscustomobject]@{ Name = $chatModel;      Capacity = $ChatModelCapacity }
     [pscustomobject]@{ Name = $graphModel;     Capacity = $GraphModelCapacity }
     [pscustomobject]@{ Name = $embeddingModel; Capacity = $EmbeddingModelCapacity }
 )
 
+# Foundry Project Manager carries a built-in condition that lets its holder assign
+# exactly two roles: Foundry Agent Consumer and Foundry User. That is what the lab
+# user needs to grant Maria's agent identity access in challenge 2, so no separate
+# RBAC administrator role is required.
 $roles = @{
-    AzureAIUser                = "53ca6127-db72-4b80-b1b0-d745d6d5456d"
+    FoundryUser                = "53ca6127-db72-4b80-b1b0-d745d6d5456d"
+    FoundryProjectManager      = "eadc314b-1a2d-4efa-be10-5d325db5065e"
+    FoundryAgentConsumer       = "eed3b665-ab3a-47b6-8f48-c9382fb1dad6"
     CognitiveServicesUser      = "a97b65f3-24c7-4388-baec-2e87135dc908"
     CognitiveServicesOpenAIUser = "5e0bd9bd-7b93-4f28-af87-19fc36ad61bd"
     SearchServiceContributor   = "7ca78c08-252a-4471-8644-bb5ff32d4ba0"
@@ -131,19 +143,48 @@ if ([string]::IsNullOrWhiteSpace($effectiveRG)) {
     }
 }
 
-$foundryAccountName = "iq-$stableHash"
-$foundryProjectName = "caldova-iq"
+$foundryAccountName = $null   # derived below
+$strandvikProject   = "strandvik"
+$kolvoProject       = "kolvo"
 $searchName         = "iq-srch-$stableHash"
 $storageName        = "iqst$stableHash"
-$storageContainer   = "caldova-docs"
+$storageContainer   = "documents"
+$fabricWorkspaceName = "strandvik-$stableHash"
 $laName             = "iq-log-$stableHash"
 $appiName           = "iq-appi-$stableHash"
 $fabricCapacityName = "iqcap$stableHash"
 $emulatorName       = "iq-wiq-$stableHash"
 
+# The Foundry account name also depends on the resource group's creation time.
+# Reason: if a Foundry account is deleted, purged and re-created with the SAME
+# subdomain, the agent A2A endpoint keeps answering "Project not found" for that
+# subdomain for a long time (observed > 45 minutes; a fresh subdomain works at
+# once). A new resource group (new event, re-provisioned lab) therefore gets a new
+# subdomain, while a re-run in the same group finds and reuses its account.
+$labAccountsResp = Invoke-AzRestMethod -Method GET -Uri ("https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/" +
+    "$effectiveRG/providers/Microsoft.CognitiveServices/accounts?api-version=2025-06-01")
+$labAccount = $null
+if ($labAccountsResp.StatusCode -eq 200) {
+    $labAccount = @(($labAccountsResp.Content | ConvertFrom-Json).value | Where-Object {
+        $_.kind -eq 'AIServices' -and $_.tags.microhack -eq '15_Microsoft_IQ' }) | Select-Object -First 1
+}
+if ($labAccount) {
+    $foundryAccountName = [string]$labAccount.name
+} else {
+    $rgList = Invoke-AzRestMethod -Method GET -Uri ("https://management.azure.com/subscriptions/$SubscriptionId/resourcegroups" +
+        "?api-version=2021-04-01&`$expand=createdTime&`$filter=" + [uri]::EscapeDataString("name eq '$effectiveRG'"))
+    $rgCreated = ""
+    if ($rgList.StatusCode -eq 200) { $rgCreated = [string](@(($rgList.Content | ConvertFrom-Json).value)[0].createdTime) }
+    $accountHash = (Get-MhhStableHash -Value (@($AllowedEntraUserIds) + "rg:$effectiveRG|$rgCreated") -Length 12).ToLower()
+    $foundryAccountName = "iq-$accountHash"
+}
+
 $rgPath      = "/subscriptions/$SubscriptionId/resourceGroups/$effectiveRG"
 $accountId   = "$rgPath/providers/Microsoft.CognitiveServices/accounts/$foundryAccountName"
-$projectId   = "$accountId/projects/$foundryProjectName"
+$projectIds  = [ordered]@{
+    $strandvikProject = "$accountId/projects/$strandvikProject"
+    $kolvoProject     = "$accountId/projects/$kolvoProject"
+}
 $searchId    = "$rgPath/providers/Microsoft.Search/searchServices/$searchName"
 $storageId   = "$rgPath/providers/Microsoft.Storage/storageAccounts/$storageName"
 $laId        = "$rgPath/providers/Microsoft.OperationalInsights/workspaces/$laName"
@@ -196,6 +237,24 @@ function Get-ArmJson {
 # Update-MhhToken; run-local.ps1 supplies a no-op stand-in.
 function Update-LabToken {
     if (Get-Command Update-MhhToken -ErrorAction SilentlyContinue) { Update-MhhToken | Out-Null }
+}
+
+# Object id and type of the identity running this script, from its ARM token claims.
+function Get-DeployerPrincipal {
+    try {
+        $tok = Get-AzAccessToken -ResourceUrl "https://management.azure.com/" -WarningAction SilentlyContinue -ErrorAction Stop
+        $raw = $tok.Token
+        if ($raw -is [System.Security.SecureString]) { $raw = [System.Net.NetworkCredential]::new('', $raw).Password }
+        $payload = $raw.Split('.')[1].Replace('-', '+').Replace('_', '/')
+        switch ($payload.Length % 4) { 2 { $payload += '==' } 3 { $payload += '=' } }
+        $claims = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($payload)) | ConvertFrom-Json
+        if (-not $claims.oid) { return $null }
+        $type = if ($claims.idtyp -eq 'app' -or -not ($claims.upn -or $claims.unique_name)) { 'ServicePrincipal' } else { 'User' }
+        return [pscustomobject]@{ Id = [string]$claims.oid; Type = $type }
+    } catch {
+        Write-Host "[WARN]  Could not read the deployment identity from its token: $_"
+        return $null
+    }
 }
 
 # Poll a resource until its provisioningState is terminal. Throws on failure or timeout.
@@ -448,6 +507,14 @@ function Submit-SearchService {
 
 function Remove-FoundryAccountAndPurge {
     param([Parameter(Mandatory=$true)][string]$Region)
+    # An account with projects cannot be deleted; remove the projects first.
+    foreach ($pPath in $projectIds.Values) {
+        Invoke-MhhArm -Method DELETE -Path "${pPath}?api-version=$cogApi" -AllowNotFound | Out-Null
+    }
+    $deadline = (Get-Date).AddMinutes(5)
+    while ((Get-Date) -lt $deadline -and @($projectIds.Values | Where-Object { Get-ArmJson -Path "${_}?api-version=$cogApi" }).Count -gt 0) {
+        Start-Sleep -Seconds 10
+    }
     Invoke-MhhArm -Method DELETE -Path "${accountId}?api-version=$cogApi" -AllowNotFound | Out-Null
     $deadline = (Get-Date).AddMinutes(5)
     while ((Get-Date) -lt $deadline -and (Get-ArmJson -Path "${accountId}?api-version=$cogApi")) { Start-Sleep -Seconds 10 }
@@ -476,7 +543,7 @@ function New-FoundryAccount {
     # A soft-deleted account (48h retention) reserves the subdomain globally and blocks
     # re-creation with 409 CustomDomainInUse. Purge it and retry once.
     if ($resp.StatusCode -eq 409 -and $resp.Content -match 'CustomDomainInUse|FlagMustBeSetForRestore|soft') {
-        Write-Host "[WARN]  Subdomain '$foundryAccountName' is held by a soft-deleted account; purging and retrying."
+        Write-Host "[WARN]  Subdomain '$foundryAccountName' is held by a soft-deleted account; purging and retrying. Note: A2A endpoints on a re-used subdomain can answer 'Project not found' for a long time; prefer a new resource group."
         $deleted = Get-ArmJson -Path "/subscriptions/$SubscriptionId/providers/Microsoft.CognitiveServices/deletedAccounts?api-version=$cogApi"
         foreach ($d in @($deleted.value | Where-Object { $_.name -eq $foundryAccountName })) {
             $delRg = if ($d.id -match '/resourceGroups/([^/]+)/deletedAccounts/') { $Matches[1] } else { $effectiveRG }
@@ -533,19 +600,28 @@ function Initialize-FoundryStack {
         Write-Host "[OK]    Foundry account settings enforced (project management on, local auth off)."
     }
 
-    # Project (must carry a system identity or the API rejects it).
-    if (-not (Get-ArmJson -Path "${projectId}?api-version=$cogApi")) {
-        $projectBody = @{
-            location   = $Region
-            tags       = $labTags
-            identity   = @{ type = "SystemAssigned" }
-            properties = @{ description = "Microsoft IQ MicroHack (Caldova Components)"; displayName = "Caldova IQ" }
-        } | ConvertTo-Json -Depth 4
-        Invoke-MhhArm -Method PUT -Path "${projectId}?api-version=$cogApi" -Payload $projectBody | Out-Null
+    # Projects (each must carry a system identity or the API rejects it).
+    $projectDescriptions = @{
+        $strandvikProject = @{ displayName = "Strandvik Drives"; description = "Microsoft IQ MicroHack: Strandvik Drives (build your agents here)" }
+        $kolvoProject     = @{ displayName = "Kolvo";            description = "Microsoft IQ MicroHack: Kolvo, the customer (pre-built, do not change)" }
     }
-    $project = Wait-ArmProvisioned -Path "${projectId}?api-version=$cogApi" -Label "Foundry project '$foundryProjectName'" -TimeoutSeconds 300 `
-        -ExtraCheck { param($o) [bool]$o.identity.principalId }
-    Write-Host "[OK]    Foundry project '$foundryProjectName' ready."
+    $projects = [ordered]@{}
+    foreach ($pName in $projectIds.Keys) {
+        $pPath = "$($projectIds[$pName])?api-version=$cogApi"
+        if (-not (Get-ArmJson -Path $pPath)) {
+            $projectBody = @{
+                location   = $Region
+                tags       = $labTags
+                identity   = @{ type = "SystemAssigned" }
+                properties = $projectDescriptions[$pName]
+            } | ConvertTo-Json -Depth 4
+            Invoke-MhhArm -Method PUT -Path $pPath -Payload $projectBody | Out-Null
+        }
+        # A PUT can return 2xx and still fail later: always confirm the project exists.
+        $projects[$pName] = Wait-ArmProvisioned -Path $pPath -Label "Foundry project '$pName'" -TimeoutSeconds 300 `
+            -ExtraCheck { param($o) [bool]$o.identity.principalId }
+        Write-Host "[OK]    Foundry project '$pName' ready."
+    }
 
     # Model deployments, one at a time (the account serialises deployment operations).
     foreach ($m in $modelPlan) {
@@ -585,11 +661,11 @@ function Initialize-FoundryStack {
         }
         Write-Host "[OK]    Model deployment '$($m.Name)' ready."
     }
-    return $project
+    return $projects
 }
 
 $labRegion = $null
-$projectResource = $null
+$projectResources = $null
 foreach ($region in $regionsToTry) {
     Update-LabToken
     $searchCreatedHere  = $false
@@ -605,7 +681,7 @@ foreach ($region in $regionsToTry) {
             $searchCreatedHere = $true
         }
         $accountCreatedHere = -not (Get-ArmJson -Path "${accountId}?api-version=$cogApi")
-        $projectResource = Initialize-FoundryStack -Region $region
+        $projectResources = Initialize-FoundryStack -Region $region
         $labRegion = $region
         break
     } catch {
@@ -653,7 +729,8 @@ for ($i = 0; $i -lt 12 -and -not $appiConnString; $i++) {
 if (-not $appiConnString) { throw "Application Insights '$appiName' has no connection string yet." }
 Write-Host "[OK]    Application Insights '$appiName' ready."
 
-$appiConnPath = "${projectId}/connections/appinsights?api-version=$cogApi"
+# One connection per project. The connection name must differ per project: a
+# same-named connection in a second project collides with the first.
 $appiConnBody = @{ properties = @{
     category      = "AppInsights"
     target        = $appiId
@@ -662,8 +739,13 @@ $appiConnBody = @{ properties = @{
     credentials   = @{ key = $appiConnString }
     metadata      = @{ ApiType = "Azure"; ResourceId = $appiId }
 } } | ConvertTo-Json -Depth 6
-Invoke-MhhArm -Method PUT -Path $appiConnPath -Payload $appiConnBody | Out-Null
-Write-Host "[OK]    Application Insights connected to the Foundry project (agent tracing)."
+foreach ($pName in $projectIds.Keys) {
+    $connName = "appinsights-$pName"
+    $appiConnPath = "$($projectIds[$pName])/connections/${connName}?api-version=$cogApi"
+    Invoke-MhhArm -Method PUT -Path $appiConnPath -Payload $appiConnBody | Out-Null
+    if (-not (Get-ArmJson -Path $appiConnPath)) { throw "Connection '$connName' was not created in project '$pName'." }
+    Write-Host "[OK]    Application Insights connected to project '$pName' ('$connName', agent tracing)."
+}
 
 # ---------------------------------------------------------------------------
 # Phase 5: Storage account for the knowledge corpus
@@ -740,7 +822,7 @@ if (-not (Get-ArmJson -Path $containerPath)) {
     Invoke-MhhArm -Method PUT -Path $containerPath -Payload (@{ properties = @{ publicAccess = "None" } } | ConvertTo-Json) | Out-Null
 }
 if (-not (Get-ArmJson -Path $containerPath)) { throw "Container '$storageContainer' was not created." }
-Write-Host "[OK]    Container '$storageContainer' ready."
+Write-Host "[OK]    Container '$storageContainer' ready (empty: participants upload the Strandvik documents)."
 
 # ---------------------------------------------------------------------------
 # Phase 6: wait for Search, then verify its settings (Entra auth, semantic ranker,
@@ -769,8 +851,11 @@ Write-Host "[OK]    Azure AI Search '$searchName' running (Basic, Entra + key au
 # ---------------------------------------------------------------------------
 Update-LabToken
 foreach ($userId in $AllowedEntraUserIds) {
-    $who = "attendee '$userId'"
-    Grant-LabRole -Scope $accountId -PrincipalId $userId -PrincipalType User -RoleName AzureAIUser -Label $who
+    $who = "lab user '$userId'"
+    # Foundry Project Manager: build agents, create connections and (through its built-in
+    # condition) assign Foundry Agent Consumer / Foundry User in IAM for challenge 2.
+    Grant-LabRole -Scope $accountId -PrincipalId $userId -PrincipalType User -RoleName FoundryProjectManager -Label $who
+    Grant-LabRole -Scope $accountId -PrincipalId $userId -PrincipalType User -RoleName FoundryUser -Label $who
     Grant-LabRole -Scope $accountId -PrincipalId $userId -PrincipalType User -RoleName CognitiveServicesUser -Label $who
     Grant-LabRole -Scope $accountId -PrincipalId $userId -PrincipalType User -RoleName CognitiveServicesOpenAIUser -Label $who
     Grant-LabRole -Scope $searchId  -PrincipalId $userId -PrincipalType User -RoleName SearchServiceContributor -Label $who
@@ -778,14 +863,47 @@ foreach ($userId in $AllowedEntraUserIds) {
     Grant-LabRole -Scope $storageId -PrincipalId $userId -PrincipalType User -RoleName StorageBlobDataContributor -Label $who
 }
 
+# Foundry IQ: the Search identity reads the blobs and calls the embedding/chat models.
 $searchWho = "Search identity '$searchPrincipalId'"
 Grant-LabRole -Scope $accountId -PrincipalId $searchPrincipalId -PrincipalType ServicePrincipal -RoleName CognitiveServicesOpenAIUser -Label $searchWho
+# "Standard" content extraction in a Foundry IQ blob source calls AI Services (document parsing), not only OpenAI.
+Grant-LabRole -Scope $accountId -PrincipalId $searchPrincipalId -PrincipalType ServicePrincipal -RoleName CognitiveServicesUser -Label $searchWho
 Grant-LabRole -Scope $storageId -PrincipalId $searchPrincipalId -PrincipalType ServicePrincipal -RoleName StorageBlobDataReader -Label $searchWho
 
-$projectPrincipalId = [string]$projectResource.identity.principalId
-$projectWho = "Foundry project identity '$projectPrincipalId'"
-Grant-LabRole -Scope $searchId  -PrincipalId $projectPrincipalId -PrincipalType ServicePrincipal -RoleName SearchIndexDataReader -Label $projectWho
-Grant-LabRole -Scope $accountId -PrincipalId $projectPrincipalId -PrincipalType ServicePrincipal -RoleName AzureAIUser -Label $projectWho
+# Each project identity connects to Foundry IQ with "Project Managed Identity" auth.
+foreach ($pName in $projectResources.Keys) {
+    $projPrincipal = [string]$projectResources[$pName].identity.principalId
+    $projectWho = "project '$pName' identity '$projPrincipal'"
+    foreach ($r in 'SearchIndexDataReader', 'SearchIndexDataContributor', 'SearchServiceContributor') {
+        Grant-LabRole -Scope $searchId -PrincipalId $projPrincipal -PrincipalType ServicePrincipal -RoleName $r -Label $projectWho
+    }
+    Grant-LabRole -Scope $accountId -PrincipalId $projPrincipal -PrincipalType ServicePrincipal -RoleName FoundryUser -Label $projectWho
+}
+
+# The identity running this script builds the Kolvo agents through the Foundry data
+# plane, which needs a data role (Owner alone has no data actions).
+$deployer = Get-DeployerPrincipal
+if ($deployer -and $AllowedEntraUserIds -notcontains $deployer.Id) {
+    Grant-LabRole -Scope $accountId -PrincipalId $deployer.Id -PrincipalType $deployer.Type -RoleName FoundryUser -Label "deployment identity '$($deployer.Id)'"
+}
+
+# ---------------------------------------------------------------------------
+# Phase 7b: Kolvo pre-build (maria-procurement, the two rival suppliers, A2A
+# connections and Maria's Foundry Agent Consumer role on the kolvo project).
+# ---------------------------------------------------------------------------
+Update-LabToken
+$kolvoScript = Join-Path $PSScriptRoot 'setup-kolvo.ps1'
+if (-not (Test-Path $kolvoScript)) { throw "Kolvo setup script not found: $kolvoScript" }
+$kolvoArgs = @{
+    SubscriptionId = $SubscriptionId; ResourceGroupName = $effectiveRG; AccountName = $foundryAccountName
+    KolvoProject = $kolvoProject; StrandvikProject = $strandvikProject; Model = $chatModel
+}
+# The public A2A endpoint of a brand-new project takes a while to come up; do not wait
+# here, the final check at the end of this script waits for the agent cards.
+$kolvo = & $kolvoScript @kolvoArgs -CardWaitSeconds 0
+$kolvo = @($kolvo) | Where-Object { $_ -and $_.PSObject.Properties.Name -contains 'MariaPrincipalId' } | Select-Object -Last 1
+if (-not $kolvo) { throw "setup-kolvo.ps1 did not return a result." }
+Write-Host "[OK]    Kolvo project pre-built (maria-procurement identity $($kolvo.MariaPrincipalId))."
 
 # ---------------------------------------------------------------------------
 # Phase 8: Fabric capacity (per attendee, attendee is capacity admin)
@@ -873,9 +991,68 @@ if ($adminUpns.Count -eq 0) {
 }
 
 # ---------------------------------------------------------------------------
-# Phase 9: Work IQ emulator (Azure Functions Flex Consumption MCP server)
-# Keys are derived with New-MhhStablePassword ([A-Za-z0-9] only, safe in HTTP
-# headers) so a re-run keeps the values already shown on the dashboard.
+# Phase 8b: Fabric workspace for the lab user, on the lab capacity (best effort).
+# Created with the deployment identity through the Fabric REST API; the lab user
+# becomes workspace Admin. If the tenant does not let this identity call Fabric
+# APIs, the lab user creates the workspace in the Fabric portal (challenge 1).
+# ---------------------------------------------------------------------------
+$fabricWorkspaceId = $null
+$fabricPortalUrl = "https://app.fabric.microsoft.com/home?tid=$((Get-AzContext).Tenant.Id)"
+function Invoke-LabFabric {
+    param([string]$Method, [string]$Path, $Body, [int[]]$Ok = @(200, 201, 202))
+    $tok = Get-AzAccessToken -ResourceUrl "https://api.fabric.microsoft.com" -WarningAction SilentlyContinue
+    $raw = $tok.Token
+    if ($raw -is [System.Security.SecureString]) { $raw = [System.Net.NetworkCredential]::new('', $raw).Password }
+    $params = @{ Method = $Method; Uri = "https://api.fabric.microsoft.com/v1$Path"; Headers = @{ Authorization = "Bearer $raw" }
+                 ContentType = 'application/json'; SkipHttpErrorCheck = $true }
+    if ($null -ne $Body) { $params.Body = ($Body | ConvertTo-Json -Depth 6) }
+    for ($attempt = 1; $attempt -le 6; $attempt++) {
+        $r = Invoke-WebRequest @params
+        if ([int]$r.StatusCode -in @(429, 430, 500, 502, 503) -and $attempt -lt 6) { Start-Sleep -Seconds (10 * $attempt); continue }
+        break
+    }
+    if ([int]$r.StatusCode -notin $Ok) { throw "Fabric $Method $Path failed with HTTP $([int]$r.StatusCode): $($r.Content)" }
+    if ($r.Content) { return ($r.Content | ConvertFrom-Json) }
+    return $null
+}
+if ($fabricReady) {
+    Update-LabToken
+    try {
+        $ws = @((Invoke-LabFabric -Method GET -Path "/workspaces").value | Where-Object { $_.displayName -eq $fabricWorkspaceName }) | Select-Object -First 1
+        $capGuid = @((Invoke-LabFabric -Method GET -Path "/capacities").value | Where-Object { $_.displayName -eq $fabricCapacityName }) |
+            Select-Object -First 1 -ExpandProperty id
+        if (-not $ws) {
+            $wsBody = @{ displayName = $fabricWorkspaceName; description = "Strandvik Drives lakehouse, ontology and data agent (Microsoft IQ MicroHack)" }
+            if ($capGuid) { $wsBody.capacityId = $capGuid }
+            $ws = Invoke-LabFabric -Method POST -Path "/workspaces" -Body $wsBody
+            Write-Host "[OK]    Fabric workspace '$fabricWorkspaceName' created."
+        } elseif ($capGuid -and $ws.capacityId -ne $capGuid) {
+            Invoke-LabFabric -Method POST -Path "/workspaces/$($ws.id)/assignToCapacity" -Body @{ capacityId = $capGuid } | Out-Null
+        }
+        if (-not $capGuid) { Write-Host "[WARN]  The deployment identity cannot see capacity '$fabricCapacityName'; the lab user assigns the workspace to it in workspace settings." }
+        $fabricWorkspaceId = [string]$ws.id
+        foreach ($uid in $AllowedEntraUserIds) {
+            try {
+                Invoke-LabFabric -Method POST -Path "/workspaces/$fabricWorkspaceId/roleAssignments" -Ok @(200, 201, 409) `
+                    -Body @{ principal = @{ id = $uid; type = "User" }; role = "Admin" } | Out-Null
+            } catch {
+                # The creator already holds Admin; Fabric rejects a duplicate assignment.
+                if ("$_" -notmatch 'AlreadyHas|already') { throw }
+            }
+        }
+        $fabricPortalUrl = "https://app.fabric.microsoft.com/groups/$fabricWorkspaceId/list?experience=fabric-developer&tid=$((Get-AzContext).Tenant.Id)"
+        Write-Host "[OK]    Fabric workspace '$fabricWorkspaceName' ($fabricWorkspaceId) ready, lab user is Admin."
+    } catch {
+        $fabricWorkspaceId = $null
+        Write-Host "[WARN]  Could not create the Fabric workspace (the lab user creates it in the Fabric portal): $_"
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Phase 9: Work IQ emulator (Azure Functions Flex Consumption MCP server, viewer
+# and Kolvo's procurement board). Keys are derived with New-MhhStablePassword
+# ([A-Za-z0-9] only, safe in HTTP headers) so a re-run keeps the same values.
+# 'alex' is the participant key (Alex's agent); 'sam' is for whoever plays Sam.
 # ---------------------------------------------------------------------------
 Update-LabToken
 $emulatorScript = Join-Path $PSScriptRoot 'workiq-emulator\Deploy-WorkIQEmulator.ps1'
@@ -887,17 +1064,21 @@ if (-not (Test-Path $emulatorScript)) {
 Set-StrictMode -Off
 
 $personaKeys = [ordered]@{
-    'sales-lead'     = New-MhhStablePassword -Purpose 'workiq-sales-lead' -Length 48
-    'supply-planner' = New-MhhStablePassword -Purpose 'workiq-supply-planner' -Length 48
-    'quality-head'   = New-MhhStablePassword -Purpose 'workiq-quality-head' -Length 48
-    'plant-manager'  = New-MhhStablePassword -Purpose 'workiq-plant-manager' -Length 48
+    'alex' = New-MhhStablePassword -Purpose 'workiq-alex' -Length 48
+    'sam'  = New-MhhStablePassword -Purpose 'workiq-sam' -Length 48
 }
 $adminKey = New-MhhStablePassword -Purpose 'workiq-admin' -Length 48
 $foundryOpenAIEndpoint = "https://$foundryAccountName.openai.azure.com/"
+$kolvoEndpoint = "https://$foundryAccountName.services.ai.azure.com/api/projects/$kolvoProject"
+$emulatorSettings = [ordered]@{
+    KOLVO_PROJECT_ENDPOINT = $kolvoEndpoint
+    MARIA_AGENT_NAME       = 'maria-procurement'
+    WORKIQ_SEED            = 'strandvik'
+    WORKIQ_AUTO_SAM        = 'false'
+}
 
 # Build the call from what Deploy-WorkIQEmulator actually exposes, so optional
-# parameters (for example the Foundry account id for its role assignment) are
-# passed only when the function declares them.
+# parameters are passed only when the function declares them.
 $emuCmd = Get-Command Deploy-WorkIQEmulator -ErrorAction Stop
 $emuParams = @{
     SubscriptionId              = $SubscriptionId
@@ -907,12 +1088,15 @@ $emuParams = @{
     AppInsightsConnectionString = $appiConnString
     FoundryOpenAIEndpoint       = $foundryOpenAIEndpoint
     FoundryChatDeployment       = $chatModel
+    FoundryAccountResourceId    = $accountId
     Keys                        = [hashtable]$personaKeys
     AdminKey                    = $adminKey
     Tags                        = $labTags
-}
-foreach ($optName in @('FoundryAccountResourceId', 'FoundryAccountId', 'FoundryResourceId')) {
-    if ($emuCmd.Parameters.ContainsKey($optName)) { $emuParams[$optName] = $accountId; break }
+    Seed                        = 'strandvik'
+    AutoSam                     = $false
+    KolvoProjectEndpoint        = $kolvoEndpoint
+    MariaAgentName              = 'maria-procurement'
+    KolvoProjectResourceId      = $projectIds[$kolvoProject]
 }
 foreach ($key in @($emuParams.PSBase.Keys)) {
     if (-not $emuCmd.Parameters.ContainsKey($key)) {
@@ -931,59 +1115,107 @@ if (-not $emulator -or -not $emulator.McpEndpoint) {
 }
 Write-Host "[OK]    Work IQ emulator ready at $($emulator.McpEndpoint)."
 
+# The procurement board's "Run 02:13" button calls maria-procurement with the Function
+# App's managed identity, so that identity needs Foundry User on the kolvo project.
+$siteId = "$rgPath/providers/Microsoft.Web/sites/$emulatorName"
+$site = Get-ArmJson -Path "${siteId}?api-version=2024-04-01"
+$emulatorPrincipalId = [string]$site.identity.principalId
+if (-not $emulatorPrincipalId) { throw "Work IQ emulator '$emulatorName' has no managed identity." }
+Grant-LabRole -Scope $projectIds[$kolvoProject] -PrincipalId $emulatorPrincipalId -PrincipalType ServicePrincipal `
+    -RoleName FoundryUser -Label "Work IQ emulator identity '$emulatorPrincipalId' (kolvo project)"
+
+# Make sure the Kolvo settings are present even if the emulator script did not take
+# them as parameters. Merge into the existing settings (never drop any).
+$settingsPath = "$siteId/config/appsettings"
+$current = (Invoke-MhhArm -Method POST -Path "$settingsPath/list?api-version=2024-04-01").Content | ConvertFrom-Json
+$merged = @{}
+foreach ($p in $current.properties.PSObject.Properties) { $merged[$p.Name] = [string]$p.Value }
+$changed = $false
+foreach ($k in $emulatorSettings.Keys) {
+    if ($merged[$k] -ne [string]$emulatorSettings[$k]) { $merged[$k] = [string]$emulatorSettings[$k]; $changed = $true }
+}
+if ($changed) {
+    Invoke-MhhArm -Method PUT -Path "${settingsPath}?api-version=2024-04-01" `
+        -Payload (@{ properties = $merged } | ConvertTo-Json -Depth 4) | Out-Null
+    Write-Host "[OK]    Work IQ emulator app settings updated (Kolvo endpoint, Maria's agent, seed, auto-Sam off)."
+} else {
+    Write-Host "[OK]    Work IQ emulator app settings already include the Kolvo settings."
+}
+$boardUrl = if ($emulator.PSObject.Properties.Name -contains 'BoardUrl' -and $emulator.BoardUrl) { [string]$emulator.BoardUrl }
+            else { ([string]$emulator.McpEndpoint) -replace '/mcp$', '/board' }
+
 # ---------------------------------------------------------------------------
-# Credentials for the attendee dashboard (emitted only after everything is ready)
+# Final check: re-run the (idempotent) Kolvo setup and wait until the rivals' A2A
+# agent cards are served, so Maria's calls work when the lab is handed over.
 # ---------------------------------------------------------------------------
-$tenantId        = (Get-AzContext).Tenant.Id
-$projectEndpoint = "https://$foundryAccountName.services.ai.azure.com/api/projects/$foundryProjectName"
-$searchEndpoint  = "https://$searchName.search.windows.net"
+Update-LabToken
+$kolvoFinal = @(& $kolvoScript @kolvoArgs -CardWaitSeconds 900) | Where-Object { $_ -and $_.PSObject.Properties.Name -contains 'CardsReady' } | Select-Object -Last 1
+if ($kolvoFinal -and $kolvoFinal.CardsReady) {
+    Write-Host "[OK]    Kolvo rivals answer on their A2A endpoints."
+} else {
+    Write-Host "[WARN]  Kolvo rivals' A2A cards are not served yet; they normally appear shortly. Re-run setup-kolvo.ps1 to check."
+}
+
+# ---------------------------------------------------------------------------
+# Credentials for the lab dashboard (emitted only after everything is ready)
+# ---------------------------------------------------------------------------
+$tenantId       = (Get-AzContext).Tenant.Id
+$searchEndpoint = "https://$searchName.search.windows.net"
 
 # Foundry portal deep link: the subscription GUID as base64url (string byte order),
 # then <rg>,,<account>,<project>.
 $subHex   = $SubscriptionId -replace '-', ''
 $subBytes = for ($i = 0; $i -lt $subHex.Length; $i += 2) { [Convert]::ToByte($subHex.Substring($i, 2), 16) }
 $subToken = [Convert]::ToBase64String([byte[]]$subBytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
-$projectPortalUrl = "https://ai.azure.com/nextgen/r/$subToken,$effectiveRG,,$foundryAccountName,$foundryProjectName/home?tid=$tenantId"
+function Get-ProjectPortalUrl([string]$Project) {
+    "https://ai.azure.com/nextgen/r/$subToken,$effectiveRG,,$foundryAccountName,$Project/home?tid=$tenantId"
+}
 
 Write-Host "[OK]    Lab provisioning complete."
 
-@{ HackboxCredential = @{ name = "FoundryProjectUrl"; value = $projectPortalUrl
-    note = "Open your Foundry project in the portal (sign in with your lab user)." } }
-@{ HackboxCredential = @{ name = "FoundryProjectEndpoint"; value = $projectEndpoint
-    note = "Foundry project endpoint (FOUNDRY_PROJECT_ENDPOINT)." } }
+@{ HackboxCredential = @{ name = "StrandvikProjectUrl"; value = (Get-ProjectPortalUrl $strandvikProject)
+    note = "Strandvik's Foundry project in the portal. Build all your agents here." } }
+@{ HackboxCredential = @{ name = "KolvoProjectUrl"; value = (Get-ProjectPortalUrl $kolvoProject)
+    note = "Kolvo's Foundry project (pre-built: maria-procurement and the rival suppliers). Look, do not change." } }
+@{ HackboxCredential = @{ name = "StrandvikProjectEndpoint"; value = "https://$foundryAccountName.services.ai.azure.com/api/projects/$strandvikProject"
+    note = "Strandvik project endpoint (PROJECT_ENDPOINT_STRANDVIK)." } }
+@{ HackboxCredential = @{ name = "KolvoProjectEndpoint"; value = $kolvoEndpoint
+    note = "Kolvo project endpoint (PROJECT_ENDPOINT_KOLVO)." } }
+@{ HackboxCredential = @{ name = "FoundryAccountName"; value = $foundryAccountName
+    note = "Foundry resource name (Azure portal > Access control (IAM) lives here)." } }
 @{ HackboxCredential = @{ name = "ModelDeploymentName"; value = $chatModel
-    note = "Chat model for your agents (MODEL_DEPLOYMENT_NAME)." } }
-@{ HackboxCredential = @{ name = "GraphModelDeploymentName"; value = $graphModel
-    note = "Model for Foundry IQ knowledge graph extraction and knowledge base query planning." } }
+    note = "Chat model for your agents." } }
+@{ HackboxCredential = @{ name = "JudgeModelDeploymentName"; value = $graphModel
+    note = "Judge model for evaluations and knowledge graph extraction." } }
 @{ HackboxCredential = @{ name = "EmbeddingDeploymentName"; value = $embeddingModel
     note = "Embedding model for the Foundry IQ knowledge source." } }
 @{ HackboxCredential = @{ name = "SearchEndpoint"; value = $searchEndpoint
-    note = "Foundry IQ (Azure AI Search) endpoint. Use your Entra identity, no keys." } }
+    note = "Foundry IQ (Azure AI Search) endpoint." } }
 @{ HackboxCredential = @{ name = "StorageAccountName"; value = $storageName
-    note = "Storage account for the Caldova documents (Entra auth only)." } }
-@{ HackboxCredential = @{ name = "StorageContainer"; value = $storageContainer
-    note = "Upload the Caldova documents here." } }
+    note = "Storage account for the Strandvik documents (Entra auth only)." } }
+@{ HackboxCredential = @{ name = "DocumentsContainer"; value = $storageContainer
+    note = "Upload the Strandvik documents into this container." } }
 if ($fabricReady) {
     @{ HackboxCredential = @{ name = "FabricCapacityName"; value = $fabricCapacityName
-        note = "Your own Fabric $FabricSkuName capacity. Assign your Fabric workspace to it." } }
-    @{ HackboxCredential = @{ name = "FabricPortalUrl"; value = "https://app.fabric.microsoft.com/home?tid=$tenantId"
+        note = "Your own Fabric $FabricSkuName capacity." } }
+    @{ HackboxCredential = @{ name = "FabricPortalUrl"; value = $fabricPortalUrl
         note = "Fabric portal (sign in with your lab user)." } }
 }
-@{ HackboxCredential = @{ name = "WorkIQEmulatorEndpoint"; value = [string]$emulator.McpEndpoint
-    note = "Work IQ (emulated) MCP endpoint. Authenticate with 'Authorization: Bearer <persona key>'." } }
-if ($emulator.ViewerUrl) {
-    @{ HackboxCredential = @{ name = "WorkIQViewerUrl"; value = [string]$emulator.ViewerUrl
-        note = "Browse the emulated Microsoft 365 content per persona." } }
+if ($fabricWorkspaceId) {
+    @{ HackboxCredential = @{ name = "FabricWorkspaceId"; value = $fabricWorkspaceId
+        note = "Your Fabric workspace '$fabricWorkspaceName' on your capacity." } }
 }
-@{ HackboxCredential = @{ name = "WorkIQKeySalesLead"; value = $personaKeys['sales-lead']
-    note = "Work IQ persona key: Sales Lead." } }
-@{ HackboxCredential = @{ name = "WorkIQKeySupplyPlanner"; value = $personaKeys['supply-planner']
-    note = "Work IQ persona key: Supply Planner." } }
-@{ HackboxCredential = @{ name = "WorkIQKeyQualityHead"; value = $personaKeys['quality-head']
-    note = "Work IQ persona key: Quality Head." } }
-@{ HackboxCredential = @{ name = "WorkIQKeyPlantManager"; value = $personaKeys['plant-manager']
-    note = "Work IQ persona key: Plant Manager." } }
-@{ HackboxCredential = @{ name = "ApplicationInsightsConnectionString"; value = $appiConnString
-    note = "Optional: send your own app telemetry to the lab Application Insights." } }
+@{ HackboxCredential = @{ name = "WorkIQEmulatorEndpoint"; value = [string]$emulator.McpEndpoint
+    note = "Work IQ (emulated) MCP endpoint. Header 'Authorization: Bearer <WorkIQKey>'." } }
+@{ HackboxCredential = @{ name = "WorkIQViewerUrl"; value = [string]$emulator.ViewerUrl
+    note = "See the Strandvik Microsoft 365 content and the thread; play Sam here." } }
+@{ HackboxCredential = @{ name = "WorkIQBoardUrl"; value = $boardUrl
+    note = "Kolvo's procurement board: the 02:13 replay." } }
+@{ HackboxCredential = @{ name = "WorkIQKey"; value = $personaKeys['alex']
+    note = "Work IQ key for Alex's agent (and the viewer)." } }
+@{ HackboxCredential = @{ name = "WorkIQKeySam"; value = $personaKeys['sam']
+    note = "Work IQ key for whoever plays Sam in the viewer." } }
+@{ HackboxCredential = @{ name = "ApplicationInsightsName"; value = $appiName
+    note = "Application Insights connected to both projects (traces)." } }
 @{ HackboxCredential = @{ name = "LabRegion"; value = $labRegion
     note = "Azure region of your lab resources." } }

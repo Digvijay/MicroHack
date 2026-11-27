@@ -2,7 +2,7 @@
 
 Usage:
   python scripts/mcp_smoke.py --url http://127.0.0.1:7071/mcp --key <persona key>
-  python scripts/mcp_smoke.py --url http://127.0.0.1:7071/mcp --persona sales-lead   (WORKIQ_DEV_MODE only)
+  python scripts/mcp_smoke.py --url http://127.0.0.1:7071/mcp --persona alex   (WORKIQ_DEV_MODE only)
 
 Requires the dev dependencies (requirements-dev.txt)."""
 
@@ -65,9 +65,9 @@ def main() -> None:
     ap.add_argument("--url", required=True)
     ap.add_argument("--key", default=os.environ.get("WORKIQ_KEY"))
     ap.add_argument("--persona")
-    ap.add_argument("--query", default="Can we ship the Brennmark PV-400 order by Friday? Teglbruk Esbjerg")
+    ap.add_argument("--query", default="What did Sam say about the Poliden maintenance stop? Kolvo press line 2")
     args = ap.parse_args()
-    headers = {"Authorization": f"Bearer {args.key}"} if args.key else {"X-WorkIQ-Persona": args.persona or "sales-lead"}
+    headers = {"Authorization": f"Bearer {args.key}"} if args.key else {"X-WorkIQ-Persona": args.persona or "alex"}
     print(json.dumps(asyncio.run(run(args.url, headers, args.query)), indent=2, ensure_ascii=False))
 
 

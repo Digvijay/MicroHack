@@ -1,54 +1,59 @@
-# Caldova data
+# Strandvik data
 
-This folder holds the data for the Caldova scenario: the Fabric IQ lakehouse tables, the Foundry IQ document corpus and the evaluation set. All companies, people, orders and documents are fictional. Every number, date, id and rule agrees with `../walkthrough/scenario-facts.md`, which is the single source of truth. Microsoft 365 content (emails, chats, meetings, files M1 to M8) is not here: it is seeded by the Work IQ emulator in `../labautomation/workiq-emulator`.
+This folder holds the data for the Strandvik scenario: the Fabric lakehouse tables, the Foundry IQ documents, the Work IQ seed, the evaluation set and the knowledge-graph ontology. All companies, people, units and documents are fictional. Every name, serial, time, price and rule agrees with `../walkthrough/scenario-facts.md`, the single source of truth.
 
-## Fabric IQ: `lakehouse/`
+## Fabric IQ: `lakehouse/` (challenges 1 and 3)
 
-CSV files, UTF-8, comma-separated, header row, ISO dates, no thousands separators. Load them as lakehouse tables and build the Fabric IQ ontology on top.
+CSV files, UTF-8, comma-separated, header row, snake_case columns, ISO dates, timestamps with offset (CET). The ERP snapshot is taken on Tuesday 15 December 2026 at about 03:10. Load them as lakehouse tables, then build the ontology and the Fabric data agent (the Parts agent uses it).
 
-| File | Rows | Maps to scenario-facts.md |
+| File | Rows | Content |
 |---|---|---|
-| `suppliers.csv` | 5 | Suppliers (SUP-01 to SUP-05). Teglbruk Metall AS has status `quality_hold`. |
-| `components.csv` | 5 | Components, plus `pressure_bearing` (true only for HX-220). |
-| `products.csv` | 3 | Products PV-400, CV-90, BV-200 with price and finished goods on hand. |
-| `bill_of_materials.csv` | 10 | Bill of materials, quantity 1 per unit. |
-| `customers.csv` | 4 | Customers CUS-01 to CUS-04 with tier. |
-| `sales_orders.csv` | 4 | Open sales orders SO-9001 to SO-9004. |
-| `purchase_orders.csv` | 3 | Open purchase orders PO-7781, PO-7790, PO-7795. |
-| `sales_orders_history.csv` | 400 | Shipped orders for the 12 months before 7 December 2026 (SO-8001 onward). Brennmark Industries GmbH is the largest customer at 6,502,600 EUR, matching the key account plan (about 6.5 M EUR a year). |
-| `supplier_deliveries_history.csv` | 147 | Inbound deliveries for the same 12 months with promised and actual dates. Nordhavn Castings A/S has 2 winter weather delays at Esbjerg. Teglbruk Metall AS includes lot L-7731 (PO-7702) received on 2026-12-04 with `quality_result` = failed. |
+| `sites.csv` | 9 | Gothenburg HQ, Pune factory, Rotterdam warehouse, Kolvo cab plant Hisingen, Poliden Skelleftehamn and four other customer sites |
+| `customers.csv` | 6 | Kolvo AB, Poliden AB and four other customers, with tier and service contract |
+| `people.csv` | 8 | Alex, Sam (in Singapore), Lina, Erik, Jonna (sales leadership), Noor (field service), Maria (Kolvo), Poliden maintenance planner |
+| `account_owners.csv` | 6 | Who owns each customer: Alex owns Kolvo, Sam owns Poliden |
+| `approved_external_agents.csv` | 2 | Customer agents allowed to ask for price and delivery (Kolvo's `maria-procurement`, acting for Maria); none may order |
+| `machines.csv` | 15 | Customer machines and the drive unit each runs on. Kolvo press line 2 runs on SD9-K-0412 (half speed) |
+| `drive_units.csv` | 22 | SD-900 and SD-700 units. In stock SD-900s: SD9-P-0981 (new, tested, Pune) and SD9-R-0733 (Rotterdam). Distractors: SD9-R-0750 (sold), SD9-P-0902 (in repair), SD7-R-0388 (SD-700, does not fit) |
+| `reservations.csv` | 5 | RSV-2291: SD9-R-0733 for Poliden crusher C3, needed 2026-12-21, owner Sam |
+| `technicians.csv` | 4 | Field technicians and their certified models |
+| `technician_schedule.csv` | 6 | Slot FS-5101: Jonas at Kolvo, Wednesday 16 December 22:00 to Thursday 06:00, available |
+| `transport_options.csv` | 6 | Rotterdam to Kolvo by truck and ferry (25 h, 2,800 EUR, arrives Wed 09:00); Pune to Kolvo by air (30 to 36 h, 40,000 EUR, Landvetter 17:30, Kolvo 19:00) |
+| `price_list.csv` | 8 | List prices for units and installation |
+| `service_contracts.csv` | 6 | SC-KOL-2024 (48 h target, 0.5% per day, 1,240,000 EUR), SC-POL-2025 and four others |
+| `service_cases.csv` | 5 | Historical cases up to CS-88411. CS-88412 does not exist yet: it is opened live at 02:13 |
 
-The two history files contain no open orders and no open POs. They are produced by `generate_history.py` with a fixed seed, so `python generate_history.py` reproduces them byte for byte.
+## Foundry IQ: `documents/` (challenges 1 and 4)
 
-Key answers the tables support: orders that depend on HX-220 are worth 1,975,000 EUR; 1,800 PV-400 can be ready by Friday 11 December (600 finished plus 1,200 HX-220); the Brennmark value delayed is 902,000 EUR.
+Upload to the `documents` blob container and build the knowledge base for the Service agent.
 
-## Foundry IQ: `documents/`
-
-Ten Markdown business documents for the Foundry IQ knowledge base (upload to Azure Blob Storage). They always use product and part codes (PV-400, CV-90, BV-200, HX-220, SL-12, ST-50, FX-8, AC-3) and full company names, and state relationships in plain sentences, so knowledge-graph extraction does not create duplicate entities.
-
-| File | Document id | Content |
+| File | Document id | Key rules |
 |---|---|---|
-| `supplier-agreement-nordhavn.md` | SA-2025-014 | Primary HX-220 supply from Esbjerg, 21-day lead time, backup subject to SQP-04 |
-| `supplier-agreement-teglbruk.md` | SA-2025-019 | Backup HX-220 supply, 10-day lead time, incoming inspection on every lot |
-| `customer-agreement-brennmark.md` | FA-2024-007 | PV-400, partials only with written agreement, 2% per week capped at 10%, force majeure notice within 48 hours |
-| `customer-agreement-solvik.md` | FA-2025-002 | CV-90, no partial deliveries, 1% per week capped at 10%, 48-hour notice |
-| `customer-agreement-osterdal.md` | CA-2023-031 | Standard terms, PV-400, partials allowed, no penalty |
-| `customer-agreement-ferrovia.md` | FA-2025-009 | BV-200, not affected (distractor) |
-| `supplier-quality-policy-sqp-04.md` | SQP-04 | Quality hold rule, no deviations for pressure-bearing parts, HX-220 is pressure-bearing |
-| `allocation-policy-ap-02.md` | AP-02 | Strategic, key, standard, then due date; Plant Manager override in writing |
-| `quality-report-qr-2026-118.md` | QR-2026-118 | Lot L-7731 failed the pressure test on 4 December 2026; hold until corrective action, expected 16 December 2026 |
-| `product-catalogue.md` | CAT-2026 | Products, bill of materials, components and suppliers |
+| `external-agent-access-policy-eap-01.md` | EAP-01 | Identify company and person; price and delivery only; no orders; every request opens a case for the account owner; quotes valid 24 hours; only the KAM commits |
+| `reservation-policy-res-02.md` | RES-02 | Reserved until the owner releases it; a note is a reason to ask; written approval (chat counts); equal unit in time; KAM carries the cost risk |
+| `service-contract-kolvo-sc-kol-2024.md` | SC-KOL-2024 | 48-hour replacement target for press lines 1 to 3; Strandvik installs; 0.5% uptime credit per day; orders need Maria |
+| `service-contract-poliden-sc-pol-2025.md` | SC-POL-2025 | Planned swaps reserved 5 working days ahead; date changes confirmed in writing by Poliden's planner |
+| `logistics-rules-log-03.md` | LOG-03 | Truck and ferry about 25 h; air 30 to 36 h; flight hold 6 h free; bookings above 10,000 EUR need KAM approval |
+| `sd-900-product-sheet.md` | PS-SD900 | SD-900 replaces SD-900s only; installation 6 to 8 hours by a certified technician |
+| `technician-scheduling-fs-04.md` | FS-04 | Technician at Kolvo Wednesday night 22:00 to 06:00; night install needs 24 hours' notice |
 
-## Evaluation: `eval/`
+## Work IQ: `workiq/` (challenge 5)
 
-| File | Used by | Content |
-|---|---|---|
-| `questions.json` | Leaderboard | 19 questions across challenges 1 to 6, with persona, required IQs, gold answer and deterministic checks |
-| `rubric.md` | Coaches | Scoring method and per-question table |
+`strandvik-seed.json` is the Work IQ emulator seed (W1 to W7 plus background noise). An identical copy lives at `../labautomation/workiq-emulator/seed/strandvik.json`; keep both in sync. Personas: `alex`, `sam`, `sales-leadership`, `service-coordinator`, `maria`, `poliden-planner`. The Kolvo thread is chat item `W3`; the 03:52 exchange is produced live.
 
-## Scripts
+## Evaluation: `eval/` (challenge 7 and finish)
 
-| File | Purpose |
+| File | Content |
 |---|---|
-| `generate_history.py` | Regenerates the two history CSV files deterministically (stdlib only). |
-| `validate_data.py` | Checks totals, ids, bill of materials, document coverage, question schema, reproducibility and the no-dash style rule. Run `python validate_data.py`; it exits non-zero on any failure. |
+| `strandvik-eval.jsonl` | 27 single-turn rows (`query`, `ground_truth`, `context`) for the Foundry portal Evaluation "Existing dataset" option, including adversarial rows |
+| `strandvik-eval-15.jsonl` | 15 of those rows (6, 7, 8, 12, 13, 14, 16, 18 to 24, 26): the faster set used in challenge 7 |
+| `custom-rubric.md` | Text to paste into a custom rubric evaluator for Alex's agent, with weights |
+| `john-blund-test.md` | The five-question finish checklist and the evidence to show |
+
+## Knowledge graph: `foundry-iq/` (challenge 4 stretch)
+
+`strandvik-ontology.jsonld` is the ontology for Foundry IQ graph extraction. The `rdfs:comment` on every class tells the extractor how entities are named, which avoids duplicate entities.
+
+## Script
+
+`validate_data.py` checks referential integrity across the CSVs, the key facts (serials, reservation, owners, times, prices), the documents' rules, the seed (W1 to W7 and visibility), the eval files, the ontology and the no-dash style rule. Run `python validate_data.py`; it exits non-zero on any failure. Standard library only, Python 3.10+.

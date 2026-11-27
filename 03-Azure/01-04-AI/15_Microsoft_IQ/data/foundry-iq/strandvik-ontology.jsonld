@@ -1,0 +1,33 @@
+{
+  "@context": {
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "sv": "https://schema.strandvik.example/drives#"
+  },
+  "@graph": [
+    {"@id": "sv:DriveUnit", "@type": "owl:Class", "rdfs:comment": "A Strandvik drive unit (motor and gearbox). Name it by its serial number only, for example SD9-R-0733 or SD7-R-0388, never by its model or a description."},
+    {"@id": "sv:Model", "@type": "owl:Class", "rdfs:comment": "A drive unit model. Name it exactly SD-900 or SD-700. An SD-900 replaces SD-900s only."},
+    {"@id": "sv:Machine", "@type": "owl:Class", "rdfs:comment": "A customer machine driven by a drive unit. Name it by customer and machine, for example Kolvo press line 2 or Poliden crusher line C3."},
+    {"@id": "sv:Site", "@type": "owl:Class", "rdfs:comment": "A physical location. Name it by owner and city, for example Strandvik warehouse Rotterdam, Strandvik factory Pune, Kolvo cab plant Hisingen, Poliden Skelleftehamn."},
+    {"@id": "sv:Customer", "@type": "owl:Class", "rdfs:comment": "A company that buys from Strandvik Drives AB. Name it by its legal name, for example Kolvo AB or Poliden AB."},
+    {"@id": "sv:Reservation", "@type": "owl:Class", "rdfs:comment": "A reservation of one drive unit for one customer. Name it by its id only, for example RSV-2291."},
+    {"@id": "sv:Person", "@type": "owl:Class", "rdfs:comment": "A person. Name Strandvik and customer people by first name only, for example Alex, Sam, Maria. Name the Poliden planner as Poliden maintenance planner."},
+    {"@id": "sv:Owner", "@type": "owl:Class", "rdfs:subClassOf": {"@id": "sv:Person"}, "rdfs:comment": "A person who answers for a customer account, a reservation or an agent, usually a key account manager. Only an owner can release a reservation or commit a price or date."},
+    {"@id": "sv:ServiceContract", "@type": "owl:Class", "rdfs:comment": "A service contract. Name it by its contract id only, for example SC-KOL-2024 or SC-POL-2025."},
+    {"@id": "sv:Policy", "@type": "owl:Class", "rdfs:comment": "An internal Strandvik rule document. Name it by its document id only, for example EAP-01, RES-02, LOG-03 or FS-04."},
+    {"@id": "sv:Transport", "@type": "owl:Class", "rdfs:comment": "A transport option between two sites. Name it by origin, destination and mode, for example Rotterdam to Gothenburg by truck and ferry."},
+    {"@id": "sv:Technician", "@type": "owl:Class", "rdfs:subClassOf": {"@id": "sv:Person"}, "rdfs:comment": "A Strandvik field technician. Name by first name, for example Jonas."},
+    {"@id": "sv:runsOn", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:Machine"}, "rdfs:range": {"@id": "sv:DriveUnit"}, "rdfs:comment": "The machine is driven by this drive unit, for example Kolvo press line 2 runs on SD9-K-0412."},
+    {"@id": "sv:hasModel", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:DriveUnit"}, "rdfs:range": {"@id": "sv:Model"}, "rdfs:comment": "The model of the drive unit, read from the serial prefix: SD9 means SD-900, SD7 means SD-700."},
+    {"@id": "sv:locatedAt", "@type": "owl:ObjectProperty", "rdfs:domain": [{"@id": "sv:DriveUnit"}, {"@id": "sv:Machine"}], "rdfs:range": {"@id": "sv:Site"}, "rdfs:comment": "Where the drive unit or machine is now, for example SD9-R-0733 is located at Strandvik warehouse Rotterdam."},
+    {"@id": "sv:operatedBy", "@type": "owl:ObjectProperty", "rdfs:domain": [{"@id": "sv:Machine"}, {"@id": "sv:Site"}], "rdfs:range": {"@id": "sv:Customer"}, "rdfs:comment": "The customer that operates the machine or site."},
+    {"@id": "sv:reserves", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:Reservation"}, "rdfs:range": {"@id": "sv:DriveUnit"}, "rdfs:comment": "The drive unit held by the reservation, for example RSV-2291 reserves SD9-R-0733."},
+    {"@id": "sv:reservedFor", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:Reservation"}, "rdfs:range": {"@id": "sv:Customer"}, "rdfs:comment": "The customer the reservation is for, for example RSV-2291 is reserved for Poliden AB."},
+    {"@id": "sv:ownedBy", "@type": "owl:ObjectProperty", "rdfs:domain": [{"@id": "sv:Reservation"}, {"@id": "sv:Customer"}], "rdfs:range": {"@id": "sv:Owner"}, "rdfs:comment": "The person who answers for it. RSV-2291 is owned by Sam. Kolvo AB is owned by Alex. Poliden AB is owned by Sam."},
+    {"@id": "sv:coveredBy", "@type": "owl:ObjectProperty", "rdfs:domain": [{"@id": "sv:Machine"}, {"@id": "sv:Customer"}], "rdfs:range": {"@id": "sv:ServiceContract"}, "rdfs:comment": "The service contract that covers the machine or customer, for example Kolvo press line 2 is covered by SC-KOL-2024."},
+    {"@id": "sv:governs", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:Policy"}, "rdfs:range": [{"@id": "sv:Reservation"}, {"@id": "sv:Transport"}, {"@id": "sv:Technician"}, {"@id": "sv:Customer"}], "rdfs:comment": "The policy sets the rules for this thing. RES-02 governs reservations, LOG-03 governs transport, FS-04 governs technician slots, EAP-01 governs external agent requests from customers."},
+    {"@id": "sv:fromSite", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:Transport"}, "rdfs:range": {"@id": "sv:Site"}, "rdfs:comment": "The site the transport leaves from."},
+    {"@id": "sv:toSite", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:Transport"}, "rdfs:range": {"@id": "sv:Site"}, "rdfs:comment": "The site the transport arrives at."},
+    {"@id": "sv:availableAt", "@type": "owl:ObjectProperty", "rdfs:domain": {"@id": "sv:Technician"}, "rdfs:range": {"@id": "sv:Site"}, "rdfs:comment": "The technician has a free slot at this site, for example Jonas is available at Kolvo cab plant Hisingen on Wednesday night 22:00 to 06:00."}
+  ]
+}

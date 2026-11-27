@@ -14,7 +14,8 @@
          is disabled; the function app uses its system-assigned identity.
       3. Flex Consumption plan (FC1) and function app (python 3.12, 2048 MB, max 1 instance).
       4. Role assignments: Storage Blob Data Owner on the storage account, and optionally
-         Cognitive Services OpenAI User on the Foundry account.
+         Cognitive Services OpenAI User on the Foundry account (for ask) and Foundry User on the
+         Kolvo project (for the procurement board's Run 02:13 button).
       5. Zip the emulator (without tests, .venv, caches) and publish it with remote build
          through the Flex "one deploy" endpoint. Poll until the deployment succeeds.
       6. Probe https://<host>/healthz until it returns 200.
@@ -22,9 +23,10 @@
 .EXAMPLE
     . ./Deploy-WorkIQEmulator.ps1
     $result = Deploy-WorkIQEmulator -SubscriptionId $sub -ResourceGroupName rg-lab01 -Location swedencentral `
-        -Name func-workiq-lab01 -Keys @{ 'sales-lead' = $k1; 'supply-planner' = $k2; 'quality-head' = $k3; 'plant-manager' = $k4 } `
-        -AdminKey $adminKey -Tags @{ project = 'microhack' }
-    $result.McpEndpoint
+        -Name func-workiq-lab01 -Keys @{ alex = $alexKey; sam = $samKey } -AdminKey $adminKey `
+        -KolvoProjectEndpoint 'https://<account>.services.ai.azure.com/api/projects/kolvo' `
+        -KolvoProjectResourceId $kolvoProjectId -Tags @{ project = 'microhack' }
+    $result.McpEndpoint; $result.ViewerUrl; $result.BoardUrl
 #>
 
 Set-StrictMode -Version Latest
@@ -32,6 +34,7 @@ Set-StrictMode -Version Latest
 $script:WorkIQEmulatorRoot = $PSScriptRoot
 $script:WorkIQRoleStorageBlobDataOwner = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
 $script:WorkIQRoleOpenAIUser = '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+$script:WorkIQRoleFoundryUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d'
 $script:WorkIQPackageExclude = @('.venv', '__pycache__', '.pytest_cache', 'tests', 'scripts', '.vscode', '.git')
 $script:WorkIQFileExclude = @('*.pyc', '*.zip', 'local.settings.json', 'requirements-dev.txt', 'Deploy-WorkIQEmulator.ps1', 'README.md', '.gitignore')
 
@@ -157,7 +160,13 @@ function Deploy-WorkIQEmulator {
         [Parameter(Mandatory)][hashtable]$Keys,
         [Parameter(Mandatory)][string]$AdminKey,
         [hashtable]$Tags = @{},
-        [int]$DeployTimeoutSeconds = 600
+        [int]$DeployTimeoutSeconds = 600,
+        [ValidatePattern('^[a-z][a-z0-9-]{0,40}$')][string]$Seed = 'strandvik',
+        [bool]$AutoSam = $false,
+        [string]$KolvoProjectEndpoint = '',
+        [string]$MariaAgentName = 'maria-procurement',
+        [string]$KolvoProjectResourceId = '',
+        [hashtable]$ExtraAppSettings = @{}
     )
     $ErrorActionPreference = 'Stop'
     $rgPath = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName"
@@ -235,6 +244,13 @@ function Deploy-WorkIQEmulator {
     if ($AppInsightsConnectionString) { $appSettings['APPLICATIONINSIGHTS_CONNECTION_STRING'] = $AppInsightsConnectionString }
     if ($FoundryOpenAIEndpoint) { $appSettings['FOUNDRY_OPENAI_ENDPOINT'] = $FoundryOpenAIEndpoint }
     if ($FoundryChatDeployment) { $appSettings['FOUNDRY_CHAT_DEPLOYMENT'] = $FoundryChatDeployment }
+    $appSettings['WORKIQ_SEED'] = $Seed
+    $appSettings['WORKIQ_AUTO_SAM'] = if ($AutoSam) { 'true' } else { 'false' }
+    $appSettings['MARIA_AGENT_NAME'] = $MariaAgentName
+    if ($KolvoProjectEndpoint) { $appSettings['KOLVO_PROJECT_ENDPOINT'] = $KolvoProjectEndpoint.TrimEnd('/') }
+    # Behind the Functions front end the app sees http; links, cookies and the Origin check need the public https URL.
+    $appSettings['WORKIQ_PUBLIC_BASE_URL'] = "https://$Name.azurewebsites.net"
+    foreach ($k in $ExtraAppSettings.Keys) { $appSettings[[string]$k] = [string]$ExtraAppSettings[$k] }
 
     $sitePath = "$rgPath/providers/Microsoft.Web/sites/$Name"
     Write-Verbose "Function app $Name"
@@ -288,6 +304,11 @@ function Deploy-WorkIQEmulator {
     if ($FoundryAccountResourceId) {
         $foundrySub = ($FoundryAccountResourceId -split '/')[2]
         New-WorkIQRoleAssignment -SubscriptionId $foundrySub -Scope $FoundryAccountResourceId.TrimEnd('/') -RoleDefinitionId $script:WorkIQRoleOpenAIUser -PrincipalId $principalId
+    }
+    if ($KolvoProjectResourceId) {
+        # Lets the board call Maria's agent through the Responses API with the app's managed identity.
+        $kolvoSub = ($KolvoProjectResourceId -split '/')[2]
+        New-WorkIQRoleAssignment -SubscriptionId $kolvoSub -Scope $KolvoProjectResourceId.TrimEnd('/') -RoleDefinitionId $script:WorkIQRoleFoundryUser -PrincipalId $principalId
     }
 
     # -- 5. package and one deploy ------------------------------------------------
@@ -368,6 +389,8 @@ function Deploy-WorkIQEmulator {
     [pscustomobject]@{
         McpEndpoint     = "https://$hostName/mcp"
         ViewerUrl       = "https://$hostName/viewer"
+        BoardUrl        = "https://$hostName/board"
         FunctionAppName = $Name
+        PrincipalId     = $principalId
     }
 }

@@ -1,156 +1,174 @@
-# Coach guide: Microsoft IQ, one agent, four IQs
+# Coach guide: Alex sleeps through 02:13
 
 **[Home](../README.md)**
 
-This folder is for coaches. Participants do not see it in the Codespace explorer (the dev container hides `walkthrough`), but it is on disk.
+This folder is for coaches. It has the full, click-by-click solutions, the exact instructions to paste into each agent and the troubleshooting notes. Participants should solve the [challenges](../challenges/) first; send them here only when they are stuck after the hints.
 
 | File | Purpose |
 |---|---|
-| [scenario-facts.md](scenario-facts.md) | Single source of truth for every number, date, persona and the right answer. Read it first. |
-| [Solution 1](challenge-01/solution-01.md) | Setup, the blind agent, how the evaluation works |
-| [Solution 2](challenge-02/solution-02.md) | Web IQ, citations, the story clock |
-| [Solution 3](challenge-03/solution-03.md) | Fabric lakehouse, data agent, Fabric IQ tool, ontology |
-| [Solution 4](challenge-04/solution-04.md) | Foundry IQ knowledge base and knowledge graph, with the reference [ontology v2](challenge-04/caldova-supply-v2.jsonld) |
-| [Solution 5](challenge-05/solution-05.md) | Work IQ, persona trimming, untrusted content, planting an email |
-| [Solution 6](challenge-06/solution-06.md) | The capstone, the reference [playbook](challenge-06/playbook.md), evaluation and Agent Optimizer |
-| [Evaluation rubric](../data/eval/rubric.md) | How the 19 questions are scored |
+| [scenario-facts.md](scenario-facts.md) | Single source of truth for every name, serial, time, price, rule and the right answer. Read it first. |
+| [Solution 1](challenge-01/solution-01.md) | Lights on: `.env`, the portals, documents to Blob, lakehouse in Fabric, the paper map |
+| [Solution 2](challenge-02/solution-02.md) | Who's asking: `strandvik-customer-service`, agent card, incoming A2A, the IAM role, the board |
+| [Solution 3](challenge-03/solution-03.md) | Know the business: ontology (and the fallback), Fabric data agent, `strandvik-parts` |
+| [Solution 4](challenge-04/solution-04.md) | Why didn't it take the unit: Foundry IQ knowledge base, `strandvik-service`, knowledge graph stretch |
+| [Solution 5](challenge-05/solution-05.md) | Sam in Singapore: `alex-agent` with the Work IQ emulator, playing Sam, auto-Sam, trimming |
+| [Solution 6](challenge-06/solution-06.md) | The night shift: `strandvik-logistics`, A2A orchestration, the 04:10 proposal |
+| [Solution 7](challenge-07/solution-07.md) | Alex makes the call: approval, evaluations, traces, cost, the 02:13 replay |
+| [Finish](finish/solution-finish.md) | The John Blund test: scoring and the closing talk |
+| [Lab automation](../labautomation/README.md) | What the lab provisions, outputs, RBAC, known waits, re-runs |
+| [Work IQ emulator](../labautomation/workiq-emulator/README.md) | Viewer, playing Sam, auto-Sam, the board, admin endpoints |
+
+## The day in one paragraph
+
+Teams are Strandvik's agent team. The lab pre-builds Kolvo's side (Maria's agent and two rival suppliers) in the **kolvo** project. Teams build five agents in the **strandvik** project: `strandvik-customer-service` (the door), `strandvik-parts` (Fabric IQ), `strandvik-service` (Foundry IQ), `strandvik-logistics` (Web IQ) and `alex-agent` (Work IQ plus A2A to the three specialists). A coach or teammate plays Sam in the Work IQ viewer. At the end, Kolvo's procurement board replays 02:13 against every team's agent and the teams take the John Blund test.
 
 ## Timing plan
 
-The challenges add up to 5 hours 10 minutes. With a short welcome, two short breaks, lunch and the finish, the day runs from 09:00 to 15:25:
+About 7 hours of challenges. A full day with breaks:
 
-| Time | Block | Length | Coach focus |
-|---|---|---|---|
-| 09:00 | Welcome, scenario, form teams (mix business and developer profiles) | 10 min | The four sources of the right answer |
-| 09:10 | [Challenge 1](../challenges/challenge-01.md): the blind agent | 30 min | Everyone has a working Codespace and `caldova check` |
-| 09:40 | [Challenge 2](../challenges/challenge-02.md): Web IQ | 40 min | Story clock versus live web |
-| 10:20 | Break | 10 min | Check Fabric capacities are running |
-| 10:30 | [Challenge 3](../challenges/challenge-03.md): Fabric IQ | 60 min | Example queries demo, on-behalf-of |
-| 11:30 | Lunch | 30 min | Stagger graph builds after lunch |
-| 12:00 | [Challenge 4](../challenges/challenge-04.md): Foundry IQ | 60 min | Teglbruk yes/no demo, ontology v2 |
-| 13:00 | Break | 10 min | |
-| 13:10 | [Challenge 5](../challenges/challenge-05.md): Work IQ | 60 min | Sales Lead versus Supply Planner, plant an email |
-| 14:10 | [Challenge 6](../challenges/challenge-06.md): four IQs | 60 min | Failures first, then the playbook |
-| 15:10 | [Finish](../challenges/finish.md): recap, leaderboards, feedback | 15 min | Compare team leaderboards |
+| Time | Block | Length | Story clock | Coach focus |
+|---|---|---|---|---|
+| 09:00 | Welcome, the story so far (read the 02:10 and 02:13 beats from Johan Wallquist's keynote), form teams | 15 min | | Mix business and builder profiles in each team. Solo hackers are fine. |
+| 09:15 | [Challenge 1](../challenges/challenge-01.md): Lights on | 45 min | 02:10 | Everyone has `.env` and all three portals. Fabric workspace exists. |
+| 10:00 | [Challenge 2](../challenges/challenge-02.md): Who's asking? | 45 min | 02:13 | Make every team run the board **before** the fix. Watch the 3 to 5 minute role wait. |
+| 10:45 | Break | 10 min | | Check every lab's board shows Strandvik answering. |
+| 10:55 | [Challenge 3](../challenges/challenge-03.md): Know the business | 75 min | 03:10 | Ontology tenant setting: decide on the fallback in the first 10 minutes. |
+| 12:10 | Lunch | 40 min | | Capacities stay on. |
+| 12:50 | [Challenge 4](../challenges/challenge-04.md): Why didn't it take the unit? | 60 min | 03:41 | Run the vote on Sam's note. "A note is a reason to ask." |
+| 13:50 | [Challenge 5](../challenges/challenge-05.md): Sam in Singapore | 60 min | 03:52 | Play Sam for teams without a spare person, or point them at auto-Sam. |
+| 14:50 | Break | 10 min | | |
+| 15:00 | [Challenge 6](../challenges/challenge-06.md): The night shift | 75 min | 04:10 | A2A one tool at a time. Fabric over A2A fallback if needed. |
+| 16:15 | [Challenge 7](../challenges/challenge-07.md): Alex makes the call | 45 min | 07:30 | Start evaluations early. Then the 02:13 replay on the projector. |
+| 17:00 | [Finish](../challenges/finish.md): the John Blund test | 15 min | Thu 06:00 | Score the five questions with each team. |
 
-That is about 6 hours 25 minutes in total, including 50 minutes of breaks and lunch. The stretch goals in Challenges 3, 4 and 6 are for fast teams; skip them to finish earlier.
+Short on time? Drop the stretch goals (knowledge graph in challenge 4, real handover in challenge 7), and in challenge 6 let teams orchestrate two specialists instead of three.
 
 ## Before the day
 
-### Tenant (once, Fabric administrator)
+### Once per tenant (Fabric administrator)
 
-In the **Fabric admin portal** > **Tenant settings**, enable for the lab users (or the whole tenant):
+In the **Fabric admin portal** > **Tenant settings**, for the lab users or the whole tenant:
 
 - [ ] **Users can create Fabric items**
-- [ ] **Users can create ontology (preview) items** (Fabric IQ ontology)
-- [ ] **Users can create and share Data agent item types (preview)** (Fabric data agent)
-- [ ] **Users can use Copilot and other features powered by Azure OpenAI**, and, if the capacity region differs from the Azure OpenAI region, **Data sent to Azure OpenAI can be processed outside your capacity's geographic region**
+- [ ] **Users can create ontology (preview) items**. If this stays off, challenge 3 uses the documented fallback.
+- [ ] **Users can create and share Data agent item types (preview)**
+- [ ] **Users can use Copilot and other features powered by Azure OpenAI** (and, if the capacity region differs from the Azure OpenAI region, **Data sent to Azure OpenAI can be processed outside your capacity's geographic region**)
 
-Lab users must be in the group **M365-E5-Users** (Microsoft 365 E5 includes the Power BI Pro license that Fabric needs) and **GHCPUsers** (GitHub Copilot and Codespaces). Both are set in [`lab-defaults.json`](../labautomation/lab-defaults.json). See [labautomation/README.md](../labautomation/README.md#platform-admin-prerequisites-once-per-tenant).
+Lab users must be in the groups from [`lab-defaults.json`](../labautomation/lab-defaults.json) (Fabric licence through Microsoft 365 E5, Codespaces).
 
-### Each lab (the day before and the morning of)
+### Per lab (the evening before)
 
-- [ ] **Resume the F2 capacity** if it was paused: Azure portal > lab resource group > Fabric capacity > **Resume**, or
+Sign in with one lab user and check:
 
-  ```bash
-  az rest --method post --url "https://management.azure.com/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Fabric/capacities/<name>/resume?api-version=2023-11-01"
-  ```
+- [ ] The **kolvo** project shows `maria-procurement`, `nordic-drive-parts` and `hallberg-repair`.
+- [ ] The **strandvik** project is empty (no agents), and the three model deployments exist.
+- [ ] The board (`/board` on the emulator host) loads after sign-in. **Run 02:13** fails with the red hint about Strandvik: that is the correct starting state.
+- [ ] The Fabric capacity is **Active** (Azure portal > the `iqcap...` resource). Resume it if it was paused.
+- [ ] The `documents` container is empty, and Storage browser opens it with your Entra account.
 
-- [ ] The dashboard shows `FabricCapacityName`. If it is missing, the lab could not create a capacity: re-run the lab deployment or plan a shared capacity for that team.
-- [ ] **Work IQ emulator seed check:** open `https://<function app host>/healthz`. Expect `{"status":"ok","items":N}` with N > 0 (the bundled pack has 25 items). Then open `WorkIQViewerUrl`, sign in with the Plant Manager key and check the Inbox shows "FW: SO-9001 PV-400 delivery confirmation" and Chats show the quality hold chat.
-- [ ] **Admin key** for planting emails: Azure portal > lab resource group > the `iq-wiq-...` Function App > **Settings** > **Environment variables** > `WORKIQ_ADMIN_KEY`, or
+### In the room
 
-  ```bash
-  az functionapp config appsettings list -g <rg> -n <function app> --query "[?name=='WORKIQ_ADMIN_KEY'].value" -o tsv
-  ```
+- A big **story clock** on a second screen (any full-screen clock page, or a slide with the time). You move it forward at every challenge.
+- Printed [scenario facts](scenario-facts.md), one per coach.
+- One spare laptop or browser profile signed in to the Work IQ viewer as **Sam**, for playing Sam across teams.
 
-  It is not on the participant dashboard on purpose, and it only controls that one lab's emulator.
-- [ ] Run the whole hack once in a coach lab and record your scores in the table below.
+## How to run the clock
 
-### After the day
+The clock is the story's spine. At the start of every challenge:
 
-- Pause the Fabric capacities if the labs stay up (the largest cost item, about 8.6 USD per lab per day while running).
+1. Set the story clock to the challenge time (02:10, 02:13, 03:10, 03:41, 03:52, 04:10, 07:30).
+2. Read the story beat from the challenge out loud, in 30 seconds. The lines are from Johan Wallquist's keynote; read them as they are.
+3. Ask the one question of the moment:
+   - 02:13: "Who's asking, and what are they allowed to do?"
+   - 03:41: **the vote.** "Is Sam's note enough to take the unit? Hands up if yes." Then: "A note is a reason to ask. It's not a decision."
+   - 07:30: **the vote.** "Who flies in the new unit? Who takes Poliden's unit?" Then reveal: Alex does both.
+   - The replay: "Which supplier is your company today? The distributor, the repair shop or Strandvik?"
+4. At the end of the challenge, ask one team to show their success criteria in two minutes.
 
-## Expected scores
+## How to play Sam
 
-These numbers come from the reference runs (same 19 questions, `gpt-5.4-mini`, one run each unless noted). Your teams will vary by about 5 to 10 points from run to run.
+Sam is Strandvik's key account manager for Poliden, at a trade fair in Singapore (UTC+8, 10:52 when the agent asks). Sam is friendly, busy and protective of Poliden.
 
-| Run | IQs | Score (of 190) | What the jump shows |
-|---|---|---|---|
-| Challenge 1: no IQ | none | 63 | General knowledge only. Honest refusals score low; the web questions get partial credit for naming Esbjerg. |
-| Challenge 2: + Web IQ | web | 69 | Only 3 questions need the web, so the jump is small but the answers become cited and current. |
-| Challenge 3: + Fabric IQ | web, fabric | 109 | The biggest single jump: stock, orders and money (q06 to q09) go from 1 to about 10 each. |
-| Challenge 4: + Foundry IQ | web, fabric, foundry | 143 | Contracts and policies (q10 to q13) pass; Teglbruk is correctly refused. |
-| Challenge 5: + Work IQ | all four | 123 | **The score drops.** More tools without guidance: the agent picks one tool, trusts stale data, and offers the customer's number instead of ours. |
-| Challenge 6: + playbook | all four + playbook | 148 to 154 (two runs) | The playbook tells the agent which IQ to use for what and how to combine them. |
+1. Open the viewer (`WORKIQ_VIEWER_URL` from the team's `.env`, or the emulator host + `/viewer`) in a **private window**, and sign in with the team's **Sam key** (`WORKIQ_KEY_SAM`).
+2. Open **Chats** > **Kolvo press line 2, SD-900**. The thread refreshes every 4 seconds; agent posts are highlighted and say "Alex's agent (on behalf of Alex)".
+3. When the agent asks, reply under **Post as: Sam**. The scripted answer:
 
-Use the Challenge 5 dip as a live discussion point: context is necessary, orchestration is what makes it useful.
+   > Yes, it is moving two weeks. Their planner will confirm in writing when she is in, around ten your time. Fine by me, as long as Poliden gets the new unit in time.
 
-## How to read the leaderboard
+4. Improvise inside the facts only. Good improvisations: "Which unit would Poliden get instead?", "Who pays the extra freight?" (answer: the KAM who reallocates carries the cost risk, RES-02). Never change the facts (the stop moves two weeks, the planner confirms around 10:00).
+5. If the agent's question is vague ("Hi Sam, any news?"), answer like a busy person: "I am at a trade fair in Singapore this week. Please keep it short: what do you need from me?" That teaches the business role to write a better question.
 
-```bash
-caldova leaderboard
+Teams can play Sam themselves: anyone signed in to the viewer with a lab key can post as any member of the thread.
+
+## Auto-Sam (solo hackers)
+
+- Turn it on with the **auto-Sam** button above the Kolvo thread in the viewer (or at deploy time with `WORKIQ_AUTO_SAM=true`).
+- Auto-Sam replies about 30 seconds after any post by someone other than Sam that **mentions Sam** (`Sam` or `@Sam`). About the Poliden unit, reservation, stop, Rotterdam or RSV-2291, it gives the scripted answer; otherwise the "keep it short" answer.
+- There are no timers: the reply is posted by the next request (any MCP call, viewer refresh). The agent's turn ends before Sam answers, so the participant asks the agent again ("Did Sam answer?").
+- It is deterministic and uses no model.
+
+## The board
+
+Kolvo's procurement board is at the emulator host + `/board`. Sign in with any lab key. It shows Maria's 02:13 request, one card per supplier (Strandvik Drives, Nordic Drive Parts, Hallberg Repair Services) and a scorecard.
+
+| State | What the board shows | Why |
+|---|---|---|
+| Before challenge 2 | All three suppliers "no answer", a red hint about Strandvik | Foundry fails Maria's **whole** response with `tool_user_error` when any A2A target is unreachable |
+| After challenge 2 (and the 3 to 5 minute wait) | Strandvik: case number and handover. Nordic: "in stock, ships today" from a stock list, cannot hold. Hallberg: office hours, answers after 08:45 | All three A2A targets reachable |
+| After the challenge 7 stretch | Strandvik's card carries the proposal and "final confirmation from Alex by 07:30" | Customer service hands over to `alex-agent` over A2A |
+
+- **Run 02:13** calls `maria-procurement` through the Responses API with the emulator's managed identity. A run takes 30 to 90 seconds; the button waits up to 180 seconds. One run at a time per lab. The last run stays on screen until the emulator restarts.
+- The scorecard (Answered, Answered in time, Grounded and holds the unit, Respects quote only, Final confirmation by a person) is keyword-based. It starts the conversation; it does not judge.
+- For the replay, put each team's board on the projector in turn and ask the replay question.
+
+## Reset tips
+
+| To reset | Do this |
+|---|---|
+| Chat posts in the Kolvo thread (after evaluations or a messy rehearsal) | Coach page `/viewer/coach` > **Reset the thread** (admin key in the form), or `POST /manage/thread/reset`: removes the live posts, stops the story clock. `POST /manage/reset` also reloads the whole seed. To stamp a beat at its story time, set the clock first (coach page, or `POST /manage/clock` with `{"time": "07:30"}`). The admin key is `WORKIQ_ADMIN_KEY` in the Function App's **Environment variables** (Azure portal > lab resource group > `iq-wiq-...` > Settings). |
+| A Strandvik agent | Delete it in the Foundry portal (strandvik project > Agents > the agent > Delete) and create it again. Re-run notebook 01 for it (it switches on incoming A2A and grants the caller's role for the new identity). |
+| The whole Strandvik side | Delete all agents in the strandvik project, the knowledge base and its source. Nothing in the automation depends on them. |
+| Kolvo's agents (someone edited them) | Run `labautomation/setup-kolvo.ps1` (needs an Az PowerShell context with Owner on the resource group). It is idempotent. |
+| Fabric | Delete the lakehouse, ontology and data agent items, then load again (portal or notebook 00). |
+
+```powershell
+# Reset the Work IQ emulator (coach). $adminKey from the Function App's environment variables.
+Invoke-RestMethod -Method Post -Uri "https://<emulator host>/manage/reset" -Headers @{ Authorization = "Bearer $adminKey" }
 ```
 
-| Column | Meaning |
-|---|---|
-| Run | The `--label` of the run |
-| IQs | The IQs the agent had |
-| Score / Max | Sum over the questions run. A full run is out of 190. Runs with `--only` or `--upto` have a smaller max: do not compare them with full runs. |
-| % and bar | Score as a percentage, one block per 5% |
-| When (UTC) | Run time |
+The emulator keeps its state in memory: a restart of the Function App also clears posts, the auto-Sam switch and the last board run.
 
-The per-question table printed by `caldova eval` has `Q`, `Ch` (challenge), `Persona`, `Needs` (IQs the question needs), `Score` (0 to 10, green from 8, yellow from 5), `Judge` (0 to 5), `Tools` and `Why` (the judge's reason). Full answers are in `src/.caldova/leaderboard.json`.
-
-What to look for:
-
-- A question needs an IQ the run did not have: expected low score, not a bug.
-- Big jumps between two identical runs: variance. Compare two runs before concluding.
-- `Judge` capped at 1 with a high answer quality: a `must_not_include` gate phrase fired. Read the answer.
-- q17 low after Challenge 5: the Sales Lead agent leaked or guessed a date.
-
-## Live demo moments
-
-These were all observed in testing. Each makes a good 3 to 5 minute demo on the projector.
-
-| Challenge | Moment | How to show it |
-|---|---|---|
-| 1 | The honest blind agent | Ask the capstone with `--iqs none`. Praise "I can't know". |
-| 2 | Grounding versus the story clock | Ask the Esbjerg weather question. Today's web disagrees with the story. |
-| 3 | Data agents need examples | `caldova fabric-iq agent --no-examples`, ask q06 and q09 ("HX-220 housing", "Brennmark" exact match fail), then `caldova fabric-iq agent` and ask again. |
-| 3 | On behalf of the user | Show the `UserEntraToken` connection and the Power BI audience. |
-| 4 | Entity resolution | Explain "PV-400" versus "PV-400 pump valve" as two nodes, and the `rdfs:comment` naming rules in v1. |
-| 4 | You only get what your ontology asks for | "Can we buy HX-220 from Teglbruk Metall AS?" with `--kb graph` (yes) and `--kb documents` (no). Then build v2 and ask the graph again (on quality hold). |
-| 4 | Phrasing | "Which supplier cannot ship?" read as "no `shipsFrom` port". Show the printed GQL. |
-| 5 | Permissions change what an agent knows | Same question as Sales Lead (stale "lands Tuesday 8 December") and Supply Planner (14 and 16 December). |
-| 5 | Untrusted content | The injection line in the IT news email, in the viewer, and the untrusted-content notice in the `retrieve` payload. |
-| 5 | Plant an email live | `POST /admin/items` with the admin key, then teams ask their agent. See [Solution 5](challenge-05/solution-05.md#live-demo-plant-a-new-email). |
-| 6 | Four IQs are not enough | Without a playbook: one tool only, lakehouse ETA over the email, offering 2,000 instead of 1,800, and the cold draft that copied "4,000 by Friday" (judge 0). |
-| 6 | The playbook | Add [playbook.md](challenge-06/playbook.md) and rerun `--only q16,q18,q19`. |
-
-## Common issues
+## Common failures
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `No active Fabric F-SKU capacity found` | Capacity paused or wrong `FABRIC_CAPACITY_NAME` | Resume the capacity, check the name |
-| Cannot create a Fabric workspace or data agent | Tenant settings or no Fabric license | See [Before the day](#before-the-day) |
-| `FeatureNotAvailable` on `caldova fabric-iq ontology` | Ontology tenant setting off | Enable "Users can create ontology (preview) items", or continue without the ontology |
-| Data agent "no rows" | No example queries | `caldova fabric-iq agent` (with examples) |
-| Graph source "ontology locked" or ignores changes | The ontology is fixed per knowledge source | Create a new version file and run `caldova foundry-iq graph --ontology <new name>` |
-| Graph build slow or failing for many teams | Shared `gpt-5.6-luna` quota | Stagger graph builds, demo from the coach lab |
-| HTTP 401 from Work IQ | Wrong key, or a key copied with spaces or a line break | Copy the key again; the header is `Bearer <key>` |
-| Viewer or `/mcp` returns 503 | No persona keys on the Function App | Check the Function App settings |
-| Strange characters on Windows | Console encoding | `$env:PYTHONIOENCODING='utf-8'` (the dev container sets `PYTHONIOENCODING=utf-8`) |
-| `caldova: command not found` | New `PATH` not loaded | New terminal, or `cd src && uv run caldova ...` |
-| Storage upload denied in the portal | Shared key access is disabled | **Switch to Microsoft Entra user account** |
-| Scores jump between runs | Model and judge variance | Run twice, compare |
+| Board or Maria's playground: `tool_user_error` ("A user error occurred while executing a tool call") | `strandvik-customer-service` missing, incoming A2A off, or Maria's identity has no **Foundry Agent Consumer** on the strandvik project | Fix the missing piece, then **wait 3 to 5 minutes** (about 4 in testing) |
+| Agent card check returns `Project not found` | Brand-new project, public A2A endpoint not ready yet | Wait a few minutes |
+| Role assigned on the wrong scope or to the wrong identity | Granted on the kolvo project, or to the target agent instead of the caller | The **caller** needs **Foundry Agent Consumer** on the **target** (agent or strandvik project). Re-run notebook 01 with the right `AGENT_NAME` (target) and `CALLER`; portals cannot pick agent identities yet |
+| Parts agent fails only when called by another agent (`tool_server_error`) | Fabric IQ needs a person; the A2A tool used agent identity | Use **OAuth Identity Passthrough** on the `strandvik-parts-a2a` tool (solution 6) |
+| Alex's whole run fails after adding A2A tools | One specialist unreachable (no incoming A2A, or `alex-agent` identity lacks the role) | Add and test one A2A tool at a time |
+| Embedding model missing in the knowledge source form | The form only lists deployments that existed when the page loaded | Reload the page |
+| Knowledge source fails or stays empty | Container empty, or Search identity roles missing | Upload the documents; check Storage Blob Data Reader for the Search identity |
+| Chat completions model dropdown only shows "Browse more models" | gpt-5.x models not offered there | Leave it empty |
+| Fabric: HTTP 430 on Load to Tables | F2 capacity busy | Wait 20 seconds and retry |
+| Data agent cannot see a new table | SQL analytics endpoint metadata not synced | Refresh the SQL endpoint metadata |
+| No **Ontology** item in Fabric, or `FeatureNotAvailable` | Tenant setting off | Fallback in [solution 3](challenge-03/solution-03.md#fallback-ontology-on-paper) |
+| `strandvik-parts` works alone, fails when `alex-agent` calls it | Fabric IQ tool needs a signed-in user; over A2A there is none | Fallback in [solution 6](challenge-06/solution-06.md#if-the-parts-agent-fails-over-a2a) |
+| MCP tool returns 401 | Header value missing `Bearer ` or wrong key | `Authorization: Bearer <WORKIQ_KEY>` (Alex's key) |
+| Agent post never appears in the thread | Agent posted to the wrong chat id, or did not call `create_entity` | Check the tool call output; tell the agent the exact path in its instructions |
+| Evaluation wizard rejects synthetic data | Minimum is 15 rows | Use 15 or more, or the provided dataset (27 rows) |
+| Monitor > Cost is empty | Cost views lag 8 to 24 hours | Use token counts in traces and the evaluation grid |
+| Somebody built a Workflow | Foundry portal Workflows retire on 1 December 2026 | Orchestrate with A2A from `alex-agent` |
 
-## Business and developer participants
+## Solutions
 
-- Mix profiles in each team. Business participants build in the portals; developers run the `caldova` commands. Both share one Codespace terminal for the evaluation.
-- The evaluation always scores the **code-built** agent (`caldova-<persona>`), from the state in `src/.caldova/state.json`. A business-only team must run the setup commands once (`caldova fabric-iq load`, `caldova fabric-iq agent`, `caldova foundry-iq documents`) before the evaluations of Challenges 3 and 4. The challenge pages say so.
-- Recommend the same names in the portal as in the code (`caldova-iq`, `caldova_lakehouse`, `CaldovaOperations`, `caldova-docs-kb`), so both paths share resources.
-
----
+- [Solution 1: Lights on](challenge-01/solution-01.md)
+- [Solution 2: Who's asking?](challenge-02/solution-02.md)
+- [Solution 3: Know the business](challenge-03/solution-03.md)
+- [Solution 4: Why didn't it take the unit?](challenge-04/solution-04.md)
+- [Solution 5: Sam in Singapore](challenge-05/solution-05.md)
+- [Solution 6: The night shift](challenge-06/solution-06.md)
+- [Solution 7: Alex makes the call](challenge-07/solution-07.md)
+- [Finish: the John Blund test](finish/solution-finish.md)
 
 **[Home](../README.md)**

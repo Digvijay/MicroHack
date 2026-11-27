@@ -4,6 +4,7 @@
 # resource group, passes the signed-in user's Entra object ID, runs deploy-lab.ps1
 # and prints the credentials it returns.
 # Not part of the hack deliverable. For local end-to-end verification only.
+# Re-running it against the same resource group is safe (deploy-lab.ps1 is idempotent).
 #
 # Prerequisites: Connect-AzAccount (Az PowerShell) and az login (Azure CLI) to the
 # test subscription, Az.Accounts and Az.Resources installed.
@@ -11,7 +12,7 @@
 param(
     # Defaults to the current Az context subscription.
     [string]$SubscriptionId = ((Get-AzContext -ErrorAction SilentlyContinue).Subscription.Id),
-    [string]$ResourceGroupName = "rg-iq-lab-local",
+    [string]$ResourceGroupName = "rg-iq-v2-local",
     [string]$Location = "swedencentral",
     [string[]]$PreferredLocation = @("swedencentral", "francecentral", "switzerlandnorth"),
     # Defaults to the signed-in user's Entra object ID (resolved below).

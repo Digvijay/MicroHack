@@ -1,0 +1,16 @@
+machine_id,machine_name,customer_id,site_id,machine_type,criticality,required_model,drive_unit_serial,status
+KOL-PL1,Press line 1,CUST-KOL,SITE-KOL-HIS,press,critical,SD-900,SD9-K-0398,running
+KOL-PL2,Press line 2,CUST-KOL,SITE-KOL-HIS,press,critical,SD-900,SD9-K-0412,half_speed
+KOL-PL3,Press line 3,CUST-KOL,SITE-KOL-HIS,press,critical,SD-900,SD9-K-0455,running
+KOL-SL1,Stamping line 1,CUST-KOL,SITE-KOL-HIS,stamping_press,high,SD-700,SD7-K-0120,running
+POL-C1,Crusher line C1,CUST-POL,SITE-POL-SKE,crusher,critical,SD-900,SD9-P-0611,running
+POL-C2,Crusher line C2,CUST-POL,SITE-POL-SKE,crusher,high,SD-700,SD7-P-0221,running
+POL-C3,Crusher line C3,CUST-POL,SITE-POL-SKE,crusher,critical,SD-900,SD9-P-0640,running
+VAR-PM2,Paper machine PM2,CUST-VAR,SITE-VAR-MILL,paper_machine,high,SD-700,SD7-V-0310,running
+VAR-PM4,Paper machine PM4,CUST-VAR,SITE-VAR-MILL,paper_machine,critical,SD-900,SD9-V-0560,running
+ARK-ST1,Rolling stand 1,CUST-ARK,SITE-ARK-MILL,rolling_mill,high,SD-700,SD7-A-0275,running
+ARK-ST2,Rolling stand 2,CUST-ARK,SITE-ARK-MILL,rolling_mill,critical,SD-900,SD9-A-0517,running
+HOL-K1,Kiln drive K1,CUST-HOL,SITE-HOL-PLANT,kiln,critical,SD-700,SD7-H-0145,running
+HOL-M2,Cement mill M2,CUST-HOL,SITE-HOL-PLANT,mill,high,SD-700,SD7-H-0152,running
+DEL-C3,Container crane C3,CUST-DEL,SITE-DEL-PORT,crane,standard,SD-700,SD7-D-0333,running
+DEL-C7,Container crane C7,CUST-DEL,SITE-DEL-PORT,crane,high,SD-900,SD9-D-0601,running

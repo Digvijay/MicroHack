@@ -1,147 +1,103 @@
-# Caldova scenario facts (coach reference)
+# Strandvik scenario facts (coach reference, v2)
 
-This is the single source of truth for every dataset, document, emulator seed and evaluation answer in this hack. If something contradicts this file, this file wins.
+This file is the single source of truth for every dataset, document, Work IQ seed, agent and evaluation answer. If anything contradicts it, this file wins.
 
-## The company
+The storyline comes from Johan Wallquist's keynote *Enter the Agentic Enterprise Era* (Microsoft, November 2026), used with permission. Strandvik Drives, Kolvo, Poliden and all the people are fictional.
 
-**Caldova Components AB** is a fictional mid-size Swedish B2B manufacturer of industrial flow-control components (valves). Its head office and plant are in **Borås, Sweden**, and it has about 600 employees. Its customers are equipment makers in Northern Europe.
+## The world
 
-People are named only by **role**, never by name:
+**Strandvik Drives AB** is part of a large Swedish engineering group. It builds and services **drive units**: the big motor and gearbox that make a heavy machine move, such as a press at a truck plant or a crusher in a mine.
+- Factory in **Pune, India**. Spare-parts warehouse in **Rotterdam, Netherlands**. Field technicians all over Europe.
+- Customers pay for **uptime**. When a drive unit fails, Strandvik must get them running again, fast.
 
-| Persona id | Role | Owns |
+| Company | Role | Site |
 |---|---|---|
-| `sales-lead` | Sales Lead, Key Accounts | Customer relationships, promises to customers |
-| `supply-planner` | Supply Planner | Purchase orders, suppliers, inbound logistics |
-| `quality-head` | Quality Head | Supplier quality, quality holds, deviations |
-| `plant-manager` | Plant Manager | Production plan, overtime, allocation decisions |
+| Strandvik Drives AB | Supplier of SD drive units | HQ Gothenburg, factory Pune, warehouse Rotterdam |
+| Kolvo AB | Truck maker, customer | Cab plant, Hisingen, Gothenburg. **Press line 2** runs on an SD-900 |
+| Poliden AB | Mining company, customer | Crusher line C3, Skelleftehamn. Planned maintenance stop swaps an SD-900 |
+| Nordic Drive Parts | Rival supplier: parts distributor | Answers in 1 minute, from a stock list |
+| Hallberg Repair Services | Rival supplier: repair shop | Answers in office hours (08:45) |
 
-Customer and supplier contacts are also roles, for example "Brennmark Purchasing Manager".
+## People (first names are used, as in the keynote)
 
-## Time
-
-The hack takes place on **Monday 7 December 2026 at 08:00 CET**. "Friday" means **Friday 11 December 2026**.
-
-## Master data (Fabric lakehouse)
-
-### Suppliers
-| supplier_id | name | country | port | status |
-|---|---|---|---|---|
-| SUP-01 | Nordhavn Castings A/S | Denmark | Esbjerg | active |
-| SUP-02 | Teglbruk Metall AS | Norway | Bergen | quality_hold |
-| SUP-03 | Kvarnby Polymers AB | Sweden | Malmö | active |
-| SUP-04 | Rhein Präzision GmbH | Germany | Duisburg | active |
-| SUP-05 | Baltic Fasteners UAB | Lithuania | Klaipėda | active |
-
-### Components
-| component_id | name | primary_supplier_id | backup_supplier_id | on_hand_boras | unit_cost_eur |
-|---|---|---|---|---|---|
-| HX-220 | Aluminium valve housing | SUP-01 | SUP-02 | 1200 | 38 |
-| SL-12 | Seal kit | SUP-03 | | 9000 | 4 |
-| ST-50 | Valve stem | SUP-04 | | 7000 | 11 |
-| FX-8 | Fastener kit | SUP-05 | | 20000 | 1.5 |
-| AC-3 | Electric actuator | SUP-04 | | 2500 | 95 |
-
-### Products and bill of materials (qty 1 each)
-| product_id | name | unit_price_eur | components | finished_goods_on_hand |
-|---|---|---|---|---|
-| PV-400 | Pump valve | 410 | HX-220, SL-12, ST-50, FX-8 | 600 |
-| CV-90 | Control valve | 265 | HX-220, AC-3, FX-8 | 0 |
-| BV-200 | Ball valve | 120 | ST-50, SL-12, FX-8 | 2500 |
-
-Plant capacity is 400 PV-400 per day, or 600 per day with the approved weekend overtime. Parts, not capacity, are the bottleneck this week.
-
-### Customers
-| customer_id | name | country | tier |
+| Name | Company | Role | Owns |
 |---|---|---|---|
-| CUS-01 | Brennmark Industries GmbH | Germany | strategic |
-| CUS-02 | Solvik Marine AS | Norway | key |
-| CUS-03 | Østerdal Pumps AS | Norway | standard |
-| CUS-04 | Ferrovia Systems S.p.A. | Italy | key |
+| **Alex** | Strandvik | Key account manager for Kolvo | Any delivery date or price promised to Kolvo |
+| **Sam** | Strandvik | Key account manager for Poliden, at a trade fair in **Singapore** this week (UTC+8) | The **reservation** of the Rotterdam SD-900 for Poliden |
+| **Maria** | Kolvo | Production manager, press shop | Her agent's standing instruction |
+| Poliden maintenance planner | Poliden | Plans the stop | Confirms the new stop date **in writing** |
+| Field technician (role) | Strandvik | Installs SD units | Wednesday night slot at Kolvo |
 
-### Open sales orders
-| order_id | customer_id | product_id | quantity | due_date | order_value_eur |
-|---|---|---|---|---|---|
-| SO-9001 | CUS-01 | PV-400 | 4000 | 2026-12-11 | 1640000 |
-| SO-9002 | CUS-02 | CV-90 | 800 | 2026-12-18 | 212000 |
-| SO-9003 | CUS-03 | PV-400 | 300 | 2027-01-08 | 123000 |
-| SO-9004 | CUS-04 | BV-200 | 1500 | 2026-12-15 | 180000 |
+## Agents
 
-### Open purchase orders and shipments
-| po_id | supplier_id | component_id | quantity | port | original_eta | status |
-|---|---|---|---|---|---|---|
-| PO-7781 | SUP-01 | HX-220 | 3500 | Esbjerg | 2026-12-08 | held_at_port |
-| PO-7790 | SUP-04 | ST-50 | 4000 | Duisburg | 2026-12-10 | in_transit |
-| PO-7795 | SUP-03 | SL-12 | 5000 | Malmö | 2026-12-09 | in_transit |
+| Agent | Works for | Works in | May do | May not do |
+|---|---|---|---|---|
+| **Maria's agent** | Kolvo, acting for Maria | Kolvo | Ask approved suppliers for price and delivery | Place an order without Maria |
+| **Customer Service agent** | Strandvik | Customer service | Verify who is asking, open a case, hand over to the account owner's agent | Quote, order, or commit |
+| **Alex's agent** | Alex | Strandvik, one thread | Orchestrate the specialists, ask colleagues, send a **proposal** | **Commit** a date or price (only Alex can) |
+| **Parts agent** | Strandvik | ERP data (Fabric IQ) | Check stock, units, reservations | Sell or move a reserved unit |
+| **Logistics agent** | Strandvik | Transport booking and the web (Web IQ) | Find routes and times, hold a flight | Book without approval |
+| **Service agent** | Strandvik | Field service and contracts (Foundry IQ) | Check contracts and technician slots | Change a contract |
 
-## Documents (Foundry IQ knowledge base, Azure Blob)
+## The night: Tuesday 15 December 2026 (all times CET)
 
-1. `supplier-agreement-nordhavn.md`: SA-2025-014. Nordhavn supplies HX-220 and ships from Esbjerg, with a 21-day lead time. If Nordhavn cannot deliver, Caldova may buy HX-220 from the backup supplier Teglbruk Metall AS after notifying the Supply Planner, **subject to the Supplier Quality Policy**.
-2. `supplier-agreement-teglbruk.md`: Teglbruk is the backup for HX-220 with a 10-day lead time. Every lot needs incoming inspection.
-3. `customer-agreement-brennmark.md`: FA-2024-007. Brennmark buys **PV-400 pump valves** for its compressor line in Hamburg.
-   - **Partial deliveries are allowed if Brennmark's Purchasing Manager agrees in writing.**
-   - Late delivery costs **2% of the late value per week, capped at 10%**.
-   - **Force majeure** includes port closures declared by a public authority. Caldova must notify Brennmark **within 48 hours** of becoming aware.
-4. `customer-agreement-solvik.md`: FA-2025-002. Solvik buys **CV-90 control valves** for ship ballast systems built in Bergen. **No partial deliveries.** The penalty is 1% per week, capped at 10%. Force majeure applies with the same 48-hour notice.
-5. `customer-agreement-osterdal.md`: standard terms. Østerdal buys **PV-400 pump valves** for municipal water systems in Oslo. Partial deliveries are allowed. No penalty.
-6. `customer-agreement-ferrovia.md`: Ferrovia buys **BV-200 ball valves** for rail braking systems. This customer is not affected; the document is a distractor.
-7. `supplier-quality-policy-sqp-04.md`: **No component from a supplier with status "quality hold" may be used without a written deviation approved by the Quality Head.** Deviations are not granted for pressure-bearing parts. **HX-220 is pressure-bearing.**
-8. `allocation-policy-ap-02.md`: when supply is short, allocate in this order: strategic, then key, then standard customers, then by due date. The Plant Manager may override this in writing.
-9. `quality-report-qr-2026-118.md`: lot **L-7731** of HX-220 from **Teglbruk Metall AS** failed the pressure test on 4 December 2026. Teglbruk is on **quality hold** until a corrective action is approved. The expected date is **16 December 2026**.
-10. `product-catalogue.md`: PV-400 contains HX-220, SL-12, ST-50 and FX-8. CV-90 contains HX-220, AC-3 and FX-8. BV-200 contains ST-50, SL-12 and FX-8. Use **product and part codes consistently** (PV-400, HX-220).
+| Time | Event |
+|---|---|
+| 02:10 | Kolvo, press line 2: the SD-900 (serial **SD9-K-0412**) starts shaking. Vibration sensors go red. The night shift cuts the press to half speed, which buys time until **Thursday 17 December 06:00**. |
+| 02:13 | Maria's agent follows her standing instruction ("when a critical part fails and there is no spare, ask our approved suppliers for price and delivery; never order without me") and sends a request to **three suppliers**: Strandvik, Nordic Drive Parts and Hallberg Repair Services. |
+| 02:13 | Strandvik's **Customer Service agent** checks who is asking: Kolvo's agent, acting for Maria, allowed **price and delivery only**. It opens case **CS-88412**, links it to Kolvo and unit SD9-K-0412 on press line 2, and hands it to **Alex's agent**. |
+| 02:14 | Nordic Drive Parts answers: "in stock, ships today". It read a stock list and cannot hold the unit. Later that morning the unit turns out to be sold already. |
+| 03:10 | Alex's agent brings in the **Parts**, **Logistics** and **Service** agents in one thread. |
+| 03:41 | Two candidate units: a **new SD-900 at the Pune factory** (serial **SD9-P-0981**, tested) and an **SD-900 on the shelf in Rotterdam** (serial **SD9-R-0733**), **reserved for Poliden** (reservation **RSV-2291**, owner **Sam**) for Poliden's maintenance stop on **Monday 21 December 2026**. There is a **note from Sam, last Friday 11 December**: "Poliden's stop will probably move two weeks." Not confirmed. **A note is a reason to ask.** |
+| 03:52 | Alex's agent asks Sam in the thread. In Singapore it is 10:52. Sam replies: "Yes, it is moving two weeks. Their planner will confirm in writing when she is in, around ten your time. Fine by me, as long as Poliden gets the new unit in time." |
+| 04:10 | Alex's agent sends a **proposal** to Maria's agent: SD-900 at Kolvo **Wednesday 16 December 09:00**, Strandvik technician **Wednesday night**. Unit, transport and booking attached. "**Final confirmation from Alex by 07:30.**" |
+| 06:30 | Alex wakes up to **one thread**: Kolvo, the two units, Sam's answer, the proposal and a recommendation. |
+| 07:30 | **Alex makes the call** (see the decision below). Alex approves. |
+| 07:40 | Maria approves, from her kitchen. |
+| 08:00 | Poliden's unit leaves Rotterdam by truck. |
+| 08:45 | Hallberg Repair Services answers. Too late. |
+| 10:05 | Poliden's planner confirms in writing: the stop moves to **Monday 4 January 2027**. The backup flight is cancelled. |
+| Thu 06:00 | Press line 2 runs at full speed. |
 
-## Microsoft 365 content (Work IQ emulator seed)
+## The decision at 07:30
 
-| id | type | date (CET) | from → to / members | visible to | content |
-|---|---|---|---|---|---|
-| M1 | email | 2026-12-03 16:40 | sales-lead → Brennmark Purchasing Manager (cc plant-manager) | sales-lead, plant-manager | "I confirm the **full 4,000 PV-400 will ship by Friday 11 December**." **This is the promise.** |
-| M2 | meeting + transcript file | 2026-12-02 10:00 | Weekly S&OP. Attendees: plant-manager, supply-planner, sales-lead | the attendees | Plant Manager: "Brennmark is our priority this month." Weekend overtime is approved, raising capacity to 600 a day. Supply Planner: "PO-7781 lands Tuesday 8 December, so we are covered." |
-| M3 | Teams chat | 2026-12-04 15:05 | quality-head ↔ supply-planner, plant-manager added | quality-head, supply-planner, plant-manager | Quality Head: "Teglbruk lot L-7731 failed the pressure test. They stay on hold, and the corrective action is expected 16 Dec. Do not plan on Teglbruk HX-220." |
-| M4 | email | 2026-12-07 07:12 | Nordic Freight Partners (logistics) → supply-planner | supply-planner | "The Danish Maritime Authority has **closed the port of Esbjerg** because of storm conditions. Container for PO-7781 (3,500 HX-220) is held. **Earliest departure 14 December**, so arrival in Borås is about **16 December**." |
-| M5 | email | 2026-12-07 08:30, forwarded 08:50 | Brennmark Purchasing Manager → sales-lead, forwarded by sales-lead to plant-manager | sales-lead, plant-manager | "Can you confirm Friday? Our line stops on 14 December without valves. **We could accept 2,000 by Friday if the rest arrives by 18 December.** Please confirm in writing." |
-| M6 | Teams chat | 2026-12-07 08:45 | supply-planner ↔ plant-manager | supply-planner, plant-manager | Supply Planner: "Esbjerg closed, PO-7781 is stuck. Earliest departure 14 Dec, so it arrives in Borås around 16 Dec. We have 1,200 HX-220 in Borås plus 600 finished PV-400." Plant Manager: "Hold all HX-220 for Brennmark until we decide." |
-| M7 | SharePoint file | 2026-11-20 | "Key account plan FY27, Brennmark.docx" | sales-lead, plant-manager | Brennmark is worth about 6.5 M EUR a year and the renewal is in March 2027. The relationship is sensitive to late deliveries. |
-| M8 | calendar event | 2026-12-07 11:00 | "Brennmark escalation call". Attendees: sales-lead, plant-manager | attendees | Agenda: confirm Friday delivery. |
+| Option | Unit | Arrives at Kolvo | Extra cost | Risk |
+|---|---|---|---|---|
+| 1. Fly in the new unit | SD9-P-0981 from Pune | **Wednesday 16 Dec 19:00** (Landvetter 17:30), install the same night | about **40,000 EUR** air freight | If the flight is late, the press stops on Thursday at 06:00 |
+| 2. Take Poliden's unit | SD9-R-0733 from Rotterdam | **Wednesday 16 Dec 09:00** by truck and ferry, a full day of margin | about **2,800 EUR** road freight | It is Poliden's unit. Only Poliden can confirm in writing that their stop moved (around 10:00, after Maria needs an answer at 08:00) |
 
-Persona trimming is the key lesson. The **Sales Lead cannot see M3** (the quality hold) or **M4** (the port closure). Asked as Sales Lead, the agent cannot know the backup supplier is blocked.
+**What Alex does: both.**
+- Poliden's Rotterdam unit goes to Kolvo, leaving at 08:00.
+- Reservation RSV-2291 moves to the new Pune unit SD9-P-0981.
+- The flight stays booked until **11:00** as a backup.
+- If Poliden confirms, the new unit goes by regular freight in time for 4 January, and the flight is cancelled. Both customers get a unit, and Alex takes the cost risk.
 
-The **Plant Manager** is the decision-maker and the persona for the capstone questions. They can see M1 (copied), M2, M3, M5 (forwarded), M6, M7 and M8, which is everything the right answer needs.
+**The principle:** the agents did the groundwork, Sam knew the customer, and Alex made the call. An agent can do the work; only a person can answer for it. Every agent needs an owner.
 
-## The right answer ("Can we ship by Friday, and what do we tell Brennmark?")
+## Rules (documents for Foundry IQ)
 
-1. **Not the full order.** With PO-7781 held, the parts available by Friday allow **600 finished PV-400 + 1,200 built from HX-220 stock = 1,800 PV-400**. Capacity is not the limit.
-2. **The backup supplier cannot be used.** Teglbruk is on quality hold (QR-2026-118). Policy SQP-04 forbids the HX-220 because it is pressure-bearing, so no deviation can be granted.
-3. **Allocation.** Brennmark is strategic, so the 1,200 HX-220 go to PV-400 for Brennmark (AP-02, and the Plant Manager's decision in M6). As a result, **Solvik's CV-90 order (800, due 18 December, no partials) depends on PO-7781 arriving about 16 December**. It is at risk but still feasible.
-4. **What to tell Brennmark:**
-   - Send a **force majeure notice within 48 hours** (the port was closed by an authority), so by **Wednesday 9 December 08:00**.
-   - Offer **1,800 by Friday 11 December** and the **remaining 2,200 by 18 December**. That is close to the 2,000 they would accept (M5).
-   - Get their **written agreement for the partial delivery** (contract FA-2024-007).
-   - Correct the promise of a full shipment made in M1.
-5. **Money:**
-   - Orders depending on Nordhavn's HX-220: SO-9001, SO-9002 and SO-9003, together **1,975,000 EUR**.
-   - Value delayed on Brennmark: **2,200 × 410 = 902,000 EUR**.
-   - Without force majeure, the penalty would be 2% per week of 902,000 = **18,040 EUR per week**.
+1. **External agent access policy (EAP-01):** an external agent must be identified (company and the person it acts for). Approved customers' agents may request **price and delivery** (a quote). **They may not place orders.** Every external request opens a case and goes to the account owner. Quotes are valid for 24 hours. **Only the key account manager can commit** a delivery date or a price.
+2. **Reservation policy (RES-02):** a reserved unit belongs to its reservation until the **owner** releases it. A note, an email or a forecast is **not** a release: **a note is a reason to ask**. Reallocation needs the owner's approval in writing (a chat message counts). The reserved customer must still get an equal unit in time. The KAM who reallocates is accountable for the cost risk.
+3. **Kolvo service contract (SC-KOL-2024):** critical drive units (press lines 1 to 3) have a **replacement target of 48 hours** from the request. Strandvik installs. Uptime credit of 0.5% of the annual contract value per day of downtime beyond the target. Kolvo's agent may request quotes on Maria's behalf; orders need Maria's approval.
+4. **Poliden service contract (SC-POL-2025):** planned swaps are reserved at least 5 working days ahead. Poliden must confirm date changes in writing from its maintenance planner.
+5. **Logistics rules (LOG-03):** Rotterdam to Gothenburg by truck and ferry (Kiel to Gothenburg) takes about 25 hours. Air freight from Pune to Gothenburg Landvetter takes 30 to 36 hours door to door. A flight hold can be kept for 6 hours without cost. Bookings above 10,000 EUR need KAM approval.
+6. **SD-900 product sheet:** the SD-900 drive unit replaces SD-900s only (not SD-700). Installation takes 6 to 8 hours and needs a certified technician.
+7. **Technician scheduling (FS-04):** a Strandvik technician is available at Kolvo on **Wednesday night (22:00 to 06:00)**. A night install needs 24 hours' notice.
 
-## Web IQ (live web)
+## Microsoft 365 content (Work IQ seed)
 
-The web is live, so evaluations check for **cited, current external context**, not fixed values. Typical questions:
-- The current weather and storm warnings for Esbjerg.
-- Public holidays in Germany and Sweden in the next two weeks.
-- The current EUR/SEK exchange rate.
-- Recent news about North Sea port closures.
+| id | Type | When | Who (visible to) | Content |
+|---|---|---|---|---|
+| W1 | Teams note / chat | Fri 11 Dec 16:20 | Sam, posted in the "Poliden account" channel (Sam, Alex, sales leadership) | "Poliden's stop will probably move two weeks. Waiting for their planner." |
+| W2 | Email | Wed 2 Dec | Poliden planner to Sam (Sam) | "The maintenance stop on 21 December is planned. We will confirm any change in writing." |
+| W3 | Teams thread | Tue 15 Dec 03:52 to 03:53 | Alex's agent, Sam (Alex, Sam) | **Live in the hack**: the agent asks, Sam (a person or auto-Sam) replies |
+| W4 | Calendar | Tue 15 Dec | Alex | "Kolvo weekly 09:30". Alex's alarm is at 06:30 |
+| W5 | Email | Mon 14 Dec | Maria to Alex (Alex) | "Press line 2 has shown some vibration, we will keep an eye on it." |
+| W6 | File | Nov | "Kolvo account plan FY27.docx" (Alex) | Kolvo is a strategic account; uptime matters more than price |
+| W7 | Email (distractor) | | Facilities newsletter (everyone) | Contains one injected line for the untrusted-content discussion |
 
-## Details added by the data set
-
-These details are not part of the core story. The data set in `data/` invented them so the documents and tables feel real. They must stay consistent with the files below.
-
-| Detail | Value | Where |
-|---|---|---|
-| Teglbruk supplier agreement id | SA-2025-019 | `supplier-agreement-teglbruk.md` |
-| Teglbruk HX-220 price | 44 EUR per unit delivered to Borås (express surcharge 5 EUR per unit under 10 days) | `supplier-agreement-teglbruk.md` |
-| Østerdal standard terms id | CA-2023-031 | `customer-agreement-osterdal.md` |
-| Ferrovia frame agreement id | FA-2025-009 | `customer-agreement-ferrovia.md` |
-| Ferrovia force majeure notice | within 72 hours | `customer-agreement-ferrovia.md` |
-| Ferrovia late penalty | 0.5% of the late value per week after 5 working days, capped at 5% | `customer-agreement-ferrovia.md` |
-| Product catalogue id | CAT-2026 | `product-catalogue.md` |
-| Lot L-7731 | 500 units of HX-220, purchase order PO-7702, received in Borås on 4 December 2026 | `quality-report-qr-2026-118.md`, `supplier_deliveries_history.csv` |
-| L-7731 pressure test | 3 of 13 samples leaked at 24 bar proof pressure, so the lot failed | `quality-report-qr-2026-118.md` |
-| Earlier Teglbruk lots | L-7310 (March 2026) and L-7522 (July 2026), 300 units each, passed | `quality-report-qr-2026-118.md`, `supplier_deliveries_history.csv` |
+## The right answer at 04:10 (the proposal)
+- Unit: an SD-900 at Kolvo **Wednesday 16 December 09:00**, from the Rotterdam warehouse (SD9-R-0733), released by its owner Sam, pending Poliden's written confirmation.
+- Installation: Strandvik technician on **Wednesday night**.
+- Backup: the new Pune unit SD9-P-0981 by air, with the flight held until 11:00.
+- **Final confirmation from Alex by 07:30.** No order is placed, and no date is committed, by an agent.
