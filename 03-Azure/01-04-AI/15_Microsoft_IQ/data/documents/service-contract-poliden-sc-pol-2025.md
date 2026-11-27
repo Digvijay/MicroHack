@@ -5,8 +5,8 @@
 | Document id | SC-POL-2025 |
 | Title | Planned maintenance and drive service contract between Strandvik Drives AB and Poliden AB |
 | Owner role | Key account manager for Poliden |
-| Effective date | 2025-01-01 |
-| Version | 1.0 (term 2025-01-01 to 2027-12-31) |
+| Effective date | In force, current version |
+| Version | 1.0 (valid until further notice) |
 
 This document is fictional and is used for training only.
 

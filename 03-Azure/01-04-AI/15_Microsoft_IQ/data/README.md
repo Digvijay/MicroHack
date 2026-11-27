@@ -4,7 +4,7 @@ This folder holds the data for the Strandvik scenario: the Fabric lakehouse tabl
 
 ## Fabric IQ: `lakehouse/` (challenges 1 and 3)
 
-CSV files, UTF-8, comma-separated, header row, snake_case columns, ISO dates, timestamps with offset (CET). The ERP snapshot is taken on Tuesday 15 December 2026 at about 03:10. Load them as lakehouse tables, then build the ontology and the Fabric data agent (the Parts agent uses it).
+CSV files, UTF-8, comma-separated, header row, snake_case columns, ISO dates, timestamps with offset (CET). The ERP snapshot is taken on Tuesday at about 03:10. Load them as lakehouse tables, then build the ontology and the Fabric data agent (the Parts agent uses it).
 
 | File | Rows | Content |
 |---|---|---|
@@ -15,9 +15,9 @@ CSV files, UTF-8, comma-separated, header row, snake_case columns, ISO dates, ti
 | `approved_external_agents.csv` | 2 | Customer agents allowed to ask for price and delivery (Kolvo's `maria-procurement`, acting for Maria); none may order |
 | `machines.csv` | 15 | Customer machines and the drive unit each runs on. Kolvo press line 2 runs on SD9-K-0412 (half speed) |
 | `drive_units.csv` | 22 | SD-900 and SD-700 units. In stock SD-900s: SD9-P-0981 (new, tested, Pune) and SD9-R-0733 (Rotterdam). Distractors: SD9-R-0750 (sold), SD9-P-0902 (in repair), SD7-R-0388 (SD-700, does not fit) |
-| `reservations.csv` | 5 | RSV-2291: SD9-R-0733 for Poliden crusher C3, needed 2026-12-21, owner Sam |
+| `reservations.csv` | 5 | RSV-2291: SD9-R-0733 for Poliden crusher C3, needed for next Monday's stop, owner Sam |
 | `technicians.csv` | 4 | Field technicians and their certified models |
-| `technician_schedule.csv` | 6 | Slot FS-5101: Jonas at Kolvo, Wednesday 16 December 22:00 to Thursday 06:00, available |
+| `technician_schedule.csv` | 6 | Slot FS-5101: Jonas at Kolvo, Wednesday 22:00 to Thursday 06:00, available |
 | `transport_options.csv` | 6 | Rotterdam to Kolvo by truck and ferry (25 h, 2,800 EUR, arrives Wed 09:00); Pune to Kolvo by air (30 to 36 h, 40,000 EUR, Landvetter 17:30, Kolvo 19:00) |
 | `price_list.csv` | 8 | List prices for units and installation |
 | `service_contracts.csv` | 6 | SC-KOL-2024 (48 h target, 0.5% per day, 1,240,000 EUR), SC-POL-2025 and four others |

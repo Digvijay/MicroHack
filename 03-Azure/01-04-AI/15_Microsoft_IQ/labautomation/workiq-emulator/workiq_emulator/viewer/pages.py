@@ -20,8 +20,16 @@ def _q(gid: str) -> str:
     return quote(gid, safe="")
 
 
-def _when(dt) -> str:
-    return dt.strftime("%a %d %b %Y, %H:%M")
+def _when(dt, store: Store) -> str:
+    """Weekday and clock time, never a calendar date: the story is not tied to a date."""
+    now = store.now
+    d = dt.astimezone(now.tzinfo)
+    days = (now.date() - d.date()).days
+    label = d.strftime("%a %H:%M")
+    if abs(days) < 7:
+        return label
+    weeks = max(1, round(abs(days) / 7))
+    return f"{label}, {weeks} week{'s' if weeks != 1 else ''} {'ago' if days > 0 else 'ahead'}"
 
 
 def _local(store: Store, dt):
@@ -90,7 +98,7 @@ def mail_page(store: Store, persona: Persona, selected: Entry | None) -> str:
         rows.append(
             f'<li><a href="/viewer/mail/{_q(e.gid)}"{cur}>'
             f'<span class="row1"><span class="from">{h(other.get("name") or other["address"])}</span>'
-            f'<span class="muted">{h(e.dt.strftime("%d %b %H:%M"))}</span></span>'
+            f'<span class="muted">{h(_when(e.dt, store))}</span></span>'
             f'<span class="subject">{(f"<span class=tag>{tag}</span> " if tag else "")}{h(e.item["subject"])}</span></a></li>'
         )
     list_html = f'<h1>Mail</h1><ul class="items">{"".join(rows) or "<li class=muted>No mail.</li>"}</ul>'
@@ -101,7 +109,7 @@ def mail_page(store: Store, persona: Persona, selected: Entry | None) -> str:
             f'<article><h2>{h(it["subject"])}</h2>'
             f'<div class="meta"><div><span class="label">From</span> {_addr(it["from"])}</div>'
             f'<div><span class="label">To</span> {"; ".join(_addr(a) for a in it["to"])}</div>{cc}'
-            f'<div><span class="label">Date</span> {h(_when(selected.dt))}</div></div>'
+            f'<div><span class="label">Date</span> {h(_when(selected.dt, store))}</div></div>'
             f'<div class="body">{h(it["body"])}</div></article>'
         )
     else:
@@ -118,7 +126,7 @@ def chats_page(store: Store, persona: Persona, selected: Entry | None, extras: d
         cur = ' aria-current="true"' if selected is e else ""
         rows.append(
             f'<li><a href="/viewer/chats/{_q(e.gid)}"{cur}><span class="row1"><span class="from">{h(store.chat_title(e))}</span>'
-            f'<span class="muted">{h(_local(store, last["dt"]).strftime("%d %b %H:%M"))}</span></span>'
+            f'<span class="muted">{h(_when(last["dt"], store))}</span></span>'
             f'<span class="subject">{h(store.sender_label(last))}: {h(last["text"][:80])}</span></a></li>'
         )
     list_html = f'<h1>Chats</h1><ul class="items">{"".join(rows) or "<li class=muted>No chats.</li>"}</ul>'
@@ -167,7 +175,7 @@ def _chat_li(store: Store, m: dict) -> str:
     agent = ' agent' if m.get("via") == "agent" else ""
     return (
         f'<li class="msg{agent}"><div class="meta"><strong>{h(store.sender_label(m))}</strong> '
-        f'<span class="muted">{h(_when(_local(store, m["dt"])))}</span></div><div class="body">{h(m["text"])}</div></li>'
+        f'<span class="muted">{h(_when(m["dt"], store))}</span></div><div class="body">{h(m["text"])}</div></li>'
     )
 
 
@@ -179,7 +187,7 @@ def chat_json(store: Store, e: Entry, auto_sam: bool, pending: bool, story_time:
         "samTyping": pending,
         "messages": [
             {"id": m["id"], "from": store.sender_label(m), "agent": m.get("via") == "agent",
-             "time": _when(_local(store, m["dt"])), "text": m["text"]}
+             "time": _when(m["dt"], store), "text": m["text"]}
             for m in e.extra["messages"]
         ],
     }
@@ -192,7 +200,7 @@ def calendar_page(store: Store, persona: Persona, selected: Entry | None) -> str
         cur = ' aria-current="true"' if selected is e else ""
         rows.append(
             f'<li><a href="/viewer/calendar/{_q(e.gid)}"{cur}><span class="row1"><span class="from">{h(e.item["subject"])}</span></span>'
-            f'<span class="subject">{h(_when(e.dt))} to {h(e.extra["end"].strftime("%H:%M"))}</span></a></li>'
+            f'<span class="subject">{h(_when(e.dt, store))} to {h(e.extra["end"].strftime("%H:%M"))}</span></a></li>'
         )
     list_html = f'<h1>Calendar</h1><ul class="items">{"".join(rows) or "<li class=muted>No events.</li>"}</ul>'
     if selected:
@@ -205,7 +213,7 @@ def calendar_page(store: Store, persona: Persona, selected: Entry | None) -> str
             transcript = f'<p><a href="/viewer/files/{_q(te.gid)}">Open the meeting transcript ({h(te.item["name"])})</a></p>'
         detail = (
             f'<article><h2>{h(it["subject"])}</h2><div class="meta">'
-            f'<div><span class="label">When</span> {h(_when(selected.dt))} to {h(selected.extra["end"].strftime("%H:%M"))}</div>'
+            f'<div><span class="label">When</span> {h(_when(selected.dt, store))} to {h(selected.extra["end"].strftime("%H:%M"))}</div>'
             f'<div><span class="label">Organizer</span> {_addr(it["organizer"])}</div>'
             f'<div><span class="label">Attendees</span> {attendees}</div>'
             f'<div><span class="label">Location</span> {h(it.get("location", ""))}</div></div>'
@@ -220,7 +228,7 @@ def files_page(store: Store, persona: Persona, selected: Entry | None) -> str:
     entries = sorted(store.visible(persona.id, "file"), key=lambda e: e.item["name"].lower())
     rows = "".join(
         f'<tr><td><a href="/viewer/files/{_q(e.gid)}">{h(e.item["name"])}</a></td><td>{h(store.drive_owner_label(e))}</td>'
-        f'<td>{h(e.dt.strftime("%d %b %Y"))}</td><td class="num">{e.extra["sizeBytes"]:,}</td></tr>'
+        f'<td>{h(_when(e.dt, store))}</td><td class="num">{e.extra["sizeBytes"]:,}</td></tr>'
         for e in entries
     )
     table = (
@@ -240,7 +248,7 @@ def files_page(store: Store, persona: Persona, selected: Entry | None) -> str:
             content = f'<div class="body doc">{h(it["content"])}</div>'
         body += (
             f'<article class="card"><h2>{h(it["name"])}</h2><p class="muted">{h(store.drive_owner_label(selected))}, '
-            f'author {h(it["createdBy"].get("name") or it["createdBy"]["address"])}, modified {h(_when(selected.dt))}. '
+            f'author {h(it["createdBy"].get("name") or it["createdBy"]["address"])}, modified {h(_when(selected.dt, store))}. '
             "The emulator stores the extracted text of each file.</p>"
             f"{content}</article>"
         )
@@ -362,7 +370,7 @@ def coach_page(persona: Persona | None, story_time: str, running: bool, notice: 
         "<p class=\"muted\">Live posts in the Kolvo thread are stamped with the story time. Set it to 03:52 before Sam's challenge "
         "and to 07:30 before Alex makes the call. Both actions need the lab admin key (WORKIQ_ADMIN_KEY).</p>"
         '<form method="post" action="/viewer/coach/clock"><h2>Set the story clock</h2>'
-        '<label for="time">Story time, HH:MM on 15 Dec (or an ISO 8601 time)</label>'
+        '<label for="time">Story time, HH:MM on the night of the story (Tuesday)</label>'
         '<input id="time" name="time" type="text" inputmode="numeric" placeholder="07:30" required maxlength="40">'
         + key_field.format(id="key-clock")
         + '<button type="submit">Set the story clock</button></form>'

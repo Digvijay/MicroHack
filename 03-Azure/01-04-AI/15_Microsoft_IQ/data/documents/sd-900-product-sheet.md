@@ -5,7 +5,7 @@
 | Document id | PS-SD900 |
 | Title | SD-900 drive unit product sheet |
 | Owner role | Product manager drive units |
-| Effective date | 2026-01-15 |
+| Effective date | In force, current version |
 | Version | 4.0 |
 
 This document is fictional and is used for training only.

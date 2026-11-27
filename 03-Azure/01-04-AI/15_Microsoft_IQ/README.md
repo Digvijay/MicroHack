@@ -1,6 +1,6 @@
 # Microsoft IQ: Alex sleeps through 02:13
 
-> **Tuesday 15 December 2026, 02:10.** At Kolvo's cab plant in Gothenburg, the drive unit on press line 2 starts shaking. The vibration sensors go red. The night shift cuts the press to half speed, which buys time until Thursday morning.
+> **Tuesday, 02:10.** At Kolvo's cab plant in Gothenburg, the drive unit on press line 2 starts shaking. The vibration sensors go red. The night shift cuts the press to half speed, which buys time until Thursday morning.
 >
 > At **02:13**, Maria's agent does what Maria told it to do: ask the approved suppliers for price and delivery, and never order without her. Three requests leave the plant. One of them lands at **Strandvik Drives**.
 >
@@ -147,7 +147,7 @@ Your lab is one resource group, built for you before the day. You build everythi
 | Web search tool (Web IQ) | GA | 6 |
 | Foundry evaluations (custom rubric evaluators in preview) | GA | 7 |
 
-> Foundry portal **Workflows** retire on 1 December 2026. This hack orchestrates with A2A instead.
+> Foundry portal **Workflows** are being retired. This hack orchestrates with A2A instead.
 
 ## Repository layout
 
@@ -158,7 +158,7 @@ Your lab is one resource group, built for you before the day. You build everythi
 ├── data/                Lakehouse CSVs, documents, Work IQ seed, evaluation set, ontology
 ├── notebooks/           00 load the world, 01 enable incoming A2A, 02 knowledge graph (stretch)
 ├── labautomation/       Lab provisioning, Kolvo pre-build, Work IQ emulator and procurement board
-├── techtalk/            Day-opener talk (still the v1 story, to be updated)
+├── techtalk/            Day-opener talk "02:13": 15 animated slides with a timed script, and its PDF
 ├── images/              Diagrams and screenshots
 ├── create-env.sh        Fills .env from your lab (create-env.ps1 on Windows)
 └── .env.example         What .env looks like
@@ -166,7 +166,7 @@ Your lab is one resource group, built for you before the day. You build everythi
 
 ## Credits and contributors
 
-The story of this hack comes from **Johan Wallquist**'s keynote *Enter the Agentic Enterprise Era* (Microsoft, November 2026), used with permission. "A note is a reason to ask", "an agent can do the work, only a person can answer for it" and the John Blund test are his. Strandvik Drives, Kolvo, Poliden, Nordic Drive Parts, Hallberg Repair Services and all the people are fictional.
+The story of this hack comes from **Johan Wallquist**'s keynote *Enter the Agentic Enterprise Era* (Microsoft), used with permission. "A note is a reason to ask", "an agent can do the work, only a person can answer for it" and the John Blund test are his. Strandvik Drives, Kolvo, Poliden, Nordic Drive Parts, Hallberg Repair Services and all the people are fictional.
 
 **Contributors**
 

@@ -5,7 +5,7 @@
 | Document id | RES-02 |
 | Title | Reservation Policy: reserving and reallocating drive units |
 | Owner role | Head of Sales Europe |
-| Effective date | 2026-03-01 |
+| Effective date | In force, current version |
 | Version | 2.1 |
 
 This document is fictional and is used for training only.

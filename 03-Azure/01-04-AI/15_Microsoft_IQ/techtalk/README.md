@@ -1,12 +1,14 @@
-# Tech talk: Into focus
+# Tech talk: 02:13
 
-Every company has the same models; this 23-minute talk shows, with Caldova's Monday morning, how the four Microsoft IQs bring an agent's answer into focus.
+Every company has the same models; this 24-minute talk follows one night at Strandvik Drives, from Maria's
+request at 02:13 to Alex's decision at 07:30, and shows what makes the difference: what your agents know (the
+IQs), whom they may talk to (A2A and identity) and who decides (people).
 By **Digvijay Chauhan**, Solution Engineer, Microsoft.
 
 | | |
 |---|---|
 | [`deck/index.html`](deck/index.html) | The talk: 15 animated slides (Reveal.js), with a timed, first-person script in the speaker notes |
-| [`into-focus.pdf`](into-focus.pdf) | Every slide in its final state, one page per slide |
+| [`02-13.pdf`](02-13.pdf) | Every slide in its final state, one page per slide |
 
 ## Present the talk
 
@@ -18,70 +20,79 @@ By **Digvijay Chauhan**, Solution Engineer, Microsoft.
    ```
    Or use **Code > Download ZIP** on GitHub and unzip it.
 2. Press **S** for the speaker view (notes and timer), **F** for full screen, **Esc** for the overview.
-3. Each slide builds by itself when you arrive. When a slide has more to show, it stops and a small
+3. Each slide builds by itself when you arrive. When a slide has more to show, it stops and a small amber
    **Click to continue** cue appears at the top right: press the right arrow, the space bar or click when you
    are ready. The notes mark every click with **[click]**. The left arrow steps back and shows the previous
    state without replaying it.
 4. The controls at the top right of every built slide: **Pause** (and Resume), **Replay** (from the start of the
    slide) and **Show all** (the final state at once).
-5. Slide 10, **Bring the answer into focus**, is the moment of the talk. Read the question, then click: the four
-   lenses arrive one by one and each sharpens its line of the answer. Click again and they converge.
+5. Slide 11, **One thread, one decision**, is the moment of the talk. Let the 04:10 proposal build line by line in
+   the Kolvo thread, each line stamped with the agent and the IQ it came from. Click: the clock flips to 06:30 and
+   dawn comes up over Alex's two options. Ask the room what they would do. Click: 07:30, "Both." and Alex's own
+   post close the thread.
+6. Three room moments are planned: the hands-up vote on Sam's note (slide 8), "what would you do?" at 06:30
+   (slide 11) and "which of the three suppliers is your company today?" (slide 13).
 
 With reduced motion turned on in the operating system, every step appears at once.
 
-The deck uses Segoe UI Variable, Sitka and Cascadia Mono, which come with Windows 11. On other systems it falls
-back to Segoe UI, Georgia and the system monospace font.
+The deck uses Bahnschrift (the story clock), Segoe UI Variable, Sitka and Cascadia Mono, which come with
+Windows 11. On other systems it falls back to Segoe UI, Georgia and the system monospace font.
 
 ## Timing
 
 | # | Slide | Starts | Length | Clicks |
 |---|---|---|---|---|
-| 1 | Into focus (cover) | 0:00 | 1:00 | 0 |
-| 2 | Monday, 08:00 | 1:00 | 2:00 | 1 |
-| 3 | Every company has the same models | 3:00 | 2:00 | 1 |
-| 4 | Web IQ: look outside | 5:00 | 1:30 | 1 |
-| 5 | Fabric IQ: know the business | 6:30 | 2:00 | 1 |
-| 6 | Foundry IQ: know the rules | 8:30 | 1:30 | 1 |
-| 7 | Two graphs, one question | 10:00 | 2:30 | 2 |
-| 8 | Work IQ: know the people | 12:30 | 1:30 | 1 |
-| 9 | Same question, two truths | 14:00 | 1:30 | 2 |
-| 10 | Bring the answer into focus | 15:30 | 2:30 | 2 |
-| 11 | The learning curve, one IQ at a time | 18:00 | 1:30 | 2 |
-| 12 | Four IQs are not enough | 19:30 | 1:30 | 1 |
-| 13 | What you can use today | 21:00 | 1:00 | 1 |
-| 14 | One agent, four IQs, six challenges | 22:00 | 1:00 | 0 |
-| 15 | Thank you | 23:00 | 0:20 | 0 |
+| 1 | 02:13 (cover) | 0:00 | 1:00 | 0 |
+| 2 | The press starts shaking | 1:00 | 1:30 | 1 |
+| 3 | One request, three suppliers | 2:30 | 2:00 | 1 |
+| 4 | Every company has the same models | 4:30 | 1:30 | 1 |
+| 5 | Who's asking? | 6:00 | 1:45 | 1 |
+| 6 | Alex's agent brings in the specialists | 7:45 | 1:15 | 1 |
+| 7 | Which SD-900 could replace it? | 9:00 | 2:00 | 1 |
+| 8 | Why didn't it take the unit? | 11:00 | 1:45 | 1 |
+| 9 | Sam in Singapore | 12:45 | 2:00 | 2 |
+| 10 | Two ways to the press | 14:45 | 1:30 | 1 |
+| 11 | One thread, one decision | 16:15 | 2:30 | 2 |
+| 12 | Can Alex trust it? | 18:45 | 2:00 | 2 |
+| 13 | Run 02:13 again | 20:45 | 1:30 | 1 |
+| 14 | Your night: seven challenges | 22:15 | 1:00 | 0 |
+| 15 | Thank you | 23:15 | 0:30 | 0 |
 
 ## PDF
 
-[`into-focus.pdf`](into-focus.pdf) has every slide in its final state. To make it again, open
+[`02-13.pdf`](02-13.pdf) has every slide in its final state. To make it again, open
 `deck/index.html?print-pdf` in Edge or Chrome and print to PDF (landscape, no margins, background graphics on).
 
 ## Where the numbers come from
 
-Every Caldova number comes from [`walkthrough/scenario-facts.md`](../walkthrough/scenario-facts.md).
-[`deck/js/data.js`](deck/js/data.js) lists every measured value with its source.
+Every name, time and number of the story comes from [`walkthrough/scenario-facts.md`](../walkthrough/scenario-facts.md).
+[`deck/js/data.js`](deck/js/data.js) lists every number shown with its source.
 
-- Slide 2: the blind agent's answer is the first sentence of a recorded run of challenge 1 (no IQ).
-- Slide 4: q03 to q05 in `src/.caldova/leaderboard.json`, runs "challenge 1: no IQ" and "challenge 2: + Web IQ".
-- Slide 5: the failing SQL is described in solution 3; the four 10 of 10 scores are from an earlier reference run
-  (`src/.caldova/leaderboard-dev1.json`, "challenge 3: + Fabric IQ"). Single answers swing between runs.
-- Slides 6 and 7: the documents in `data/documents` and the teaching moments in solution 4 (the split "PV-400" node,
-  "Yes, buy from Teglbruk" with ontology v1, the fix in v2), all observed while building the hack.
-- Slides 8 and 9: the Work IQ emulator seed (M1 to M8) and solution 5. The Work IQ part of the hack runs on an
-  emulator with the exact Work IQ MCP contract, because a lab tenant has no Microsoft 365 Copilot licences.
-- Slide 10: the reference answer to q18, coloured by the IQ each fact comes from. The composition is illustrative.
-- Slide 11: the newest complete set of the six runs "challenge 1: no IQ" to "challenge 6: + playbook" in
-  `src/.caldova/leaderboard.json` (26 November 2026): 63, 69, 109, 143, 123 and 154 out of 190, rounded. A second
-  playbook run scored 148. If you rerun the evaluation, update the scores in `data.js`.
-- Slide 12: "Why each playbook rule exists" in solution 6, including the cold draft that copied "4,000 by Friday"
-  and scored 0 with the judge.
-- Slide 13: "What is GA and what is preview" in the [hack README](../README.md#what-is-ga-and-what-is-preview).
+- Slides 2, 3 and 8: the night, the rules (EAP-01, RES-02, SC-KOL-2024, FS-04) and Sam's Friday note in the scenario
+  facts. The supplier answers on slide 3 are shortened from Kolvo's procurement board after Run 02:13 (solution 2).
+- Slide 5: the three locks and the two refused requests are the success criteria of challenge 2; "4 to 6 minutes"
+  for a new role is from solution 2.
+- Slide 7: `data/lakehouse/drive_units.csv` and `reservations.csv`, and the expected answer in solution 3.
+- Slide 9: the agent's question at 03:45 and Sam's reply at 03:52, as in the README timeline
+  (`images/readme-scenario.png`) and the thread in solution 6. The scenario facts put the question at 03:52; the
+  emulator's story clock starts at 03:45 with the first live post (solution 5). Singapore is seven hours ahead.
+- Slide 10: the transport snapshot TR-01 and TR-02 and "about 21 hours of margin" in solution 6. The 11 hours of the
+  Pune route are counted from Wednesday 19:00 to Thursday 06:00. The talk names story days by weekday (Tuesday night
+  to Thursday 06:00, next Monday), never by calendar date, month or year.
+- Slide 11: the proposal (solution 6) and Alex's 07:30 post (solution 7), shortened. The dawn is decoration.
+- Slide 12: results in testing in solution 7 (15 rows, judge `gpt-5.6-luna`): the custom rubric pass rate 27% (4 of
+  15) for v3 and 58% (7 of 12) for v6, Compare runs 0.27 to 0.47 "Inconclusive", safety 100%; the trace of one night
+  run: 60 seconds, about 30,000 tokens, four nesting levels (`images/c07-nested-a2a-trace.png`). If you rerun the
+  evaluation, update the numbers in `data.js` and on the slide.
+- Slide 13: the scorecard on the board after Run 02:13 (`images/c02-board-strandvik-answered.png`).
+- Slide 14: "The clock and the challenges" and "What is GA and what is preview" in the [hack README](../README.md).
 
 ## Credits
 
-Talk, script and design: Digvijay Chauhan, Solution Engineer, Microsoft. Caldova and every person, company and
-number in its story are fictional.
+Talk, script and design: Digvijay Chauhan, Solution Engineer, Microsoft. The story comes from **Johan Wallquist**'s
+keynote *Enter the Agentic Enterprise Era* used with permission; "a note is a reason to
+ask" and "an agent can do the work, only a person can answer for it" are his. Strandvik Drives, Kolvo, Poliden,
+Nordic Drive Parts, Hallberg Repair Services and every person in the story are fictional.
 
 The slides use [Reveal.js](https://revealjs.com) 6.0.2 by Hakim El Hattab, MIT licence, in
 `deck/vendor/reveal.js-6.0.2/` with its `LICENSE`. One label in the speaker view (`plugin/notes.js`) was

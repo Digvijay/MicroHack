@@ -158,7 +158,7 @@ The emulator keeps its state in memory: a restart of the Function App also clear
 | Agent post never appears in the thread | Agent posted to the wrong chat id, or did not call `create_entity` | Check the tool call output; tell the agent the exact path in its instructions |
 | Evaluation wizard rejects synthetic data | Minimum is 15 rows | Use 15 or more, or the provided dataset (27 rows) |
 | Monitor > Cost is empty | Cost views lag 8 to 24 hours | Use token counts in traces and the evaluation grid |
-| Somebody built a Workflow | Foundry portal Workflows retire on 1 December 2026 | Orchestrate with A2A from `alex-agent` |
+| Somebody built a Workflow | Foundry portal Workflows are being retired | Orchestrate with A2A from `alex-agent` |
 
 ## Solutions
 

@@ -67,7 +67,7 @@ token audience `https://ai.azure.com`) and ARM:
 | `nordic-drive-parts` | Prompt agent (gpt-5.4-mini). Answers at once from its stock list: "In stock, ships today." Cannot hold or reserve a unit, no installation. **Incoming A2A on** |
 | `hallberg-repair` | Prompt agent. Repair shop, office hours 08:00 to 17:00 CET; at night it replies that a person answers after 08:45. **Incoming A2A on** |
 | A2A connections | `nordic-drive-parts-a2a`, `hallberg-repair-a2a`, `strandvik-a2a` in the kolvo project. Category `RemoteA2A`, auth `AgenticIdentityToken`, audience `https://ai.azure.com`. `strandvik-a2a` points at `.../api/projects/strandvik/agents/strandvik-customer-service/endpoint/protocols/a2a`, which participants create in challenge 2 |
-| `maria-procurement` | Prompt agent with the three A2A tools (`a2a`, version 1.0). Maria's standing instruction: ask the approved suppliers for price, delivery time and whether they can hold the unit for SD9-K-0412 on press line 2, needed before Thursday 17 December 06:00; summarise per supplier; never order |
+| `maria-procurement` | Prompt agent with the three A2A tools (`a2a`, version 1.0). Maria's standing instruction: ask the approved suppliers for price, delivery time and whether they can hold the unit for SD9-K-0412 on press line 2, needed before Thursday 06:00; summarise per supplier; never order |
 | Role | Maria's agent identity (`instance_identity.principal_id`) gets **Foundry Agent Consumer** on the **kolvo** project, so it can call the rivals. It deliberately does **not** get it on the strandvik project: granting that is the participants' task in challenge 2 |
 
 Incoming A2A is enabled with `PATCH /agents/<name>` (`agent_card` plus

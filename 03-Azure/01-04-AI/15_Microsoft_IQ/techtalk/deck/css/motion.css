@@ -4,7 +4,7 @@
 :root {
   --out: cubic-bezier(0.16, 1, 0.3, 1);     /* arrivals: fast start, soft landing */
   --inout: cubic-bezier(0.65, 0, 0.35, 1);  /* journeys: draws, travel, scans */
-  --cue: #F4F1EA;                           /* the "click to continue" colour: the white of resolved light */
+  --cue: #FFB547;                           /* the "click to continue" colour: the amber of the story clock */
 }
 
 /* Slides are fixed 1280x720 compositions; position elements absolutely inside them. */

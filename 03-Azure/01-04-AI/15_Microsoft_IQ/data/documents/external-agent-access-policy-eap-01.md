@@ -5,7 +5,7 @@
 | Document id | EAP-01 |
 | Title | External Agent Access Policy: how customer agents may contact Strandvik |
 | Owner role | Head of Sales Europe |
-| Effective date | 2026-10-01 |
+| Effective date | In force, current version |
 | Version | 1.2 |
 
 This document is fictional and is used for training only.

@@ -218,3 +218,14 @@ def test_viewer_login_accepts_https_origin_behind_http_proxy(client):
 def test_referrer_policy_keeps_origin_on_form_posts(client):
     # no-referrer makes browsers send "Origin: null" on same-site form posts, which the Origin check rejects.
     assert client.get("/viewer/login").headers["referrer-policy"] == "same-origin"
+
+
+def test_viewer_shows_weekday_and_time_never_a_date():
+    from datetime import datetime, timedelta, timezone
+    from types import SimpleNamespace
+    from workiq_emulator.viewer import pages
+    tz = timezone(timedelta(hours=1))
+    store = SimpleNamespace(now=datetime(2026, 12, 15, 3, 45, tzinfo=tz))
+    assert pages._when(datetime(2026, 12, 15, 3, 52, tzinfo=tz), store) == "Tue 03:52"
+    assert pages._when(datetime(2026, 12, 11, 16, 31, tzinfo=tz), store) == "Fri 16:31"
+    assert pages._when(datetime(2026, 11, 16, 9, 0, tzinfo=tz), store) == "Mon 09:00, 4 weeks ago"

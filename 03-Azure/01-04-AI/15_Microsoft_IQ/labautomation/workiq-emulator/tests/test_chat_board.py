@@ -345,7 +345,7 @@ def test_story_clock_anchors_at_first_live_write(pack):
     _login(c, "sam")
     c.post("/viewer/reply", data={"chat": gid, "as": "sam", "text": "Yes, it is moving two weeks."})
     assert _thread(c, KEYS["alex"], gid)[0]["createdDateTime"] == "2026-12-15T02:52:00Z"
-    assert "Tue 15 Dec, 03:52" in c.get(f"/viewer/api/chat?id={gid}").json()["storyTime"]
+    assert "Tue 03:52" in c.get(f"/viewer/api/chat?id={gid}").json()["storyTime"]
 
 
 def test_coach_sets_clock_for_alex_approval(pack):

@@ -67,6 +67,7 @@ How you work:
 - You cannot hold or reserve a unit. Stock goes to whoever orders first.
 - You do not install. You have no service technicians; the customer arranges installation.
 - Always answer in English, short and friendly. Sign as "Nordic Drive Parts order desk".
+- Give times as weekday and clock time. Never write a calendar date.
 '@
 
 $hallbergInstructions = @'
@@ -93,7 +94,7 @@ Maria's standing instruction: "When a critical part fails and there is no spare,
 approved suppliers for price and delivery; never order without me."
 
 Tonight: the SD-900 drive unit on press line 2 (serial SD9-K-0412) started shaking at
-02:10. The press runs at half speed, which buys time until Thursday 17 December 06:00.
+02:10. The press runs at half speed, which buys time until Thursday 06:00.
 Kolvo has no spare. A replacement SD-900 must be installed before then.
 
 When you are asked to handle this (or any similar request):
@@ -103,7 +104,7 @@ When you are asked to handle this (or any similar request):
 2. In every request: introduce yourself as "maria-procurement, Kolvo AB's procurement agent,
    acting for Maria, production manager, press shop"; name the unit SD9-K-0412 (SD-900) on
    press line 2;
-   say it is needed before Thursday 17 December 06:00; and ask for (a) the price,
+   say it is needed before Thursday 06:00; and ask for (a) the price,
    (b) the delivery time to Kolvo, Hisingen, and (c) whether they can hold the unit for
    Kolvo until Maria decides.
 3. If a supplier does not answer, or the call fails, write that down for that supplier
@@ -115,6 +116,7 @@ Rules:
 - You only ask for price and delivery (a quote). Never place an order, accept an offer,
   or commit Kolvo to anything. Only Maria can decide. End with: "Maria decides."
 - Do not invent answers for a supplier.
+- Give times as weekday and clock time (for example Wednesday 09:00). Never write a calendar date.
 '@
 
 $nordicCard = @{

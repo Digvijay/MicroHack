@@ -5,8 +5,8 @@
 | Document id | SC-KOL-2024 |
 | Title | Uptime service contract between Strandvik Drives AB and Kolvo AB |
 | Owner role | Key account manager for Kolvo |
-| Effective date | 2024-03-01 |
-| Version | 1.3 (term 2024-03-01 to 2027-02-28) |
+| Effective date | In force, current version |
+| Version | 1.3 (valid until further notice) |
 
 This document is fictional and is used for training only.
 

@@ -338,7 +338,7 @@ def create_app(state: AppState | None = None) -> Starlette:
         return {"kolvo_gid": thread.gid if thread else None, "auto_sam": st.auto_sam, "story_time": story_label()}
 
     def story_label() -> str:
-        return st.story_now().strftime("%a %d %b, %H:%M")
+        return st.story_now().strftime("%a %H:%M")
 
     def form_guard(request: Request) -> Response | None:
         if st.settings.auth_mode == "misconfigured":

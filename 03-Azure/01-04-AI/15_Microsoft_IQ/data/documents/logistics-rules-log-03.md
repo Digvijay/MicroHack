@@ -5,7 +5,7 @@
 | Document id | LOG-03 |
 | Title | Logistics Rules: urgent transport of drive units in Europe |
 | Owner role | Head of Logistics |
-| Effective date | 2026-02-01 |
+| Effective date | In force, current version |
 | Version | 3.0 |
 
 This document is fictional and is used for training only.

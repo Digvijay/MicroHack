@@ -72,8 +72,18 @@ DOC_REQUIREMENTS = {
         "replaces SD-900s only (not SD-700)", "Installation takes 6 to 8 hours and needs a certified technician"],
     "technician-scheduling-fs-04.md": [
         "FS-04", "available at Kolvo on **Wednesday night (22:00 to 06:00)**",
-        "A night install needs 24 hours' notice", "FS-5101"],
+        "A night install needs 24 hours' notice", "FS-5101", "Wednesday from 22:00 to Thursday at 06:00"],
 }
+CALENDAR_DATE = re.compile(r"\b\d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b"
+                           r"|\b(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}\b"
+                           r"|\b20\d\d\b")
+DATE_IDS = re.compile(r"\bSC-(KOL|POL)-20\d\d\b", re.I)
+
+
+def calendar_dates(text):
+    return [m.group(0) for m in CALENDAR_DATE.finditer(DATE_IDS.sub("", text))]
+
+
 HEADER_FIELDS = ["Document id", "Title", "Owner role", "Effective date", "Version"]
 
 failures: list[str] = []
@@ -223,14 +233,14 @@ def check_facts(t, people, machines, units):
     rsv = get("reservations", "reservation_id", "RSV-2291")
     check(rsv.get("serial") == "SD9-R-0733" and rsv.get("customer_id") == "CUST-POL" and rsv.get("machine_id") == c3.get("machine_id")
           and rsv.get("needed_by_date") == "2026-12-21" and first(rsv.get("owner_person_id")) == "Sam" and rsv.get("status") == "active",
-          "RSV-2291 must reserve SD9-R-0733 for Poliden C3 on 2026-12-21, owner Sam, active")
+          "RSV-2291 must reserve SD9-R-0733 for Poliden C3 for next Monday's stop, owner Sam, active")
     check(not any(r["serial"] == "SD9-P-0981" for r in t["reservations"]), "SD9-P-0981 must be unreserved")
     active = [r["serial"] for r in t["reservations"] if r["status"] == "active"]
     check(len(active) == len(set(active)), "a unit has two active reservations")
 
     slot = [s for s in t["technician_schedule"] if s["site_id"] == "SITE-KOL-HIS" and s["status"] == "available"]
     check(len(slot) == 1 and slot[0]["start_time"] == "2026-12-16T22:00:00+01:00" and slot[0]["end_time"] == "2026-12-17T06:00:00+01:00"
-          and slot[0]["shift"] == "night", "Kolvo needs exactly one available slot: Wed 16 Dec 22:00 to 06:00")
+          and slot[0]["shift"] == "night", "Kolvo needs exactly one available slot: Wednesday 22:00 to Thursday 06:00")
     if slot:
         tech = get("technicians", "technician_id", slot[0]["technician_id"])
         check("SD-900" in tech.get("certified_models", ""), "Kolvo slot technician must be SD-900 certified")
@@ -265,6 +275,8 @@ def check_documents():
             check(re.search(rf"^\| {field} \| .+ \|$", text, re.M) is not None, f"{name}: header field {field} missing")
         for term in required:
             check(term in text, f"{name}: missing '{term}'")
+        found = calendar_dates(text)
+        check(not found, f"{name}: calendar dates {found}, use weekday and clock time")
 
 
 def check_seed():
@@ -288,7 +300,7 @@ def check_seed():
     w1 = items.get("W1", {})
     check(w1.get("type") == "chat" and {"sam", "alex", "sales-leadership"} <= vis("W1"), "W1 must be a chat visible to Sam, Alex and sales leadership")
     check(any(m["from"] == "sam" and m["date"] == "2026-12-11T16:20:00+01:00" and "probably move two weeks" in m["text"]
-              for m in w1.get("messages", [])), "W1 must hold Sam's note of Fri 11 Dec 16:20")
+              for m in w1.get("messages", [])), "W1 must hold Sam's note of Friday 16:20")
     check(items.get("W2", {}).get("type") == "email" and vis("W2") == {"sam"}
           and "We will confirm any change in writing" in items["W2"].get("body", ""), "W2 must be the planner's email, visible to Sam only")
     w3 = items.get("W3", {})
@@ -323,15 +335,22 @@ def check_eval():
     check(20 <= len(rows) <= 30, f"eval rows = {len(rows)}, expected 20 to 30")
     truth = " ".join(r["ground_truth"] for r in rows)
     for term in ["SD9-R-0733", "SD9-P-0981", "RSV-2291", "Sam", "48 hours", "a note is a reason to ask", "22:00 to 06:00",
-                 "2,800 EUR", "40,000 EUR", "Final confirmation from Alex by 07:30", "Refuse"]:
+                 "2,800 EUR", "40,000 EUR", "Final confirmation from Alex by 07:30", "Refuse",
+                 "Wednesday 09:00", "Thursday 06:00", "next Monday"]:
         check(term.lower() in truth.lower(), f"eval ground truths never mention '{term}'")
     short = [json.loads(l) for l in (EVAL / "strandvik-eval-15.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    for n, r in enumerate(rows, 1):
+        found = calendar_dates(r["query"] + " " + r["ground_truth"])
+        check(not found, f"eval line {n}: calendar dates {found}, use weekday and clock time")
     check(len(short) == 15, f"strandvik-eval-15.jsonl has {len(short)} rows, expected 15")
     check(all(r in rows for r in short), "strandvik-eval-15.jsonl rows must be copies of strandvik-eval.jsonl rows")
     for name in ("custom-rubric.md", "john-blund-test.md"):
         check((EVAL / name).exists(), f"eval/{name} missing")
     rubric = (EVAL / "custom-rubric.md").read_text(encoding="utf-8")
     check("final confirmation from Alex by 07:30" in rubric, "rubric must require the 07:30 confirmation line")
+    for name in ("custom-rubric.md", "john-blund-test.md"):
+        found = calendar_dates((EVAL / name).read_text(encoding="utf-8"))
+        check(not found, f"eval/{name}: calendar dates {found}, use weekday and clock time")
     weights = [int(w) for w in re.findall(r"\(weight (\d+)\)", rubric)]
     check(sum(weights) == 100, f"rubric weights add up to {sum(weights)}")
     return len(rows)

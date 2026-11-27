@@ -4,21 +4,119 @@
 
 **Clock: 02:10** · **Time:** 45 minutes · **Products:** your lab, Azure portal, Foundry portal, Fabric portal
 
-## The story
+## Objective
 
-It's ten past two. At Kolvo's cab plant on Hisingen, the drive unit on press line 2 starts shaking, and the vibration sensors go red. The night shift cuts the press to half speed. That buys time until Thursday morning at 06:00. Then the press stops, and the cab line with it.
+Open your lab, get to know the Strandvik world, and put its data where the agents will need it: the seven documents in Blob Storage and the fourteen business tables in a Fabric lakehouse. You also draw a paper map of who owns what. Every later challenge builds on this data and this map.
 
-Alex is asleep. Alex works at Strandvik Drives, which builds and services the drive units that keep heavy machines running. Customers pay Strandvik for uptime.
+## Context
 
-In three minutes, Maria's agent will knock on Strandvik's door. Before anyone can answer it, someone has to switch the lights on: know what Strandvik owns, where it is, and **who owns what**. That someone is your team.
+> It's ten past two. At Kolvo's cab plant on Hisingen, the drive unit on press line 2 starts shaking, and the vibration sensors go red. The night shift cuts the press to half speed. That buys time until Thursday 06:00. Then the press stops, and the cab line with it.
+>
+> Alex is asleep. Alex works at Strandvik Drives, which builds and services the drive units that keep heavy machines running. Customers pay Strandvik for uptime.
+>
+> In three minutes, Maria's agent will knock on Strandvik's door. Before anyone can answer it, someone has to switch the lights on: know what Strandvik owns, where it is, and **who owns what**. That someone is your team.
 
-## Goal
+> [!IMPORTANT]
+> Use your **lab user** everywhere. Your own corporate account will not see the lab. Build in the **strandvik** project only. The **kolvo** project belongs to Kolvo: look, don't touch.
 
-Your lab is open, your team knows the Strandvik world, and the world's data is where the agents will need it: the documents in Blob Storage and the business tables in a Fabric lakehouse.
+## Tasks
 
-## Business task
+### Part A: Sign in and fill `.env` (10 min)
 
-Map the Strandvik world **on paper** (a whiteboard, a sheet, a Loop page, anything). Use [`data/README.md`](../data/README.md), the CSV files in [`data/lakehouse/`](../data/lakehouse/) and the documents in [`data/documents/`](../data/documents/).
+`create-env.sh` signs you in once with a device code, only reads from Azure, and writes `.env` with every endpoint and key the notebooks need. One person per team is enough; share the links it prints.
+
+**Option 1: GitHub Codespace (recommended)**
+
+1. Sign in to GitHub, open the hack repository and select **Code** > **Codespaces** > **...** > **New with options...**.
+2. Under **Dev container configuration**, choose **Azure / AI / Microsoft IQ**. Select **Create codespace**.
+3. Wait until VS Code opens in the browser with the hack folder in the explorer and a terminal whose prompt starts with `(.venv)`. The setup takes a few minutes. Its log is under **View** > **Command Palette** > **Codespaces: View Creation Log**.
+
+<!-- SHOT: c01-codespace-ready | GitHub Codespaces (VS Code in the browser) | Hack folder open in the explorer, terminal with the (.venv) prompt | Highlight the hack folder and the (.venv) prompt -->
+![Codespace ready](../images/c01-codespace-ready.png)
+
+4. In the terminal (the hack folder is the working folder), run:
+
+   ```bash
+   bash create-env.sh
+   ```
+
+5. When asked, open `https://microsoft.com/devicelogin`, enter the code and sign in with the **lab user**.
+6. The script finds the lab resource group (tagged `microhack=15_Microsoft_IQ`), reads every endpoint and key, and writes `.env`. At the end it prints the Foundry links for **strandvik** and **kolvo**, the Azure portal link, the Fabric workspace link, the Work IQ viewer and the procurement board.
+
+<!-- SHOT: c01-create-env-output | Codespace terminal | Output of bash create-env.sh: "Your lab is ready", the project links, the viewer and board URLs | Highlight "Your lab is ready". Blur the subscription, the account and the links -->
+![create-env.sh output](../images/c01-create-env-output.png)
+
+**Option 2: on your own machine**
+
+Open the hack folder in VS Code with **Dev Containers** (same dev container, then run `bash create-env.sh`), or on Windows without bash run `./create-env.ps1` in PowerShell from the hack folder. Same result.
+
+> [!TIP]
+> On a locked-down laptop you can skip `.env` entirely: a teammate runs the script and shares the portal links.
+
+> [!IMPORTANT]
+> Never commit `.env`. It holds your Work IQ keys.
+
+### Part B: Open the three portals (5 min)
+
+1. **Foundry portal**: open the Strandvik project link from the script output (or [ai.azure.com](https://ai.azure.com), switch **New Foundry** on at the top, and pick the project **strandvik** of the `iq-<hash>` resource in the project picker at the top left). Check that **Build** > **Agents** is empty. Open the **kolvo** project the same way and check that `maria-procurement`, `nordic-drive-parts` and `hallberg-repair` are listed.
+2. **Azure portal**: open the resource group link. You see the Foundry resource `iq-<hash>`, the Search service `iq-srch-<hash>`, the storage account `iqst<hash>`, the Fabric capacity `iqcap<hash>`, Application Insights `iq-appi-<hash>` and the emulator `iq-wiq-<hash>`.
+3. **Fabric portal**: open [app.fabric.microsoft.com](https://app.fabric.microsoft.com) with the lab user and go to **Workspaces** > `strandvik-<hash>`.
+
+> [!NOTE]
+> **No Fabric workspace?** Fabric portal > **Workspaces** > **+ New workspace**. **Name**: `strandvik-<your initials>`. Expand **Advanced** > **License mode**: **Fabric capacity** > pick `iqcap<hash>`. Select **Apply**. Then run `bash create-env.sh` again so `FABRIC_WORKSPACE_ID` is filled (it looks for a workspace whose name starts with `strandvik`).
+
+### Part C: Upload the documents to Blob Storage (5 min)
+
+1. Download the 7 files in [`data/documents/`](../data/documents/) to your machine (in the Codespace: select the files in the explorer > right-click > **Download...**; or download them from GitHub).
+2. Azure portal > the lab resource group > the storage account `iqst<hash>` > **Storage browser** > **Blob containers** > `documents`.
+3. If you see "You do not have permissions" or a key error, switch **Authentication method** to **Microsoft Entra user account**. Shared key access is off; the lab user has Storage Blob Data Contributor.
+4. Select **Upload** > drag the 7 files > **Upload**.
+
+<!-- SHOT: c01-storage-browser-upload | Azure portal, storage account iqst<hash> > Storage browser > Blob containers > documents | Container after upload, listing the 7 .md files | Highlight the Authentication method set to Microsoft Entra user account and the 7 files -->
+![Documents uploaded to the documents container](../images/c01-storage-browser-upload.png)
+
+Expected files (do not rename them; later challenges and the evaluation set expect these names):
+
+| File | Document |
+|---|---|
+| `external-agent-access-policy-eap-01.md` | EAP-01 |
+| `reservation-policy-res-02.md` | RES-02 |
+| `service-contract-kolvo-sc-kol-2024.md` | SC-KOL-2024 |
+| `service-contract-poliden-sc-pol-2025.md` | SC-POL-2025 |
+| `logistics-rules-log-03.md` | LOG-03 |
+| `sd-900-product-sheet.md` | PS-SD900 |
+| `technician-scheduling-fs-04.md` | FS-04 |
+
+### Part D: Load the lakehouse in Fabric (15 min)
+
+1. Fabric portal > your workspace > **+ New item** > **Lakehouse**. **Name**: `strandvik_lakehouse`. Leave **Lakehouse schemas** off. Select **Create**.
+
+<!-- SHOT: c01-fabric-new-lakehouse | Fabric portal, workspace strandvik-<hash> > + New item > Lakehouse dialog | The "New lakehouse" dialog with the name strandvik_lakehouse and schemas unchecked | Highlight the name field and the schemas checkbox -->
+![New lakehouse](../images/c01-fabric-new-lakehouse.png)
+
+2. In the lakehouse explorer, next to **Files** select **...** > **Upload** > **Upload files**. Select the 14 CSV files from [`data/lakehouse/`](../data/lakehouse/) and select **Upload**.
+3. Open **Files**, then for each CSV: **...** > **Load to Tables** > **New table**. Keep the table name (the file name without `.csv`), **Column header** on, **Separator** `,`. Select **Load**.
+
+<!-- SHOT: c01-fabric-load-to-table | Fabric portal, strandvik_lakehouse > Files > drive_units.csv > ... menu | The "Load to Tables" > "New table" dialog for drive_units.csv | Highlight "Load to Tables", the table name and the header option -->
+![Load to Tables](../images/c01-fabric-load-to-table.png)
+
+4. Repeat for all 14 files.
+
+   > [!TIP]
+   > An F2 capacity runs few loads at a time. If you get HTTP 430 or "capacity busy", wait 20 seconds and load again.
+
+5. Check: the **Tables** folder shows 14 tables. Select `reservations` and confirm the preview shows `RSV-2291`, `SD9-R-0733`, `P-SAM`.
+6. Switch the lakehouse view to **SQL analytics endpoint** (top right) once, and select **Refresh** if a table is missing there. The data agent in challenge 3 reads the schema from this endpoint.
+
+<!-- SHOT: c01-lakehouse-tables | Fabric portal, strandvik_lakehouse (Lakehouse view) | Tables folder expanded with 14 tables, reservations preview open | Highlight the table count and the RSV-2291 row -->
+![14 tables in the lakehouse](../images/c01-lakehouse-tables.png)
+
+> [!TIP]
+> **Prefer a notebook?** [`notebooks/00-load-the-world.ipynb`](../notebooks/00-load-the-world.ipynb) does Parts C and D in one go. Open it in the Codespace, **Select Kernel** > **Jupyter Kernel** > **Python (Microsoft IQ)**, then **Run All** (3 to 8 minutes on F2, safe to run again). Section 1 uploads the documents; section 2 creates the lakehouse, loads every CSV as a table and refreshes the SQL endpoint metadata. Both paths end in the same place.
+
+### Part E: Map the Strandvik world (10 min)
+
+Map the world **on paper** (a whiteboard, a sheet, a Loop page, anything). Use [`data/README.md`](../data/README.md), the CSV files in [`data/lakehouse/`](../data/lakehouse/) and the documents in [`data/documents/`](../data/documents/).
 
 Your map shows at least:
 
@@ -28,23 +126,10 @@ Your map shows at least:
 - Who owns the **Kolvo** account and who owns the **Poliden** account.
 - One line per agent you expect to build: what it **may** do and what it **may not** do.
 
-Keep the map. You will turn it into an ontology in challenge 3 and into instructions in every challenge after that.
+> [!TIP]
+> Start from `machines.csv` (press line 2 is `KOL-PL2`), follow `drive_unit_serial` into `drive_units.csv`, then look for SD-900s with status `in_stock`. For each one, check `reservations.csv` and follow `owner_person_id` into `people.csv`. Watch out: not every SD-900 on a shelf is free, and not every drive unit fits a press.
 
-## Builder task
-
-1. Fill `.env` for your lab with `create-env.sh` (or `create-env.ps1` on Windows). Share the three portal links it prints with your team.
-2. Open the three portals with your lab user: the **strandvik** and **kolvo** projects in the Foundry portal, your resource group in the Azure portal, and your Fabric workspace.
-3. Put the **seven Strandvik documents** into the `documents` container of your lab's storage account.
-4. Put the **fourteen CSV files** into a Fabric lakehouse named `strandvik_lakehouse`, each as a table.
-
-You may do steps 3 and 4 by hand in the portals, or with the helper notebook [`notebooks/00-load-the-world.ipynb`](../notebooks/00-load-the-world.ipynb). Both end in the same place.
-
-## Constraints
-
-- Use your **lab user** everywhere. Your own corporate account will not see the lab.
-- Build in the **strandvik** project only. The **kolvo** project belongs to Kolvo: look, don't touch.
-- Do not rename the documents or the tables. Later challenges (and the evaluation set) expect these names.
-- Never commit `.env`. It holds your Work IQ keys.
+Keep the map. You turn it into an ontology in challenge 3 and into instructions in every challenge after that.
 
 ## Success criteria
 
@@ -54,35 +139,28 @@ You may do steps 3 and 4 by hand in the portals, or with the helper notebook [`n
 - [ ] Your paper map answers, without a laptop: *Which unit runs press line 2? Which two SD-900s could replace it? Who owns the Rotterdam one?*
 - [ ] Every team member can open the Kolvo project and see `maria-procurement`.
 
-## Hints
+## Troubleshooting
 
-<details>
-<summary>Hint 1: Where do I start?</summary>
+| Symptom | Fix |
+|---|---|
+| `create-env.sh` says "no Microsoft IQ lab found" | You signed in with the wrong account. Run `az logout`, then run the script again and sign in with the lab user. Or pass the resource group: `bash create-env.sh <rg>`. |
+| `FABRIC_WORKSPACE_ID` stays empty | Create the workspace (name starting with `strandvik`) on the lab capacity, then run the script again. |
+| Storage browser: "This request is not authorized" | Switch **Authentication method** to **Microsoft Entra user account**. Right after the lab is created, wait a minute for the role to apply. |
+| Fabric: **Load to Tables** is greyed out | You selected a folder or a non-CSV file. Select one CSV file. |
+| Fabric: HTTP 430 | The F2 capacity is busy. Wait 20 seconds and try again. |
+| A table is missing in the SQL analytics endpoint | Open the SQL analytics endpoint view and select **Refresh**. |
+| Fabric capacity paused | Azure portal > `iqcap<hash>` > **Resume**. |
 
-In a Codespace (dev container **Azure / AI / Microsoft IQ**), open a terminal in the hack folder and run `bash create-env.sh`. It signs you in once with a device code and only reads from Azure. At the end it prints the links you need.
+## Go further
 
-</details>
+- Add the **sites** and **transport options** to your map: where would a unit from Pune or Rotterdam travel to reach Gothenburg?
+- Read [`EAP-01`](../data/documents/external-agent-access-policy-eap-01.md) and mark on your map which agents may talk to outsiders at all.
 
-<details>
-<summary>Hint 2: No Fabric workspace?</summary>
+## Reflection
 
-The lab tries to create a workspace named `strandvik-...` for you. If `create-env.sh` says there is none, create a workspace in the Fabric portal, assign it to your lab's Fabric capacity (`iqcap...`), then run `create-env.sh` again so `FABRIC_WORKSPACE_ID` is filled.
-
-</details>
-
-<details>
-<summary>Hint 3: Loading tables in the Fabric portal</summary>
-
-Create the lakehouse, upload the CSV files to **Files**, then use **Load to Tables** on each file. On a small F2 capacity a load can be refused with HTTP 430 when another load is still running: wait a few seconds and try again. If a new table is missing in the SQL analytics endpoint, refresh its metadata.
-
-</details>
-
-<details>
-<summary>Hint 4: Reading the map</summary>
-
-Start from `machines.csv` (press line 2 is `KOL-PL2`), follow `drive_unit_serial` into `drive_units.csv`, then look for SD-900s with status `in_stock`. For each one, check `reservations.csv` and follow `owner_person_id` into `people.csv`. Watch out: not every SD-900 on a shelf is free, and not every drive unit fits a press.
-
-</details>
+- Which facts on your map would an agent get wrong if it only had the documents, and which if it only had the tables?
+- Why does it matter tonight **who owns** each reservation, not just where each unit is?
+- Which "may not" line on your map would hurt Strandvik most if an agent broke it?
 
 ## Learning resources
 

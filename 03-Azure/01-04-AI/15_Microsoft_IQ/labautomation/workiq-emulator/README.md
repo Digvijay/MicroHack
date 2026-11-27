@@ -81,11 +81,11 @@ Posting needs a viewer session, that is a valid lab persona key. Random visitors
 
 ### Story clock and coach controls
 
-Live posts in the Kolvo thread are stamped with a **story clock**, not the real date. Until the first live write in the Kolvo thread (an agent post or a viewer post) the story time is the seed's "now", Tuesday 15 December 03:45. The first live write starts the clock, and from then on real time runs (a lab day is about 7 hours, so 03:52, 04:10 and so on come out roughly right). Labs deployed days ahead are not affected, because the clock does not start with the app.
+Live posts in the Kolvo thread are stamped with a **story clock**, not the real date. Until the first live write in the Kolvo thread (an agent post or a viewer post) the story time is the seed's "now", Tuesday 03:45. The first live write starts the clock, and from then on real time runs (a lab day is about 7 hours, so 03:52, 04:10 and so on come out roughly right). Labs deployed days ahead are not affected, because the clock does not start with the app.
 
 Coaches control it on `https://<host>/viewer/coach` (no viewer sign-in needed, every action asks for the lab admin key `WORKIQ_ADMIN_KEY`):
 
-* **Set the story clock**: enter `HH:MM` (on 15 December) or a full ISO 8601 time. Set 03:52 before Sam's challenge and **07:30 before "Alex makes the call"**, so Alex's approval posted from the viewer shows 07:30.
+* **Set the story clock**: enter `HH:MM` (on the night of the story, Tuesday) or a full ISO 8601 time. Set 03:52 before Sam's challenge and **07:30 before "Alex makes the call"**, so Alex's approval posted from the viewer shows 07:30.
 * **Reset the thread**: removes every live post in the Kolvo thread (agents and people), cancels a pending auto-Sam reply and stops the story clock. Use it between dry runs or teams.
 
 The thread view shows the current story time under the auto-Sam switch. A coach script can do the same over HTTP with the admin key (see Admin endpoints).
@@ -211,15 +211,15 @@ All need `Authorization: Bearer <WORKIQ_ADMIN_KEY>`.
 | `POST /manage/items` | Append one item, for example a new email that a coach plants during the hack. |
 | `POST /manage/reset` | Reload the bundled pack. |
 | `GET /manage/pack` | Export the current pack. |
-| `GET /manage/clock` | Story clock: `{"storyTime": "2026-12-15T03:45:00+01:00", "running": false}`. |
-| `POST /manage/clock` | Set the story clock, body `{"time": "07:30"}` or `{"time": "2026-12-15T07:30:00+01:00"}`. Returns the clock. |
+| `GET /manage/clock` | Story clock: `{"storyTime": "<ISO 8601 story time, Tuesday 03:45>", "running": false}`. |
+| `POST /manage/clock` | Set the story clock, body `{"time": "07:30"}` or a full ISO 8601 time. Returns the clock. |
 | `POST /manage/thread/reset` | Remove live posts from the Kolvo thread, cancel auto-Sam, stop the clock. Returns `{"status": "ok", "removed": N, ...}`. |
 
 Example, plant a new email for Alex:
 
 ```powershell
 $item = @{
-  id = 'coach-update-1'; type = 'email'; date = '2026-12-15T04:30:00+01:00'; visibleTo = @('alex')
+  id = 'coach-update-1'; type = 'email'; date = (Invoke-RestMethod "https://<host>/manage/clock" -Headers @{ Authorization = "Bearer $adminKey" }).storyTime; visibleTo = @('alex')
   subject = 'Call me before 08:00'; from = @{ name = 'Maria (Kolvo)'; address = 'maria@kolvo.example' }
   to = @(@{ name = 'Alex'; address = 'alex@strandvik.example' }); body = 'Please call me before 08:00.'
 } | ConvertTo-Json -Depth 5

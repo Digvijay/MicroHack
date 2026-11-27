@@ -5,7 +5,7 @@
 | Document id | FS-04 |
 | Title | Field Service: technician scheduling for installations |
 | Owner role | Field service coordinator |
-| Effective date | 2026-04-01 |
+| Effective date | In force, current version |
 | Version | 1.4 |
 
 This document is fictional and is used for training only.
@@ -25,11 +25,11 @@ This document is fictional and is used for training only.
 
 2.2 Installation of an SD-900 takes 6 to 8 hours, so it fits in one slot.
 
-## 3. Current availability for Kolvo (week 51, 2026)
+## 3. Current availability for Kolvo (this week)
 
-3.1 A Strandvik technician is available at Kolvo on **Wednesday night (22:00 to 06:00)**: Wednesday 16 December 2026 from 22:00 to Thursday 17 December 2026 at 06:00. Technician: Jonas, SD-700 and SD-900 certified. Slot FS-5101.
+3.1 A Strandvik technician is available at Kolvo on **Wednesday night (22:00 to 06:00)**: Wednesday from 22:00 to Thursday at 06:00. Technician: Jonas, SD-700 and SD-900 certified. Slot FS-5101.
 
-3.2 There are no other free SD-900 certified slots at Kolvo before Friday 18 December.
+3.2 There are no other free SD-900 certified slots at Kolvo before Friday.
 
 ## 4. How to book
 
