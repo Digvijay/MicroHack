@@ -2,7 +2,7 @@
 
 **[Back to Challenge 1](../../challenges/challenge-01.md)** - **[Home](../../README.md)** - [Next Solution](../challenge-02/solution-02.md)
 
-**Duration:** 45 minutes
+**Duration:** 55 minutes
 
 ## Goal
 
@@ -12,9 +12,9 @@ The team works in the browser from its lab dashboard (three portals open, Cloud 
 
 ### Part A: browser only
 
-Participants install nothing and need no Codespace. They work from the **lab dashboard** values (project links, `FabricPortalUrl`, `StorageAccountName`, `WorkIQBoardUrl`, `WorkIQViewerUrl`, `WorkIQEmulatorEndpoint`, `WorkIQKey`, `WorkIQKeySam`) and download the hack as a ZIP for the `data/documents` and `data/lakehouse` uploads. The most common failure is a corporate account signed in to the portal instead of the lab user: insist on a private window.
+Participants install nothing and need no Codespace. They work from the **lab dashboard** values (project links, `FabricPortalUrl`, `StorageAccountName`, `WorkIQBoardUrl`, `WorkIQViewerUrl`, `WorkIQEmulatorEndpoint`, `WorkIQKey`, `WorkIQKeySam`) and download two zips for the uploads: [strandvik-documents.zip](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/downloads/strandvik-documents.zip) (7 documents) and [strandvik-lakehouse-csv.zip](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/downloads/strandvik-lakehouse-csv.zip) (14 CSVs). They unzip both before uploading. No repo ZIP and no clone. The most common failure is a corporate account signed in to the portal instead of the lab user: insist on a private window.
 
-Part B ends with opening **Cloud Shell** (Bash, **No storage account required**). Challenges 2, 6 and 7 run `scripts/enable-a2a.py` there. If Cloud Shell is blocked in the tenant, find out now: a teammate with the optional Codespace (on their own fork, billed to their GitHub account) or a local clone with the Azure CLI runs the same script after `az login`.
+Part B ends with opening **Cloud Shell** (Bash, **No storage account required**). Challenges 2, 6 and 7 run `scripts/enable-a2a.py` there, always with `--resource-group <your lab resource group>` because several labs share the subscription. If Cloud Shell is blocked in the tenant, find out now: a teammate with the optional Codespace (on their own fork, using their own GitHub account's Codespaces allowance) or a local clone with the Azure CLI runs the same script after `az login`.
 
 The optional Codespace or local clone (end of the challenge) is for developers who want to run notebooks 00 and 02. There `create-env.sh` (or `create-env.ps1`) only reads from Azure, finds the lab by the tag `microhack=15_Microsoft_IQ` and writes `.env`.
 
@@ -29,7 +29,9 @@ Shared key access is off on the storage account. The lab user has **Storage Blob
 - The Fabric data agent in challenge 3 reads the schema from the **SQL analytics endpoint**, not from the lakehouse view. Opening the endpoint once and selecting **Refresh** avoids "table not found" later.
 - The optional notebook `00-load-the-world.ipynb` (Codespace or local clone only) is an equal path: it uploads CSVs to `Files/strandvik/`, loads each table (waiting on HTTP 430), refreshes the SQL endpoint metadata and prints all tables and columns. If the Azure CLI session is gone, the participant runs `az login --use-device-code` in the terminal first.
 
-### Part E: the map is the real deliverable
+### Part E: read the world, then map it
+
+Every team member reads the seven documents in `data/documents` first (about 10 minutes, split them if the team is short on time). They explain what Strandvik, Kolvo and Poliden do and the rules the night turns on: EAP-01 (who may ask), RES-02 (a note is a reason to ask), SC-KOL-2024 (48 hours), SC-POL-2025 (written confirmation), LOG-03 (routes and the 10,000 EUR limit), the SD-900 product sheet and FS-04 (the technician slot). Ask one person per document for one sentence.
 
 The map feeds the ontology (challenge 3) and every set of instructions after that. Insist on **owners**: the whole story turns on Sam owning the Rotterdam reservation and Alex owning the Kolvo account.
 

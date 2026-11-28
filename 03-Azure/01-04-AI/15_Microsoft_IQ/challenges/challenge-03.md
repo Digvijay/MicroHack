@@ -65,8 +65,8 @@ Build a **Parts agent** that answers stock questions from Strandvik's business d
 <!-- SHOT: c03-new-data-agent | Fabric portal, lakehouse > Add to data agent > New data agent | Name dialog with strandvik_parts_data entered | Highlight the name field and Create -->
 ![Name the data agent](../images/c03-new-data-agent.png)
 
-3. The data agent editor opens. In the explorer tree on the left, under `strandvik_lakehouse`, tick the 7 tables: `drive_units`, `machines`, `reservations`, `people`, `account_owners`, `customers`, `sites`.
-4. In the **Agent instructions** editor at the top (Markdown), paste your ontology on paper from Part A under the heading `Ontology (how Strandvik's business fits together)`. Then paste these rules below it:
+3. The data agent editor opens and sets itself up for a few seconds. In the explorer tree on the left (**Sources**), under `strandvik_lakehouse` > **Schemas** > **dbo** > **Tables**, tick the 7 tables (widen the explorer, or use **Search data**, if the names are cut off): `drive_units`, `machines`, `reservations`, `people`, `account_owners`, `customers`, `sites`.
+4. Select **Agent instructions** in the ribbon. In its Markdown editor, replace the template text: paste your ontology on paper from Part A under the heading `Ontology (how Strandvik's business fits together)`. Then paste these rules below it:
 
    ```text
    You answer questions about Strandvik Drives' drive units, the machines they run on, customers, sites and reservations.
@@ -75,10 +75,12 @@ Build a **Parts agent** that answers stock questions from Strandvik's business d
    - status sold, in_repair or installed means not available. Say why when you exclude a unit the user asked about.
    - A unit with an active reservation is NOT free, even when its status is in_stock. Always report the reservation id, the reserved customer and machine, the needed-by date and the owner's first name (people.first_name via reservations.owner_person_id).
    - Never say a reserved unit is available. Say: reserved, ask the owner.
+   - List reserved candidates too, in the same table, marked "reserved, ask the owner". Leaving them out hides the one unit that may save the customer.
    - Name units by serial. Give the site name and condition.
    - Look for candidates at every Strandvik site (factories and warehouses). The customer's site is where a unit is installed, not where spares are kept.
+   - When a question names a customer, plant or line instead of a machine id (for example "Kolvo's Hisingen plant" or "press line 2"), first find the machine: join machines to customers and sites and match names with LIKE. Then use that machine's required_model.
    Answer in English with a short table, then one sentence.
-   Give times as weekday and clock time (for example Wednesday 09:00). Never write a calendar date.
+   Give times as weekday and clock time (for example Wednesday 09:00). A date without a time (such as needed_by_date) is just the weekday, for example "needed by Monday". Never write a calendar date.
    ```
 
 <!-- SHOT: c03-data-agent-instructions | Fabric portal, strandvik_parts_data data agent editor | Explorer tree with the 7 lakehouse tables ticked and the Agent instructions editor filled with the ontology on paper and rules | Highlight the ticked tables and the Agent instructions editor -->
@@ -94,7 +96,7 @@ Build a **Parts agent** that answers stock questions from Strandvik's business d
 <!-- SHOT: c03-data-agent-example | Fabric portal, strandvik_parts_data > Setup > Example queries | Example queries pane with the Add, Import from JSON and Export all buttons | Highlight Import from JSON -->
 ![Example queries pane](../images/c03-data-agent-example.png)
 
-2. Select **Import from JSON** and pick [`data/fabric/data-agent-example-queries.json`](../data/fabric/data-agent-example-queries.json) from the repo (5 question and SQL pairs, format `{"question": "sql"}`). A "Preview runtime" banner may appear: that is expected. The main one looks like this:
+2. Download the file first: select [data-agent-example-queries.json](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/fabric/data-agent-example-queries.json) and the click saves it (you can read it in the repo at [`data/fabric/data-agent-example-queries.json`](../data/fabric/data-agent-example-queries.json)). Then select **Import from JSON** and pick the downloaded file (5 question and SQL pairs, format `{"question": "sql"}`). A "Preview runtime" banner may appear: that is expected. The main one looks like this:
 
    ```sql
    -- Which SD-900 units could replace SD9-K-0412 on Kolvo press line 2?
@@ -162,13 +164,13 @@ Build a **Parts agent** that answers stock questions from Strandvik's business d
    - Quote prices or delivery dates. Other agents do that.
 
    # How to answer
-   1. Always call the Fabric data tool. Never answer from memory, and never invent a serial.
+   1. Always call the Fabric data tool. Never answer from memory, and never invent a serial. Pass the question to the tool in the asker's words, short and plain, with any machine, serial or reservation id they gave. Do not add your own plan or steps to it: the data agent writes its own query.
    2. For a replacement question: find the machine and its required model; list every unit of that model that is in stock at any Strandvik site (factories and warehouses, not the customer's site); exclude sold, in repair and installed units and units of another model.
    3. For every candidate, check for an active reservation. If there is one, give the reservation id, the reserved customer and machine, the needed-by date and the owner's name, and say: "Reserved: ask the owner before proposing it."
    4. Answer with a short table (serial, site, condition, reservation, owner), then one or two sentences. Name the source: "Strandvik ERP (Fabric)".
    5. If the tool fails or returns nothing, say so. Do not guess.
    6. Answer in English.
-   7. Give times as weekday and clock time (for example Wednesday 09:00). Never write a calendar date.
+   7. Give times as weekday and clock time (for example Wednesday 09:00). A date without a time (such as needed_by_date) is just the weekday, for example "needed by Monday". Never write a calendar date.
    ```
 
 4. **Add** > **Add tools** > **Configured** > **Fabric IQ (OneLake Catalog)** (preview) > **Add tool**.
@@ -176,7 +178,7 @@ Build a **Parts agent** that answers stock questions from Strandvik's business d
 <!-- SHOT: c03-select-fabric-iq | Foundry portal, strandvik-parts > Add > Add tools > Configured tab | "Select a tool" dialog with Fabric IQ (OneLake Catalog) selected | Highlight Fabric IQ (OneLake Catalog) (preview) and Add tool -->
 ![Select Fabric IQ](../images/c03-select-fabric-iq.png)
 
-5. A **OneLake Catalog** picker opens. It is pre-filtered to **Semantic model** (the filter shows **Filter (1)**). Open the filter > **Type** > untick **Semantic model**, tick **Data agent**. Select `strandvik_parts_data` > **Add**.
+5. A **OneLake Catalog** picker opens. It is pre-filtered to **Semantic model** (the filter shows **Filter (1)**). Open the filter > **Type** > untick **Semantic model**, tick **Data agent**. Select `strandvik_parts_data` whose **Location** is **your** workspace `strandvik-<hash>` (other labs in the tenant can have a data agent with the same name) > **Add**.
 
 <!-- SHOT: c03-onelake-catalog-data-agent | Foundry portal, strandvik-parts > Fabric IQ (OneLake Catalog) picker | OneLake Catalog filtered to Type = Data agent with strandvik_parts_data selected | Highlight the Type filter (Data agent ticked) and the Add button -->
 ![Pick the data agent in the OneLake Catalog](../images/c03-onelake-catalog-data-agent.png)

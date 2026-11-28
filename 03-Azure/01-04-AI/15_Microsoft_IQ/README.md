@@ -38,9 +38,27 @@ Welcome to the **Microsoft IQ** MicroHack. You build every piece of Strandvik's 
 - Ground agents in business data (**Fabric IQ**), documents (**Foundry IQ**), people (**Work IQ**) and the web (**Web IQ**).
 - Orchestrate specialist agents over A2A, then **trace**, **evaluate** and **cost** the whole night.
 
+**The concepts in one table**
+
+| Concept | What it means | Where you use it (challenge) |
+|---|---|---|
+| **Agent** (in Foundry) | A model with instructions, tools and knowledge, saved with versions, with its own identity and an owner | 2 to 7 |
+| **Fabric IQ** | Business data and ontology: lakehouse tables, how the business fits together, a data agent | 1, 3 |
+| **Foundry IQ** | Knowledge bases over documents: policies and contracts, with citations | 1, 4 |
+| **Work IQ** | What people wrote: mail, chats, meetings and files, reached through MCP | 5, 6 |
+| **Web IQ** | The outside world: web search | 6 |
+| **A2A** (agent to agent) | One agent calls another over an open protocol, across companies; agent identities and roles decide who may call whom | 2, 6, 7 |
+| **MCP** (Model Context Protocol) | A standard way to give an agent tools; here the Work IQ tools `retrieve`, `fetch` and `create_entity` | 5, 6 |
+| **Human in the loop** | Approvals on tool calls; only people commit | 5, 6, 7 |
+| **Evaluations and traces** | Score and compare agent versions; follow every call and token of a run | 7 |
+
+[Challenge 1](challenges/challenge-01.md#what-you-will-learn-in-this-hack) starts with the same table.
+
 ## The story
 
 **Strandvik Drives AB** builds and services drive units: the big motor and gearbox that make a heavy machine move. Its factory is in Pune, India, its spare-parts warehouse is in Rotterdam, and its technicians work all over Europe. Customers pay for **uptime**.
+
+![Who is who tonight. Kolvo AB: Maria, the production manager, and Maria's agent, which asks three suppliers at 02:13 and never orders. Strandvik Drives AB, your company: Alex, Sam, Noor, Jonas, the customer service agent, Alex's agent and the Parts, Service and Logistics agents. Poliden AB: the maintenance planner. The rival suppliers Nordic Drive Parts and Hallberg Repair Services. The facts the night turns on: two candidate units, a note is not a release, and the Thursday 06:00 deadline](images/readme-cast.png)
 
 | Who | What they own tonight |
 |---|---|
@@ -84,7 +102,7 @@ The hack runs on story time. The clock on the wall says 02:10 at the start and 0
 
 | # | Clock | Challenge | IQ / product | Time |
 |---|---|---|---|---|
-| 1 | 02:10 | [Lights on](challenges/challenge-01.md) | Setup, the Strandvik world | 45 min |
+| 1 | 02:10 | [Lights on](challenges/challenge-01.md) | Setup, read the Strandvik world | 55 min |
 | 2 | 02:13 | [Who's asking?](challenges/challenge-02.md) | Foundry Agent Service, A2A, agent identity, guardrails | 45 min |
 | 3 | 03:10 | [Know the business](challenges/challenge-03.md) | Fabric IQ: lakehouse, ontology, data agent | 75 min |
 | 4 | 03:41 | [Why didn't it take the unit?](challenges/challenge-04.md) | Foundry IQ: knowledge base (stretch: knowledge graph) | 60 min |
@@ -93,7 +111,7 @@ The hack runs on story time. The clock on the wall says 02:10 at the start and 0
 | 7 | 07:30 | [Alex makes the call](challenges/challenge-07.md) | Evaluations, tracing, cost, the 02:13 replay | 45 min |
 | | | [Finish: the John Blund test](challenges/finish.md) | All five layers | 15 min |
 
-That is about **7 hours** of hacking. With a welcome, breaks and lunch, plan a full day (for example 09:00 to 17:15, see the [coach guide](walkthrough/README.md#timing-plan)).
+That is about **7 hours** of hacking. With a welcome, breaks and lunch, plan a full day (for example 09:00 to 17:25, see the [coach guide](walkthrough/README.md#timing-plan)).
 
 Every challenge has the same shape: a story beat, a **goal**, a **business task**, a **builder task**, constraints, success criteria a coach can check, and hints that reveal a little more each time you open one.
 
@@ -112,8 +130,8 @@ Solo? You are all three. Switch hats out loud; it helps.
 - A lab from the MicroHack platform (your coach gives you the sign-in). The lab user has a Fabric licence.
 - A modern browser. Three portals stay open all day: [Azure portal](https://portal.azure.com), [Foundry portal](https://ai.azure.com) (switch **New Foundry** on) and [Fabric portal](https://app.fabric.microsoft.com).
 - **Nothing to install, no Codespace.** One step in challenges 2, 6 and 7 runs a short script in **Azure Cloud Shell** (Azure portal top bar, the `>_` icon, **Bash**), which is in the browser and already signed in.
-- The hack files on your machine for the uploads in challenge 1: on GitHub, **Code** > **Download ZIP**.
-- Optional, for developers who want to run the notebooks: a GitHub Codespace or a local clone. **Fork the repository to your own GitHub account** and create the Codespace on your fork (or clone it locally with Python, the Azure CLI and `az login`, then run `create-env.ps1` or `create-env.sh`). Codespaces are billed to the GitHub account that creates them; Microsoft does not pay for them. See [challenge 1](challenges/challenge-01.md#if-you-run-in-github-codespaces-optional).
+- The hack data for the uploads in challenge 1: two direct downloads, [strandvik-documents.zip](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/downloads/strandvik-documents.zip) (7 documents) and [strandvik-lakehouse-csv.zip](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/downloads/strandvik-lakehouse-csv.zip) (14 CSVs). Unzip both before uploading. No repository download or clone needed.
+- Optional, for developers who want to run the notebooks: a GitHub Codespace or a local clone. The hack does not provide Codespaces billing: **fork the repository to your own GitHub account** and create the Codespace on your fork, using your own account's Codespaces allowance (personal GitHub accounts include free Codespaces hours every month). Or clone it locally with Python, the Azure CLI and `az login`, then run `create-env.ps1` or `create-env.sh`. See [challenge 1](challenges/challenge-01.md#if-you-run-in-github-codespaces-optional).
 - Useful, not required: you have built one agent or one Power BI report before.
 
 ## Your lab environment
@@ -127,11 +145,11 @@ Your lab is one resource group, built for you before the day. You build everythi
 | Azure AI Search (Foundry IQ) and a storage account | Empty `documents` container | Upload the policies and build a knowledge base |
 | Fabric capacity (F2) and workspace | Empty | Load the lakehouse, build the ontology and a data agent |
 | Work IQ emulator | Seeded with Alex's and Sam's Microsoft 365 world | Connect Alex's agent, play Sam in the viewer, run Kolvo's procurement board |
-| Application Insights | Connected to both projects | Read the traces of the whole night |
+| Application Insights | Connected to both projects, backed by a Log Analytics workspace; lab users have Log Analytics Reader | Read the traces of the whole night |
 
 Your **lab dashboard** shows every name, endpoint and key you need (project links, the Work IQ viewer, board, endpoint and keys). In the optional Codespace, `create-env.sh` (or `create-env.ps1`) reads the same values and writes `.env` for the notebooks. Details for coaches and platform owners are in [labautomation/README.md](labautomation/README.md).
 
-> **Why a Work IQ emulator?** Real Work IQ needs Microsoft 365 Copilot licences that lab users do not have. The emulator speaks the same MCP contract, so only the URL and the key change. See [the emulator's README](labautomation/workiq-emulator/README.md).
+> **Why a Work IQ emulator?** Real Work IQ needs Microsoft 365 Copilot licences that lab users do not have. The emulator speaks the same MCP contract, so only the URL and the key change. Curious? Read [How the Work IQ emulator works](labautomation/workiq-emulator/README.md). In the Work IQ viewer, the **Story** page lets your team set the story clock or reset the Kolvo thread to start the night again.
 
 ## What is GA and what is preview
 
@@ -157,7 +175,7 @@ Your **lab dashboard** shows every name, endpoint and key you need (project link
 15_Microsoft_IQ/
 ├── challenges/          The challenges (participants)
 ├── walkthrough/         Coach guide, step-by-step solutions, scenario facts
-├── data/                Lakehouse CSVs, documents, Work IQ seed, evaluation set, ontology
+├── data/                Lakehouse CSVs, documents, the two download zips, Work IQ seed, evaluation set, ontology
 ├── scripts/             enable-a2a.py, run in Azure Cloud Shell (challenges 2, 6, 7)
 ├── notebooks/           Optional (Codespace or local): 00 load the world, 02 knowledge graph (stretch)
 ├── labautomation/       Lab provisioning, Kolvo pre-build, Work IQ emulator and procurement board

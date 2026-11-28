@@ -77,7 +77,7 @@ You will find these decisions in the instructions in Parts B and D. Compare, and
    Give times as weekday and clock time (for example Wednesday 09:00). Never write a calendar date.
    ```
 
-3. **Add** > **Add tools** > **Configured** > **Web search** > **Add tool**.
+3. Keep the **Web search** tool that every new agent gets (this is the one agent that uses it). If you removed it, **Add** > **Add tools** > **Configured** > **Web search** > **Add tool**.
 4. **Knowledge** > **Add** > `strandvik-policies` (the challenge 4 knowledge base, which holds LOG-03).
 5. **Save**. Test in the playground:
 
@@ -92,14 +92,22 @@ You will find these decisions in the instructions in Parts B and D. Compare, and
 The same lock as Maria's door in challenge 2: each target agent needs incoming A2A, and the **calling** agent (now `alex-agent`) needs **Foundry Agent Consumer** on it. The portals cannot grant a role to an agent identity yet, so the Cloud Shell script from challenge 2 does both.
 
 1. Open Cloud Shell: Azure portal (lab user) > top bar > the **Cloud Shell** icon (`>_`) > **Bash** (**No storage account required** is fine).
-2. Run the script three times, once per specialist. The caller is now `alex-agent` in the strandvik project. The script has a default agent card for each specialist built in; add `--description "<your text>"` if your team wrote its own.
+2. Run the script three times, once per specialist. The caller is now `alex-agent` in the strandvik project. As in challenge 2, pass your lab's resource group from the lab dashboard (several labs share the subscription). The script has a default agent card for each specialist built in; replace `--description "<your text>"` with your team's card, or leave the option out to publish the default.
 
    ```bash
    curl -sO https://raw.githubusercontent.com/microsoft/MicroHack/main/03-Azure/01-04-AI/15_Microsoft_IQ/scripts/enable-a2a.py
-   python3 enable-a2a.py --agent strandvik-parts --caller strandvik/alex-agent
-   python3 enable-a2a.py --agent strandvik-logistics --caller strandvik/alex-agent
-   python3 enable-a2a.py --agent strandvik-service --caller strandvik/alex-agent
+   python3 enable-a2a.py --agent strandvik-parts --caller strandvik/alex-agent --resource-group <your lab resource group> --scope agent --description "<your text>"
+   python3 enable-a2a.py --agent strandvik-logistics --caller strandvik/alex-agent --resource-group <your lab resource group> --scope agent --description "<your text>"
+   python3 enable-a2a.py --agent strandvik-service --caller strandvik/alex-agent --resource-group <your lab resource group> --scope agent --description "<your text>"
    ```
+
+   | Option | What it means |
+   |---|---|
+   | `--agent` | The Strandvik specialist you open to A2A. |
+   | `--caller project/agent` | The agent allowed to call it. Tonight `strandvik/alex-agent`. |
+   | `--resource-group` | Your lab's resource group, from the lab dashboard. Needed because several labs share one subscription. |
+   | `--description` | Your team's agent card text: what other agents read before they call. Without it the script publishes the hack's default card for that specialist. |
+   | `--scope agent` or `project` | `agent` (the default) grants the role on this one specialist only: least privilege. `project` grants it on every agent in the strandvik project. |
 
    In an ephemeral Cloud Shell session the file from challenge 2 is gone, so download it again. In a kept session the `curl` line simply replaces it.
 
@@ -214,7 +222,7 @@ Do this once per specialist: Parts, then Logistics, then Service.
 
 ### Part F: Run the night (20 min)
 
-Start a **new chat** in the `alex-agent` playground. Keep Sam (a teammate in the viewer, or auto-Sam) ready, as in challenge 5.
+Start a **new chat** in the `alex-agent` playground. Keep Sam (a teammate in the viewer, or auto-Sam) ready, as in challenge 5. Optional: to start the night over with a clean thread, open the Work IQ viewer (signed in with your key) > **Story** > **Reset the Kolvo thread** first.
 
 1. **Turn 1: the groundwork.**
 
@@ -268,7 +276,8 @@ Start a **new chat** in the `alex-agent` playground. Keep Sam (a teammate in the
 | Proposal says "confirmed" | Keep the "What only Alex may do" block and test again with turn 3. |
 | Logistics agent quotes web ferry times that differ | LOG-03 and the snapshot win; the web is for real-world checks only. |
 | Run takes over a minute | Normal: three A2A hops plus tools, about 60 seconds for turn 1. Traces (challenge 7) show where the time goes. |
-| Thread times look off (for example the proposal at 03:54, not 04:10) | The story clock runs in real time from the first live post. That is fine; a coach can set it. |
+| Thread times look off (for example the proposal at 03:54, not 04:10) | The story clock runs in real time from the first live post. That is fine. To change it, open the viewer > **Story** > **Set the story clock**. |
+| You want to run the night again from the start | In the viewer select **Story** > **Reset the Kolvo thread**. It removes the live posts and stops the story clock. Then start a new chat in the playground. |
 
 ## Go further
 

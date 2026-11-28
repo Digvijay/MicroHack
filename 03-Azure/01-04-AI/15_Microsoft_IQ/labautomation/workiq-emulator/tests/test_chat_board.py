@@ -121,7 +121,7 @@ def test_viewer_post_rejects_non_members_foreign_origin_and_hidden_chats(client,
     "text,expected",
     [
         (ASK_SAM, chat.SAM_YES_REPLY),
-        ("@Sam is the maintenance stop at Poliden still on 21 December?", chat.SAM_YES_REPLY),
+        ("@Sam is the maintenance stop at Poliden still on next Monday?", chat.SAM_YES_REPLY),
         ("Sam, how is Singapore?", chat.SAM_BUSY_REPLY),
         ("Can we take the Poliden unit?", None),
         ("Samuel and Samantha say hi about the unit", None),
@@ -353,7 +353,7 @@ def test_coach_sets_clock_for_alex_approval(pack):
     st = make_state(pack, clock=clock)
     c = TestClient(create_app(st))
     gid = st.store.by_item_id["W3"].gid
-    assert "Coach controls" in c.get("/viewer/coach").text
+    assert "Story controls" in c.get("/viewer/coach").text
     assert c.post("/viewer/coach/clock", data={"time": "07:30", "admin_key": "wrong"}).status_code == 401
     assert c.post("/viewer/coach/clock", data={"time": "25:99", "admin_key": ADMIN_KEY}).status_code == 400
     r = c.post("/viewer/coach/clock", data={"time": "07:30", "admin_key": ADMIN_KEY}, follow_redirects=False)
@@ -398,3 +398,16 @@ def test_score_no_hold_variants(text):
 def test_score_hold_still_recognised():
     s = board.score("strandvik", {"text": "Case CS-88412 opened; we can hold SD9-R-0733 pending Alex."})
     assert s["holdsUnit"] == "Yes"
+
+
+def test_signed_in_participant_uses_story_controls_without_key(pack):
+    st = make_state(pack, clock=Clock())
+    c = TestClient(create_app(st))
+    assert c.post("/viewer/coach/clock", data={"time": "07:30"}).status_code == 401  # no session, no key
+    _login(c, "alex")
+    page = c.get("/viewer/story").text
+    assert "Story controls" in page and 'name="admin_key"' not in page
+    r = c.post("/viewer/coach/clock", data={"time": "07:30"}, follow_redirects=False)
+    assert r.status_code == 303 and r.headers["location"] == "/viewer/story?done=clock" and st.story_clock_running()
+    assert c.post("/viewer/coach/reset-thread", data={}, follow_redirects=False).status_code == 303
+    assert not st.story_clock_running()

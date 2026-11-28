@@ -34,6 +34,8 @@ The door has three locks. The **Azure role** decides who may knock. The **instru
 <!-- SHOT: c02-create-agent-dialog | Foundry portal, strandvik project > Agents > New agent > Build an agent | The "Create an agent" dialog with the name strandvik-customer-service | Highlight the name and the create button -->
 ![Create an agent](../images/c02-create-agent-dialog.png)
 
+   If the dialog warns "We couldn't automatically deploy a model for your agent", ignore it: the lab already deployed `gpt-5.4-mini`. A "Status unavailable" card in the playground right after creating goes away after the first **Save**.
+
 3. **Model**: the portal preselects `model-router`. Change it to `gpt-5.4-mini` (custom guardrails need a deployed model).
 4. Paste these instructions into **Instructions**:
 
@@ -162,21 +164,27 @@ The portal cannot switch on **incoming** A2A yet, and it cannot pick agent ident
    | `project` | every agent in the strandvik project | Too wide: Maria's agent could reach Alex's agent and the specialists. |
 
 3. Open Cloud Shell: Azure portal (lab user) > top bar > the **Cloud Shell** icon (`>_`) > **Bash**. If asked about storage, choose **No storage account required** (an ephemeral session is fine) and your lab subscription.
-4. Download the script and run it. The caller tonight is Maria's agent in the kolvo project. Paste your card description between the quotes:
+4. Download the script and run it. Your lab shares the subscription with other labs, so always pass **your** resource group (from the lab dashboard). The caller tonight is Maria's agent in the kolvo project. Paste your card description between the quotes:
 
    ```bash
    curl -sO https://raw.githubusercontent.com/microsoft/MicroHack/main/03-Azure/01-04-AI/15_Microsoft_IQ/scripts/enable-a2a.py
-   python3 enable-a2a.py --agent strandvik-customer-service --caller kolvo/maria-procurement --description "<your card description>"
+   python3 enable-a2a.py --agent strandvik-customer-service --caller kolvo/maria-procurement --resource-group <your lab resource group> --scope agent --description "<your card description>"
    ```
 
-   Without `--description` the script publishes the hack's default card. Add `--scope project` only if your team decided so. If you have more than one lab in the subscription, add `--resource-group <name>` (the name is on the lab dashboard).
+   | Option | What it means |
+   |---|---|
+   | `--agent` | The Strandvik agent you open to A2A. Here `strandvik-customer-service`. |
+   | `--caller project/agent` | The agent allowed to call it. Here `kolvo/maria-procurement`, Maria's agent in the kolvo project. |
+   | `--resource-group` | Your lab's resource group, from the lab dashboard. Needed because several labs share one subscription. |
+   | `--description` | Your team's agent card text: what outside agents read before they call. Without it the script publishes the hack's default card. |
+   | `--scope agent` or `project` | `agent` (the default) grants the role on this one agent only: least privilege. `project` grants it on every agent in the strandvik project. Use the scope your team decided in step 2. |
 
-5. Read the output. The script finds your lab by its tag, reads your agent, publishes the card and switches on the A2A protocol, reads the card back, finds Maria's **agent identity** and grants it the **Foundry Agent Consumer** role (it may call agents, nothing more). The line under **Foundry Agent Consumer** says `granted`, or `already granted, nothing to do` when you run it twice. At the end it prints the A2A endpoint that Maria's A2A tool points at, and asks you to wait 3 to 6 minutes.
+5. Read the output. The script finds your lab in your resource group, reads your agent, publishes the card and switches on the A2A protocol, reads the card back, finds Maria's **agent identity** and grants it the **Foundry Agent Consumer** role (it may call agents, nothing more). The line under **Foundry Agent Consumer** says `granted`, or `already granted, nothing to do` when you run it twice. At the end it prints the A2A endpoint that Maria's A2A tool points at, and asks you to wait 3 to 6 minutes.
 
 <!-- SHOT: c02-cloudshell-enable-a2a | Azure portal, Cloud Shell (Bash) | Download of enable-a2a.py and the run for strandvik-customer-service with caller kolvo/maria-procurement: card published, Maria's agent identity found, the role line, the A2A endpoint | Highlight the Cloud Shell icon, the two commands and the A2A endpoint -->
 ![Cloud Shell runs enable-a2a.py](../images/c02-cloudshell-enable-a2a.png)
 
-6. Check in the Foundry portal: `strandvik-customer-service` > **Details** > **General** > **Endpoints** now shows **A2A protocol: Active** with the A2A endpoint URL. Incoming A2A stays on when you save new versions: you run this once.
+6. Check in the Foundry portal: reload the page, then `strandvik-customer-service` > **Details** > **General** > **Endpoints** now shows **A2A protocol: Active** (before the reload it may still say **Set up**) with the A2A endpoint URL. Incoming A2A stays on when you save new versions: you run this once.
 
 <!-- SHOT: c02-agent-details-a2a-active | Foundry portal, strandvik-customer-service > Details > General | Endpoints: Responses protocol and A2A protocol both Active | Highlight A2A protocol Active and its endpoint -->
 ![A2A protocol active](../images/c02-agent-details-a2a-active.png)
@@ -235,8 +243,8 @@ The portal cannot switch on **incoming** A2A yet, and it cannot pick agent ident
 |---|---|
 | The board fails for all three suppliers | Expected until your agent exists, has incoming A2A on and Maria's agent has the role. One unreachable A2A target fails Maria's whole request. |
 | Script: `returned HTTP 404` when reading the agent | The name must be exactly `strandvik-customer-service`, in the strandvik project. |
-| Script: "No lab found" | Cloud Shell uses another subscription. Run `az account show`, switch with `az account set -s <lab subscription id>`, run again. |
-| Script: "More than one lab found" | Add `--resource-group <name>` with the resource group from the lab dashboard. |
+| Script: "No lab found" | Check `--resource-group`: copy your lab's resource group name from the lab dashboard. If it is right, Cloud Shell uses another subscription: run `az account show`, switch with `az account set -s <lab subscription id>`, run again. |
+| Script: "More than one lab found" | You left out `--resource-group`. Add it with the name from the lab dashboard. |
 | Script: HTTP `401` or `403` | Cloud Shell is signed in with another account. Open Cloud Shell from the Azure portal where you are signed in as the lab user. |
 | Script: "has no agent identity yet" | Open the caller agent once in the Foundry portal and **Save**, then run again. |
 | Cloud Shell does not open | Ask your coach. A teammate with the optional Codespace or a local clone (challenge 1) runs the same command after `az login`. |

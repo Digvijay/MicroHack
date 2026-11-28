@@ -1,6 +1,17 @@
 # Strandvik data
 
-This folder holds the data for the Strandvik scenario: the Fabric lakehouse tables, the Foundry IQ documents, the Work IQ seed, the evaluation set and the knowledge-graph ontology. All companies, people, units and documents are fictional. Every name, serial, time, price and rule agrees with `../walkthrough/scenario-facts.md`, the single source of truth.
+This folder holds the data for the Strandvik scenario: the Fabric lakehouse tables, the Foundry IQ documents, the two download zips, the Work IQ seed, the evaluation set and the knowledge-graph ontology. All companies, people, units and documents are fictional. Every name, serial, time, price and rule agrees with `../walkthrough/scenario-facts.md`, the single source of truth.
+
+## Downloads: `downloads/` (challenge 1)
+
+Participants do not download or clone the repository. Challenge 1 links two zips directly (main branch raw URLs), and they unzip them before uploading.
+
+| File | Content | Built from |
+|---|---|---|
+| `downloads/strandvik-documents.zip` | The 7 documents for the `documents` blob container (challenge 1 Part C) | `documents/*.md` |
+| `downloads/strandvik-lakehouse-csv.zip` | The 14 CSVs for the lakehouse (challenge 1 Part D) | `lakehouse/*.csv` |
+
+After any change to `documents/` or `lakehouse/`, rebuild both zips from the hack folder with `python data/make_downloads.py` and commit them. The script writes fixed timestamps, so an unchanged input gives a byte-identical zip. Challenges 3 and 7 link single files the same way (`fabric/data-agent-example-queries.json` and `eval/strandvik-eval-15.jsonl`).
 
 ## Fabric IQ: `lakehouse/` (challenges 1 and 3)
 
@@ -54,6 +65,8 @@ Upload to the `documents` blob container and build the knowledge base for the Se
 
 `strandvik-ontology.jsonld` is the ontology for Foundry IQ graph extraction. The `rdfs:comment` on every class tells the extractor how entities are named, which avoids duplicate entities.
 
-## Script
+## Scripts
 
 `validate_data.py` checks referential integrity across the CSVs, the key facts (serials, reservation, owners, times, prices), the documents' rules, the seed (W1 to W7 and visibility), the eval files, the ontology and the no-dash style rule. Run `python validate_data.py`; it exits non-zero on any failure. Standard library only, Python 3.10+.
+
+`make_downloads.py` rebuilds `downloads/strandvik-documents.zip` and `downloads/strandvik-lakehouse-csv.zip`. Run `python data/make_downloads.py` from the hack folder. Standard library only.

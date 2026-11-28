@@ -10,7 +10,9 @@ coach step per lab. One-time tenant settings are listed under
 
 Participants build everything else themselves in the browser: the portals, plus one script in
 Azure Cloud Shell ([`scripts/enable-a2a.py`](../scripts/enable-a2a.py)). They need no Codespace and
-no local install, and they never run these scripts.
+no local install, and they never run these scripts. Several labs share one subscription
+(`labsPerSubscription`), so every `enable-a2a.py` command in the challenges passes
+`--resource-group <your lab resource group>` with the name from the lab dashboard.
 
 | File | Purpose |
 |------|---------|
@@ -121,6 +123,7 @@ script adds:
 | Lab user | Foundry account | Foundry Project Manager (`eadc314b-1a2d-4efa-be10-5d325db5065e`), Foundry User (`53ca6127-db72-4b80-b1b0-d745d6d5456d`), Cognitive Services User, Cognitive Services OpenAI User |
 | Lab user | Search service | Search Service Contributor, Search Index Data Contributor |
 | Lab user | Storage account | Storage Blob Data Contributor |
+| Lab user | Application Insights and Log Analytics workspace | Log Analytics Reader (`73c42c96-874c-492b-b04d-ab87d138a893`), so traces show in Foundry (challenge 7) |
 | Lab user | Fabric | Capacity admin (UPN via `Get-MhhLabUser`), workspace Admin |
 | Search identity | Foundry account | Cognitive Services OpenAI User |
 | Search identity | Storage account | Storage Blob Data Reader |
@@ -207,8 +210,10 @@ Set once by the lab tenant's Fabric administrator, **Fabric admin portal, Tenant
 
 Lab users need a Fabric (Power BI) licence: `"groups": ["GHCPUsers", "M365-E5-Users"]` in
 [`lab-defaults.json`](lab-defaults.json) assigns Microsoft 365 E5 (includes Power BI Pro) and a
-GitHub Copilot seat. Participants do not need Codespaces: the hack is browser only. A participant
-who wants a Codespace creates it on their own fork, billed to their own GitHub account.
+GitHub Copilot seat. Participants do not need Codespaces: the hack is browser only. The hack does
+not provide Codespaces billing. A participant who wants a Codespace creates it on their own fork,
+using their own GitHub account's Codespaces allowance (personal GitHub accounts include free
+Codespaces hours every month), or uses a local clone.
 
 ## Packing and quotas (`labsPerSubscription = 10`)
 

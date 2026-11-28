@@ -33,7 +33,21 @@ The **Azure role** decides whether Maria's agent can call at all: the platform c
 
 ### Part E: why a script
 
-- **Where it runs**: [`scripts/enable-a2a.py`](../../scripts/enable-a2a.py) runs in Azure Cloud Shell (Bash, ephemeral session, already signed in, nothing to install). It finds the lab by the tag `microhack=15_Microsoft_IQ`; with several labs in one subscription it needs `--resource-group`. Verified in a real Cloud Shell.
+- **Where it runs**: [`scripts/enable-a2a.py`](../../scripts/enable-a2a.py) runs in Azure Cloud Shell (Bash, ephemeral session, already signed in, nothing to install). The lab platform puts several labs in one subscription, so every command passes `--resource-group <your lab resource group>` (from the lab dashboard); the script then looks for the lab's Foundry resource only in that group. Verified in a real Cloud Shell.
+- **The full command** teams run:
+
+  ```bash
+  python3 enable-a2a.py --agent strandvik-customer-service --caller kolvo/maria-procurement --resource-group <your lab resource group> --scope agent --description "<your card description>"
+  ```
+
+  | Option | What it means |
+  |---|---|
+  | `--agent` | The Strandvik agent you open to A2A. |
+  | `--caller project/agent` | The agent allowed to call it. |
+  | `--resource-group` | The lab's resource group from the dashboard. Needed because several labs share a subscription. |
+  | `--description` | The team's agent card text, what outside agents read. Default: the hack's card. |
+  | `--scope agent` or `project` | `agent` (default): only this one agent, least privilege. `project`: every agent in the strandvik project. |
+
 - **Incoming A2A** is not in the portal yet. The script sends `PATCH .../agents/strandvik-customer-service?api-version=v1` with `agent_card` and `agent_endpoint.protocol_configuration` (`responses` and `a2a`), then reads the card from `.../endpoint/protocols/a2a/agentCard/v1.0`. It stays on across new versions.
 - **The card** is a business decision: `--description "<text>"` replaces the description; without it the script publishes the hack's default card (built in for `strandvik-customer-service`, `strandvik-parts`, `strandvik-logistics`, `strandvik-service` and `alex-agent`). The skills are always the built-in ones.
 - **The role grant**: the portal's **Assign Azure roles** dialog offers **Foundry Agent Consumer · This agent**, but **Add people** finds only people, and Azure IAM does not list Foundry Agent Consumer at project scope. The script reads Maria's `instance_identity.principal_id` from the kolvo project (`--caller kolvo/maria-procurement`) and makes the same role assignment through ARM. It checks first: a second run prints `already granted, nothing to do`.
@@ -67,7 +81,7 @@ Playground tests in the strandvik project:
 | Symptom | Cause | Fix |
 |---|---|---|
 | Script: `returned HTTP 404` on `GET .../agents/strandvik-customer-service` | Name typo or wrong project | Name exactly `strandvik-customer-service`, in the strandvik project |
-| Script: "No lab found" or "More than one lab found" | Cloud Shell on another subscription, or several labs in one subscription | `az account set -s <lab subscription>`, or add `--resource-group <rg>` |
+| Script: "No lab found" or "More than one lab found" | Wrong or missing `--resource-group`, or Cloud Shell on another subscription | Pass the team's lab resource group from the dashboard with `--resource-group`; check the subscription with `az account show` and switch with `az account set -s <lab subscription>` |
 | Script: `401` or `403` | Cloud Shell opened from a portal session with another account | Open the Azure portal as the lab user (private window), then Cloud Shell |
 | Script: "has no agent identity yet" | The caller agent was never saved | Open it in the Foundry portal, **Save**, run again |
 | Card GET returns `Project not found` | Public A2A endpoint of a brand-new project not ready | Wait a few minutes, run the script again |

@@ -79,16 +79,18 @@ The Kolvo thread (seed item `W3`, topic "Kolvo press line 2, SD-900", members Al
 
 Posting needs a viewer session, that is a valid lab persona key. Random visitors cannot post. Cross-origin form posts are refused, and the session cookie is `SameSite=Strict`.
 
-### Story clock and coach controls
+### Story clock and story controls
 
-Live posts in the Kolvo thread are stamped with a **story clock**, not the real date. Until the first live write in the Kolvo thread (an agent post or a viewer post) the story time is the seed's "now", Tuesday 03:45. The first live write starts the clock, and from then on real time runs (a lab day is about 7 hours, so 03:52, 04:10 and so on come out roughly right). Labs deployed days ahead are not affected, because the clock does not start with the app.
+Live posts in the Kolvo thread are stamped with a **story clock**, not the real time of day. Until the first live write in the Kolvo thread (an agent post or a viewer post) the story time is the seed's "now", Tuesday 03:45. The first live write starts the clock, and from then on real time runs (a lab day is about 7 hours, so 03:52, 04:10 and so on come out roughly right). Labs deployed well ahead of the hack are not affected, because the clock does not start with the app.
 
-Coaches control it on `https://<host>/viewer/coach` (no viewer sign-in needed, every action asks for the lab admin key `WORKIQ_ADMIN_KEY`):
+Participants control the story themselves. In the viewer, signed in with a lab persona key (Alex's `WorkIQKey` or Sam's `WorkIQKeySam`), select **Story** in the top navigation (`https://<host>/viewer/story`; the old `/viewer/coach` URL still works). No admin key is needed when you are signed in. Each lab has its own emulator, so the controls only affect that team's story. The page has two controls:
 
-* **Set the story clock**: enter `HH:MM` (on the night of the story, Tuesday) or a full ISO 8601 time. Set 03:52 before Sam's challenge and **07:30 before "Alex makes the call"**, so Alex's approval posted from the viewer shows 07:30.
-* **Reset the thread**: removes every live post in the Kolvo thread (agents and people), cancels a pending auto-Sam reply and stops the story clock. Use it between dry runs or teams.
+* **Set the story clock**: enter `HH:MM` (on the night of the story, Tuesday) or a full ISO 8601 time. For example, set **07:30 before "Alex makes the call"** (challenge 7), so Alex's approval posted from the viewer shows 07:30.
+* **Reset the Kolvo thread**: removes every live post in the Kolvo thread (agents and people), cancels a pending auto-Sam reply and stops the story clock. Use it to start the night again.
 
-The thread view shows the current story time under the auto-Sam switch. A coach script can do the same over HTTP with the admin key (see Admin endpoints).
+The thread view shows the current story time under the auto-Sam switch.
+
+Coaches can use the same page without signing in: every action then asks for the lab admin key `WORKIQ_ADMIN_KEY`. A coach script can do the same over HTTP with the admin key (see Admin endpoints).
 
 ### Auto-Sam (solo hackers)
 
@@ -157,7 +159,7 @@ Run the tests:
 |---|---|
 | `WORKIQ_KEY_<PERSONA>` | Persona key, for example `WORKIQ_KEY_ALEX`. Keys shorter than 16 characters are ignored. |
 | `WORKIQ_ADMIN_KEY` | Key for `/manage/*`. Admin endpoints are disabled when it is not set. |
-| `WORKIQ_SESSION_SECRET` | HMAC secret for viewer sessions. Derived from the admin key when not set. |
+| `WORKIQ_SESSION_SECRET` | HMAC secret for viewer sessions. The deploy script derives it from the admin key, so a redeploy keeps viewers signed in. Derived from the admin key when not set. |
 | `WORKIQ_DEV_MODE` | `true` allows `X-WorkIQ-Persona` when no persona keys exist (without the header the caller is `WORKIQ_DEFAULT_PERSONA`, default `alex`). Without keys and without dev mode, `/mcp` and `/viewer` return 503. |
 | `WORKIQ_ALLOW_MUTATIONS` | `true` lets `create_entity` create drafts under `/me/messages`. |
 | `WORKIQ_SEED` | Bundled scenario pack under `seed/`, default `strandvik`. |
@@ -197,8 +199,8 @@ New role assignments can take a few minutes to apply.
 | `GET /viewer/board` | Viewer session | The procurement board. |
 | `POST /viewer/board/run` | Viewer session | Runs Maria's request, blocks up to 180 seconds. Send `Accept: application/json` for a JSON result. 409 when a run is in progress. |
 | `GET /viewer/api/board` | Viewer session | Last run as JSON. |
-| `GET /viewer/coach` | None | Coach controls page (story clock, reset thread). |
-| `POST /viewer/coach/clock`, `POST /viewer/coach/reset-thread` | Admin key in the form | Coach controls. |
+| `GET /viewer/story` (alias `GET /viewer/coach`) | None | Story controls page (story clock, reset the Kolvo thread). The **Story** item in the viewer navigation opens it. |
+| `POST /viewer/coach/clock`, `POST /viewer/coach/reset-thread` | Viewer session, or the admin key in the form | Story controls. |
 | `/manage/*` | Admin key | See below. |
 
 ## Admin endpoints (coaches)
@@ -226,7 +228,7 @@ $item = @{
 Invoke-RestMethod -Method Post -Uri https://<host>/manage/items -Headers @{ Authorization = "Bearer $adminKey" } -ContentType application/json -Body $item
 ```
 
-State is in memory per instance: admin changes, chat posts, the auto-Sam switch and the last board run are lost on restart and are not shared between instances. `POST /manage/reset` also removes all chat posts and stops the story clock. The deployment sets `maximumInstanceCount` to 1 so that every request sees the same state.
+State is in memory per instance: admin changes, chat posts, the auto-Sam switch and the last board run are lost on restart and are not shared between instances. `POST /manage/reset` also removes all chat posts and stops the story clock. The deployment sets `maximumInstanceCount` to 1 so that every request sees the same state, and keeps one always-ready instance so the app does not scale to zero (and lose the story) while a team is idle. A redeploy restarts the app, and for a few minutes the old and the new instance both serve requests. Wait about five minutes after a redeploy, then reset the thread and start the night again.
 
 ## Deploy to Azure
 

@@ -37,7 +37,7 @@ Alex's agent knows **there is a reason to ask** (W1), but not **the answer** (W2
 
 Auto-Sam answers about 30 seconds after a post that mentions `Sam`. About the Poliden unit, reservation, stop, Rotterdam or RSV-2291 it gives the scripted answer below. The reply always lands after the agent's turn ended, so the agent needs a second prompt ("Did Sam answer?").
 
-Live posts carry a story time, not the real time. The clock starts at 03:45 with the first live post in the Kolvo thread and then runs in real time. The coach page `/viewer/coach` (lab admin key `WORKIQ_ADMIN_KEY`) can set the story clock (for example 03:52 before this challenge) and reset the thread. Admin HTTP endpoints are under `/manage/*` (not `/admin/*`).
+Live posts carry a story time, not the real time. The clock starts at 03:45 with the first live post in the Kolvo thread and then runs in real time. Teams control it themselves: in the Work IQ viewer, signed in with their key, **Story** in the top navigation offers **Set the story clock** (`HH:MM`, for example 03:52 before this challenge) and **Reset the Kolvo thread** (removes the live posts and stops the clock, to start the night again). No admin key is needed when signed in. Coach options are in the [coach guide](../README.md#reset-tips).
 
 ## Expected results
 
@@ -71,7 +71,7 @@ Sam's scripted answer (human Sam or auto-Sam):
 | Every tool call waits for approval | Default "Never auto-approve tools" | Part C settings; posts still wait for **Approve**, as intended |
 | "The following MCP approval requests do not have an approval" | An approval was left open | Answer it, or start a new chat |
 | Agent quotes W2 anyway | It is guessing | Add "Never invent content you cannot see" and test again |
-| Posts from earlier tests clutter the thread | Shared thread state | `/viewer/coach` > **Reset the thread**, or `POST /manage/thread/reset` (see the [coach guide](../README.md#reset-tips)) |
+| Posts from earlier tests clutter the thread | Shared thread state | The team resets it: Work IQ viewer > **Story** > **Reset the Kolvo thread** (see the [coach guide](../README.md#reset-tips)) |
 
 ## Checks for the coach
 

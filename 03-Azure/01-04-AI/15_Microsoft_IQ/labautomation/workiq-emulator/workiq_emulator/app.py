@@ -401,7 +401,7 @@ def create_app(state: AppState | None = None) -> Starlette:
         log.info("auto-sam=%s by=%s", st.auto_sam, persona.id)
         return RedirectResponse(safe_next(form.get("next")), status_code=303)
 
-    # -- Coach controls (admin key in the form, no session needed) ----------------
+    # -- Story controls (viewer session, or the admin key in the form) ---------------
 
     async def coach_get(request: Request) -> Response:
         if st.settings.auth_mode == "misconfigured":
@@ -415,9 +415,12 @@ def create_app(state: AppState | None = None) -> Starlette:
         form = await read_form(request)
         if form is None:
             return None, HTMLResponse(pages.message_page("Too large", "The form is too large."), status_code=413)
+        if viewer_persona(request):
+            # One emulator per team: anyone signed in to this lab's viewer may run the story controls.
+            return form, None
         if not st.settings.admin_key:
-            return None, HTMLResponse(pages.coach_page(viewer_persona(request), story_label(), st.story_clock_running(),
-                                                       error="Coach controls are disabled because WORKIQ_ADMIN_KEY is not set."), status_code=403)
+            return None, HTMLResponse(pages.coach_page(None, story_label(), st.story_clock_running(),
+                                                       error="Sign in to the viewer first (admin key controls are disabled: WORKIQ_ADMIN_KEY is not set)."), status_code=403)
         if not auth.is_admin(st.settings, form.get("admin_key", "").strip()):
             log.info("coach control refused: wrong admin key")
             return None, HTMLResponse(pages.coach_page(viewer_persona(request), story_label(), st.story_clock_running(),
@@ -434,7 +437,7 @@ def create_app(state: AppState | None = None) -> Starlette:
             return HTMLResponse(pages.coach_page(viewer_persona(request), story_label(), st.story_clock_running(), error=str(err)), status_code=400)
         st.set_story_clock(when)
         log.info("coach story clock set to %s", when.isoformat())
-        return RedirectResponse("/viewer/coach?done=clock", status_code=303)
+        return RedirectResponse("/viewer/story?done=clock", status_code=303)
 
     async def coach_reset(request: Request) -> Response:
         form, denied = await coach_form(request)
@@ -442,7 +445,7 @@ def create_app(state: AppState | None = None) -> Starlette:
             return denied
         removed = st.reset_thread()
         log.info("coach thread reset: removed=%d", removed)
-        return RedirectResponse("/viewer/coach?done=reset", status_code=303)
+        return RedirectResponse("/viewer/story?done=reset", status_code=303)
 
     # -- Kolvo procurement board ------------------------------------------------
 
@@ -536,6 +539,7 @@ def create_app(state: AppState | None = None) -> Starlette:
               ("/clock", admin_clock_post, ["POST"]),
               ("/thread/reset", admin_thread_reset, ["POST"]),
           )],
+        Route("/viewer/story", coach_get, methods=["GET"]),
         Route("/viewer/coach", coach_get, methods=["GET"]),
         Route("/viewer/coach/clock", coach_clock, methods=["POST"]),
         Route("/viewer/coach/reset-thread", coach_reset, methods=["POST"]),

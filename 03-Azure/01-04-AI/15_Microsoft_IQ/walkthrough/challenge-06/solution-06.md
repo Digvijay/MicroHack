@@ -16,7 +16,15 @@ Foundry portal Workflows are being retired and classic connected agents are gone
 
 ### Why the Cloud Shell script grants the role (Part C)
 
-Same as challenge 2: each target needs incoming A2A, and the caller's **agent identity** needs **Foundry Agent Consumer**. Neither the Foundry **Assign Azure roles** dialog nor the Azure IAM member picker can find an agent identity yet. Teams run `enable-a2a.py` three times, `--agent strandvik-parts`, `strandvik-logistics` and `strandvik-service`, each with `--caller strandvik/alex-agent`. The script looks up `alex-agent`'s identity and grants the role on that one specialist (least privilege, `--scope agent`). Look for `granted` (or `already granted, nothing to do`) under `Foundry Agent Consumer for alex-agent on agent ...`. Each specialist gets its default card unless the team passes `--description`. An ephemeral Cloud Shell session loses the file, so teams download it again. The role needs 3 to 6 minutes before it works.
+Same as challenge 2: each target needs incoming A2A, and the caller's **agent identity** needs **Foundry Agent Consumer**. Neither the Foundry **Assign Azure roles** dialog nor the Azure IAM member picker can find an agent identity yet. Teams run `enable-a2a.py` three times, one per specialist, always with their lab's resource group because several labs share the subscription:
+
+```bash
+python3 enable-a2a.py --agent strandvik-parts --caller strandvik/alex-agent --resource-group <your lab resource group> --scope agent --description "<your text>"
+python3 enable-a2a.py --agent strandvik-logistics --caller strandvik/alex-agent --resource-group <your lab resource group> --scope agent --description "<your text>"
+python3 enable-a2a.py --agent strandvik-service --caller strandvik/alex-agent --resource-group <your lab resource group> --scope agent --description "<your text>"
+```
+
+The options are the same as in challenge 2 (`--agent` the specialist, `--caller` the agent allowed to call it, `--resource-group` the lab's group from the dashboard, `--description` the team's card text, `--scope agent` least privilege). The script looks up `alex-agent`'s identity and grants the role on that one specialist. Look for `granted` (or `already granted, nothing to do`) under `Foundry Agent Consumer for alex-agent on agent ...`. Each specialist gets its default card when the team leaves `--description` out. An ephemeral Cloud Shell session loses the file, so teams download it again. The role needs 3 to 6 minutes before it works.
 
 ### Why Parts uses OAuth Identity Passthrough (Part E)
 
@@ -65,7 +73,7 @@ Final confirmation from Alex by 07:30.
 | Symptom | Cause | Fix |
 |---|---|---|
 | `tool_user_error` on every `alex-agent` run | One specialist unreachable, `alex-agent` lacks the role, or the role is younger than 4 minutes | Remove A2A tools until it works, add back one at a time; check the script output (`granted` for each specialist); wait |
-| A2A tool works for one specialist, not another | That specialist has no incoming A2A | Run `enable-a2a.py --agent <specialist> --caller strandvik/alex-agent` for it; check the card prints |
+| A2A tool works for one specialist, not another | That specialist has no incoming A2A | Run `enable-a2a.py --agent <specialist> --caller strandvik/alex-agent --resource-group <your lab resource group>` for it; check the card prints |
 | `tool_server_error` from the Parts agent | The Parts A2A tool uses agent identity; Fabric needs a person | Recreate `strandvik-parts-a2a` with **OAuth Identity Passthrough** |
 | Parts answers "no data found for SD9-K-0412" | The question named only the serial | Ask with customer and machine; the full turn 1 prompt works |
 | Alex's agent answers from memory | Weak routing in instructions | Keep "Who knows what" and "Order of work"; name the tools exactly |
@@ -73,7 +81,8 @@ Final confirmation from Alex by 07:30.
 | Proposal posted before Sam answered | Step 5 missing | Keep "ask the owner, then wait" in the order of work |
 | Logistics agent quotes web ferry times that differ | Web is not the story | LOG-03 and the snapshot win; the web is for real-world checks |
 | Turn 1 seems to hang after the post to Sam | The playground waits for **Approve** on `create_entity` | Approve the post; reading is auto-approved since challenge 5 |
-| Thread times look off (proposal at 03:54, not 04:10) | The story clock starts at 03:45 with the first live post and runs in real time | Fine. Set it with `/viewer/coach` or `POST /manage/clock` with `{"time": "04:10"}` |
+| Thread times look off (proposal at 03:54, not 04:10) | The story clock starts at 03:45 with the first live post and runs in real time | Fine. The team can set it in the Work IQ viewer: **Story** > **Set the story clock** (`04:10`) |
+| The team wants to run the night again | Old posts in the Kolvo thread | Work IQ viewer > **Story** > **Reset the Kolvo thread**, then a new chat in the playground |
 
 ## Checks for the coach
 

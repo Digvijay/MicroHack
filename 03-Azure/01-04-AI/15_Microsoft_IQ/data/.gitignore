@@ -1,0 +1,2 @@
+# The repo .gitignore excludes downloads/; these zips are hack downloads and must be committed.
+!downloads/

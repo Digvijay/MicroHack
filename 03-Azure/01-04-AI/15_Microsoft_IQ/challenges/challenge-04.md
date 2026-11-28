@@ -25,7 +25,7 @@ Build a **Service agent** that answers contract, policy and scheduling questions
 ### Part B: Connect Foundry IQ to Search (5 min)
 
 1. Foundry portal > project **strandvik** > **Build** > **Knowledge**.
-2. The first time, the page asks for a **Foundry IQ resource**: pick the lab's Search service `iq-srch-<hash>`.
+2. The first time, the page asks for a **Foundry IQ resource**: pick the lab's Search service `iq-srch-<hash>` (the list shows the resource group under each name; pick the one in your lab's resource group).
 3. **Auth Type**: **Project Managed Identity**. Select **Connect**.
 
 <!-- SHOT: c04-foundry-iq-connect-search | Foundry portal, Build > Knowledge (first visit) | The "connect a Foundry IQ resource" panel with the Search service selected and Auth Type | Highlight the Foundry IQ resource dropdown, Auth Type and Connect -->
@@ -44,8 +44,8 @@ Build a **Service agent** that answers contract, policy and scheduling questions
    ```
 
 3. **Improve retrieval**:
-   - **Chat completions model**: leave empty. The dropdown may only show "Browse more models".
-   - **Retrieval reasoning effort**: **Low** (or Minimal).
+   - **Chat completions model**: `gpt-5.4-mini`. It plans the queries, and the retrieval instructions below only work with a model selected. (If the list only shows "Browse more models", leave it empty, set the effort to **Minimal** and skip the retrieval instructions.)
+   - **Retrieval reasoning effort**: **Low** (one pass of query planning).
    - **Retrieval instructions**:
 
      ```text

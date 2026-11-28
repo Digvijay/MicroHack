@@ -15,7 +15,7 @@ def _dump(obj) -> str:
 def test_alex_cannot_retrieve_w2(as_persona, state):
     m = as_persona("alex")
     hidden = ids_of(state, "W2")
-    for query in ("Poliden maintenance stop 21 December", "confirm any change in writing", "Poliden planner crusher line C3"):
+    for query in ("Poliden maintenance stop next Monday", "confirm any change in writing", "Poliden planner crusher line C3"):
         res = m.call("retrieve", query=query)
         assert res["isError"] is False
         # Check only returned content; searchMetadata echoes the query terms.

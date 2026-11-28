@@ -2,11 +2,27 @@
 
 **[Home](../README.md)** - [Next Challenge](challenge-02.md)
 
-**Clock: 02:10** · **Time:** 45 minutes · **Products:** your lab, Azure portal, Foundry portal, Fabric portal
+**Clock: 02:10** · **Time:** 55 minutes · **Products:** your lab, Azure portal, Foundry portal, Fabric portal
 
 ## Objective
 
-Open your lab, get to know the Strandvik world, and put its data where the agents will need it: the seven documents in Blob Storage and the fourteen business tables in a Fabric lakehouse. You also draw a paper map of who owns what. Every later challenge builds on this data and this map.
+Open your lab, get to know the Strandvik world, and put its data where the agents will need it: the seven documents in Blob Storage and the fourteen business tables in a Fabric lakehouse. Every team member reads the seven documents, so everyone knows what the companies do and which rules the night turns on. Then you draw a paper map of who owns what. Every later challenge builds on this data and this map.
+
+## What you will learn in this hack
+
+Today you build a team of agents for a fictional company. These are the ideas you meet along the way:
+
+| Concept | What it means | Where you use it (challenge) |
+|---|---|---|
+| **Agent** (in Foundry) | A model with instructions, tools and knowledge, saved with versions in a Foundry project. Each agent has its own identity and an owner. | 2 to 7 |
+| **Fabric IQ** | Business data and its meaning: lakehouse tables, an ontology of how the business fits together, and a data agent that answers from them. | 1, 3 |
+| **Foundry IQ** | Knowledge bases over documents: policies and contracts that an agent searches and cites. | 1, 4 |
+| **Work IQ** | What people wrote: mail, chats, meetings and files in Microsoft 365, reached through MCP. This lab uses an emulator with the same contract. | 5, 6 |
+| **Web IQ** | The outside world: web search for routes, weather and public holidays. | 6 |
+| **A2A** (agent to agent) | One agent calls another over an open protocol, also across companies. Agent identities and Azure roles decide who may call whom. | 2, 6, 7 |
+| **MCP** (Model Context Protocol) | A standard way to give an agent tools. Here the Work IQ tools `retrieve`, `fetch` and `create_entity`. | 5, 6 |
+| **Human in the loop** | Approvals on tool calls, and a simple rule: agents prepare, only people commit. | 5, 6, 7 |
+| **Evaluations and traces** | Score the agent on a test set with a rubric, compare two versions, and follow every call and token of one run. | 7 |
 
 ## Context
 
@@ -15,6 +31,8 @@ Open your lab, get to know the Strandvik world, and put its data where the agent
 > Alex is asleep. Alex works at Strandvik Drives, which builds and services the drive units that keep heavy machines running. Customers pay Strandvik for uptime.
 >
 > In three minutes, Maria's agent will knock on Strandvik's door. Before anyone can answer it, someone has to switch the lights on: know what Strandvik owns, where it is, and **who owns what**. That someone is your team.
+
+![Who is who tonight. Kolvo AB, the truck maker: Maria, the production manager who approves every order, and Maria's agent, which asks three suppliers at 02:13 and never orders. Strandvik Drives AB, your company: Alex, the key account manager for Kolvo who decides at 07:30; Sam, the key account manager for Poliden in Singapore who owns reservation RSV-2291; Noor, the field service coordinator; Jonas, the technician free on Wednesday night; and the agents you build: customer service, Alex's agent, and the Parts, Service and Logistics agents. Poliden AB: the maintenance planner who confirms a stop date change in writing around 10:00. The rival suppliers Nordic Drive Parts and Hallberg Repair Services. The facts the night turns on: two candidate units, a note is not a release, and the deadline of Thursday 06:00](../images/readme-cast.png)
 
 > [!IMPORTANT]
 > Use your **lab user** everywhere. Your own corporate account will not see the lab. Build in the **strandvik** project only. The **kolvo** project belongs to Kolvo: look, don't touch.
@@ -25,7 +43,7 @@ Open your lab, get to know the Strandvik world, and put its data where the agent
 
 Everything in this hack runs in the browser: the Azure portal, the Foundry portal, the Fabric portal, the Work IQ viewer and Kolvo's board. One step in challenges 2, 6 and 7 runs a short script in **Azure Cloud Shell**, also in the browser. You install nothing.
 
-1. Open your **lab dashboard** (the lab page your coach gives you). Keep it open all day. It shows your lab user and password, the resource group, and the values you need later:
+1. Open your **lab dashboard** (the lab page your coach gives you). Keep it open all day. It shows your lab user and password, the resource group (several labs share one subscription, so the Cloud Shell script in challenges 2, 6 and 7 needs this name), and the values you need later:
 
    | Value | Used for |
    |---|---|
@@ -36,10 +54,17 @@ Everything in this hack runs in the browser: the Azure portal, the Foundry porta
    | `WorkIQEmulatorEndpoint`, `WorkIQKey`, `WorkIQKeySam` | Alex's Work IQ tool and the viewer sign-in for Alex and Sam (challenge 5) |
 
 2. Open a **private (InPrivate or Incognito) browser window** and sign in to the [Azure portal](https://portal.azure.com) with the **lab user**. A private window keeps your corporate account out of the way.
-3. Get the hack files on your machine: Parts C and D upload the documents and the CSV files from your computer. On the hack's GitHub page select **Code** > **Download ZIP** and unzip it. The hack is in the folder `03-Azure/01-04-AI/15_Microsoft_IQ`; you need its `data/documents` and `data/lakehouse` folders. If a ZIP download is blocked, open each file in [`data/documents/`](../data/documents/) and [`data/lakehouse/`](../data/lakehouse/) on GitHub and select **Download raw file**.
+3. Download the hack data: Parts C and D upload the documents and the CSV files from your computer. Select both links; each click downloads one zip:
+
+   | Download | What is in it | Used in |
+   |---|---|---|
+   | [strandvik-documents.zip](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/downloads/strandvik-documents.zip) | The 7 Strandvik documents (`.md`) | Part C: Blob Storage |
+   | [strandvik-lakehouse-csv.zip](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/downloads/strandvik-lakehouse-csv.zip) | The 14 business tables (`.csv`) | Part D: the lakehouse |
+
+   **Unzip both** before you upload (on Windows: right-click > **Extract All**). You do not need to download or clone the whole repository.
 
 > [!TIP]
-> One set of files per team is enough: whoever uploads in Parts C and D needs them. Everyone else can start reading for the map in Part E.
+> One set of files per team is enough: whoever uploads in Parts C and D needs them. Everyone else can start reading the documents for Part E.
 
 > [!NOTE]
 > Developers who want to run the optional notebooks can use a Codespace or a local clone. See [If you run in GitHub Codespaces (optional)](#if-you-run-in-github-codespaces-optional) at the end of the tasks. Nobody needs it.
@@ -47,7 +72,7 @@ Everything in this hack runs in the browser: the Azure portal, the Foundry porta
 ### Part B: Open the three portals and Cloud Shell (5 min)
 
 1. **Foundry portal**: open `StrandvikProjectUrl` from the lab dashboard (or [ai.azure.com](https://ai.azure.com), switch **New Foundry** on at the top, and pick the project **strandvik** of the `iq-<hash>` resource in the project picker at the top left). Check that **Build** > **Agents** is empty. Open the **kolvo** project the same way (`KolvoProjectUrl`) and check that `maria-procurement`, `nordic-drive-parts` and `hallberg-repair` are listed.
-2. **Azure portal**: open **Resource groups** > your lab resource group (its name is on the lab dashboard). You see the Foundry resource `iq-<hash>`, the Search service `iq-srch-<hash>`, the storage account `iqst<hash>`, the Fabric capacity `iqcap<hash>`, Application Insights `iq-appi-<hash>` and the emulator `iq-wiq-<hash>`.
+2. **Azure portal**: open **Resource groups** > your lab resource group (its name is on the lab dashboard). You see the Foundry resource `iq-<hash>` with its projects, the Search service `iq-srch-<hash>`, the storage account `iqst<hash>`, the Fabric capacity `iqcap<hash>`, Application Insights `iq-appi-<hash>` and the emulator `iq-wiq-<hash>`, plus a few helpers (Log Analytics, and the emulator's plan and storage account).
 3. **Fabric portal**: open `FabricPortalUrl` (or [app.fabric.microsoft.com](https://app.fabric.microsoft.com)) with the lab user and go to **Workspaces** > `strandvik-<hash>`.
 4. **Azure Cloud Shell**: in the Azure portal top bar select the **Cloud Shell** icon (`>_`) and choose **Bash**. If asked about storage, choose **No storage account required** (an ephemeral session is fine) and your lab subscription. When the prompt appears, close it again. You use it in challenge 2; if it does not open, tell your coach now.
 
@@ -56,7 +81,7 @@ Everything in this hack runs in the browser: the Azure portal, the Foundry porta
 
 ### Part C: Upload the documents to Blob Storage (5 min)
 
-1. Find the 7 files in `data/documents` of the hack files you downloaded in Part A (on GitHub: [`data/documents/`](../data/documents/)).
+1. Find the 7 files in the unzipped `strandvik-documents` folder from Part A (you can read them in the repo at [`data/documents/`](../data/documents/)).
 2. Azure portal > the lab resource group > the storage account `iqst<hash>` > **Storage browser** > **Blob containers** > `documents`.
 3. If you see "You do not have permissions" or a key error, switch **Authentication method** to **Microsoft Entra user account**. Shared key access is off; the lab user has Storage Blob Data Contributor.
 4. Select **Upload** > drag the 7 files > **Upload**.
@@ -78,12 +103,12 @@ Expected files (do not rename them; later challenges and the evaluation set expe
 
 ### Part D: Load the lakehouse in Fabric (15 min)
 
-1. Fabric portal > your workspace > **+ New item** > **Lakehouse**. **Name**: `strandvik_lakehouse`. Leave **Lakehouse schemas** off. Select **Create**.
+1. Fabric portal > your workspace > **+ New item** > **Lakehouse**. **Name**: `strandvik_lakehouse`. **Untick Lakehouse schemas** (it is ticked by default). Select **Create**.
 
 <!-- SHOT: c01-fabric-new-lakehouse | Fabric portal, workspace strandvik-<hash> > + New item > Lakehouse dialog | The "New lakehouse" dialog with the name strandvik_lakehouse and schemas unchecked | Highlight the name field and the schemas checkbox -->
 ![New lakehouse](../images/c01-fabric-new-lakehouse.png)
 
-2. In the lakehouse explorer, next to **Files** select **...** > **Upload** > **Upload files**. Select the 14 CSV files from `data/lakehouse` in the hack files you downloaded (on GitHub: [`data/lakehouse/`](../data/lakehouse/)) and select **Upload**.
+2. In the lakehouse explorer, next to **Files** select **...** > **Upload** > **Upload files**. Select the 14 CSV files from the unzipped `strandvik-lakehouse-csv` folder from Part A (you can read them in the repo at [`data/lakehouse/`](../data/lakehouse/)) and select **Upload**.
 3. Open **Files**, then for each CSV: **...** > **Load to Tables** > **New table**. Keep the table name (the file name without `.csv`), **Column header** on, **Separator** `,`. Select **Load**.
 
 <!-- SHOT: c01-fabric-load-to-table | Fabric portal, strandvik_lakehouse > Files > drive_units.csv > ... menu | The "Load to Tables" > "New table" dialog for drive_units.csv | Highlight "Load to Tables", the table name and the header option -->
@@ -95,7 +120,7 @@ Expected files (do not rename them; later challenges and the evaluation set expe
    > An F2 capacity runs few loads at a time. If you get HTTP 430 or "capacity busy", wait 20 seconds and load again.
 
 5. Check: the **Tables** folder shows 14 tables. Select `reservations` and confirm the preview shows `RSV-2291`, `SD9-R-0733`, `P-SAM`.
-6. Switch the lakehouse view to **SQL analytics endpoint** (top right) once, and select **Refresh** if a table is missing there. The data agent in challenge 3 reads the schema from this endpoint.
+6. Back in the workspace list, the lakehouse has a child item of type **SQL analytics endpoint** (same name). Open it once and expand **Schemas** > **dbo** > **Tables**: you should see the 14 tables. If one is missing, select the refresh icon (the first icon in the ribbon) and wait a minute. The data agent in challenge 3 reads the schema from this endpoint.
 
 <!-- SHOT: c01-lakehouse-tables | Fabric portal, strandvik_lakehouse (Lakehouse view) | Tables folder expanded with 14 tables, reservations preview open | Highlight the table count and the RSV-2291 row -->
 ![14 tables in the lakehouse](../images/c01-lakehouse-tables.png)
@@ -103,9 +128,25 @@ Expected files (do not rename them; later challenges and the evaluation set expe
 > [!TIP]
 > **Running the optional Codespace?** [`notebooks/00-load-the-world.ipynb`](../notebooks/00-load-the-world.ipynb) does Parts C and D in one go. See [If you run in GitHub Codespaces (optional)](#if-you-run-in-github-codespaces-optional). Both paths end in the same place.
 
-### Part E: Map the Strandvik world (10 min)
+### Part E: Read the Strandvik world (10 min)
 
-Map the world **on paper** (a whiteboard, a sheet, a Loop page, anything). Use [`data/README.md`](../data/README.md), the CSV files in [`data/lakehouse/`](../data/lakehouse/) and the documents in [`data/documents/`](../data/documents/).
+Strandvik Drives, Kolvo and Poliden are fictional, but their rules are written down like a real company's. **Every team member** reads the seven documents, so everyone knows what the companies do and which rules the night turns on. Short on time? Split them, then tell each other in one sentence what each one says.
+
+| Document | What it is |
+|---|---|
+| [EAP-01: External agent access policy](../data/documents/external-agent-access-policy-eap-01.md) | Who outside Strandvik may ask its agents what, and what an agent may never do for them. |
+| [RES-02: Reservation policy](../data/documents/reservation-policy-res-02.md) | When a reserved unit may be used for someone else, and who must agree. |
+| [SC-KOL-2024: Kolvo service contract](../data/documents/service-contract-kolvo-sc-kol-2024.md) | What Strandvik promised Kolvo: the replacement target for the press lines, installation, uptime credits. |
+| [SC-POL-2025: Poliden service contract](../data/documents/service-contract-poliden-sc-pol-2025.md) | Poliden's planned swaps, and how a change of date must be confirmed. |
+| [LOG-03: Logistics rules](../data/documents/logistics-rules-log-03.md) | Routes, typical transit times, costs, flight holds and who approves a booking. |
+| [SD-900 product sheet](../data/documents/sd-900-product-sheet.md) | The drive unit itself: what it replaces and how long an installation takes. |
+| [FS-04: Technician scheduling](../data/documents/technician-scheduling-fs-04.md) | When a certified technician can install at a customer, and how much notice they need. |
+
+While you read, note three things for your map: who **owns** what, what an agent **may not** do, and every **time** that matters tonight.
+
+### Part F: Map the Strandvik world (10 min)
+
+Map the world **on paper** (a whiteboard, a sheet, a Loop page, anything). Use what you read in Part E, [`data/README.md`](../data/README.md) and the CSV files in [`data/lakehouse/`](../data/lakehouse/).
 
 Your map shows at least:
 
@@ -125,7 +166,7 @@ Keep the map. You turn it into an ontology in challenge 3 and into instructions 
 Not needed for the hack. Use it only if you are a developer and want to run the optional notebooks (`00-load-the-world` for Parts C and D, `02-knowledge-graph-stretch` for the challenge 4 stretch), or run the Cloud Shell script from your own terminal.
 
 > [!IMPORTANT]
-> **Fork the hack repository to your own GitHub account** and create the Codespace on your fork (or clone it to your machine). Codespaces are billed to the GitHub account that creates them. Microsoft does not pay for them.
+> The hack does not provide Codespaces billing. **Fork the hack repository to your own GitHub account** and create the Codespace on your fork, using your own account's Codespaces allowance (personal GitHub accounts include free Codespaces hours every month). Or clone the repository to your machine.
 
 **In a Codespace**
 
@@ -165,9 +206,10 @@ Clone the repository (your fork or the original). You need Python 3.11 or later 
 ## Success criteria
 
 - [ ] Every team member can open the lab dashboard and has signed in to the three portals with the lab user.
-- [ ] The team has the hack files (`data/documents`, `data/lakehouse`) on at least one machine.
+- [ ] The team has downloaded and unzipped `strandvik-documents.zip` and `strandvik-lakehouse-csv.zip` on at least one machine.
 - [ ] The coach sees 7 `.md` files in the `documents` container (Azure portal > storage account > Storage browser).
 - [ ] The coach sees 14 tables in `strandvik_lakehouse` in Fabric, and a preview of `reservations` shows `RSV-2291`.
+- [ ] Every team member has read the seven documents and can say in one sentence what EAP-01 and RES-02 are for.
 - [ ] Your paper map answers, without a laptop: *Which unit runs press line 2? Which two SD-900s could replace it? Who owns the Rotterdam one?*
 - [ ] Every team member can open the Kolvo project and see `maria-procurement`.
 
@@ -176,7 +218,8 @@ Clone the repository (your fork or the original). You need Python 3.11 or later 
 | Symptom | Fix |
 |---|---|
 | The portals show no lab resources, or "You don't have access" | You are signed in with your corporate account. Use a private browser window and sign in with the lab user from the lab dashboard. |
-| The ZIP download is blocked or very slow | Open the files in `data/documents` and `data/lakehouse` on GitHub one by one and select **Download raw file**. |
+| A zip download is blocked or very slow | Open the files in [`data/documents/`](../data/documents/) and [`data/lakehouse/`](../data/lakehouse/) on GitHub one by one and select **Download raw file**. |
+| Upload shows a `.zip` file, or no files | Unzip first. Upload the 7 `.md` files and the 14 `.csv` files, not the zips. |
 | No `strandvik-<hash>` workspace in Fabric | Create it on the lab capacity (Part B note). |
 | Cloud Shell does not open, or is blocked by a policy | Tell your coach. A teammate who runs the optional Codespace (or a local clone with the Azure CLI) can run the same script for the team in challenges 2, 6 and 7. |
 | Storage browser: "This request is not authorized" | Switch **Authentication method** to **Microsoft Entra user account**. Right after the lab is created, wait a minute for the role to apply. |

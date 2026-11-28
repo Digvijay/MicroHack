@@ -118,6 +118,8 @@ $roles = @{
     SearchIndexDataReader      = "1407120a-92aa-4202-b7e9-c0e197c71c8f"
     StorageBlobDataContributor = "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
     StorageBlobDataReader      = "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1"
+    LogAnalyticsReader         = "73c42c96-874c-492b-b04d-ab87d138a893"
+    MonitoringReader           = "43d0d8ad-25c7-4714-9337-8ba259a9fe05"
 }
 
 # ---------------------------------------------------------------------------
@@ -131,16 +133,30 @@ $candidateRegions = @($PreferredLocation | ForEach-Object { $_ -split ',' } |
     ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ })
 if ($candidateRegions.Count -eq 0) { $candidateRegions = @("swedencentral", "francecentral", "switzerlandnorth") }
 
-$stableHash = (Get-MhhStableHash -Value $AllowedEntraUserIds -Length 12).ToLower()
+$userHash = (Get-MhhStableHash -Value $AllowedEntraUserIds -Length 12).ToLower()
 
 $effectiveRG = $ResourceGroupName
 if ([string]::IsNullOrWhiteSpace($effectiveRG)) {
     # 'subscription' deployments get no resource group from the platform.
-    $effectiveRG = "rg-iq-lab-$stableHash"
+    $effectiveRG = "rg-iq-lab-$userHash"
     if (-not (Get-AzResourceGroup -Name $effectiveRG -ErrorAction SilentlyContinue)) {
         New-AzResourceGroup -Name $effectiveRG -Location $candidateRegions[0] | Out-Null
         Write-Host "[OK]    Created resource group '$effectiveRG' (subscription deployment)."
     }
+}
+
+# Globally unique names (Search, storage, capacity, emulator) must differ per lab, also when the
+# same attendee gets a second lab in the same subscription. A re-run in a group that already holds
+# a lab reuses that lab's suffix, so re-runs stay idempotent.
+$stableHash = $null
+$existingSearch = Invoke-AzRestMethod -Method GET -Uri ("https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/" +
+    "$effectiveRG/providers/Microsoft.Search/searchServices?api-version=2025-05-01")
+if ($existingSearch.StatusCode -eq 200) {
+    $prior = @(($existingSearch.Content | ConvertFrom-Json).value | Where-Object { $_.name -match '^iq-srch-([0-9a-z]{12})$' }) | Select-Object -First 1
+    if ($prior) { $stableHash = $prior.name.Substring(8) }
+}
+if (-not $stableHash) {
+    $stableHash = (Get-MhhStableHash -Value (@($AllowedEntraUserIds) + "sub:$SubscriptionId|rg:$effectiveRG") -Length 12).ToLower()
 }
 
 $foundryAccountName = $null   # derived below
@@ -861,6 +877,9 @@ foreach ($userId in $AllowedEntraUserIds) {
     Grant-LabRole -Scope $searchId  -PrincipalId $userId -PrincipalType User -RoleName SearchServiceContributor -Label $who
     Grant-LabRole -Scope $searchId  -PrincipalId $userId -PrincipalType User -RoleName SearchIndexDataContributor -Label $who
     Grant-LabRole -Scope $storageId -PrincipalId $userId -PrincipalType User -RoleName StorageBlobDataContributor -Label $who
+    # Traces (challenge 7): the Foundry Traces views read Application Insights and its Log Analytics workspace.
+    Grant-LabRole -Scope $appiId    -PrincipalId $userId -PrincipalType User -RoleName LogAnalyticsReader -Label $who
+    Grant-LabRole -Scope $laId      -PrincipalId $userId -PrincipalType User -RoleName LogAnalyticsReader -Label $who
 }
 
 # Foundry IQ: the Search identity reads the blobs and calls the embedding/chat models.
@@ -878,6 +897,8 @@ foreach ($pName in $projectResources.Keys) {
         Grant-LabRole -Scope $searchId -PrincipalId $projPrincipal -PrincipalType ServicePrincipal -RoleName $r -Label $projectWho
     }
     Grant-LabRole -Scope $accountId -PrincipalId $projPrincipal -PrincipalType ServicePrincipal -RoleName FoundryUser -Label $projectWho
+    # Evaluations on production traces read Application Insights with the project identity.
+    Grant-LabRole -Scope $appiId -PrincipalId $projPrincipal -PrincipalType ServicePrincipal -RoleName MonitoringReader -Label $projectWho
 }
 
 # The identity running this script builds the Kolvo agents through the Foundry data
@@ -1000,9 +1021,16 @@ $fabricWorkspaceId = $null
 $fabricPortalUrl = "https://app.fabric.microsoft.com/home?tid=$((Get-AzContext).Tenant.Id)"
 function Invoke-LabFabric {
     param([string]$Method, [string]$Path, $Body, [int[]]$Ok = @(200, 201, 202))
-    $tok = Get-AzAccessToken -ResourceUrl "https://api.fabric.microsoft.com" -WarningAction SilentlyContinue
-    $raw = $tok.Token
-    if ($raw -is [System.Security.SecureString]) { $raw = [System.Net.NetworkCredential]::new('', $raw).Password }
+    $raw = $null
+    try {
+        $tok = Get-AzAccessToken -ResourceUrl "https://api.fabric.microsoft.com" -WarningAction SilentlyContinue -ErrorAction Stop
+        $raw = $tok.Token
+        if ($raw -is [System.Security.SecureString]) { $raw = [System.Net.NetworkCredential]::new('', $raw).Password }
+    } catch {
+        # An Az context made from an access token cannot mint other audiences: fall back to the Azure CLI sign-in.
+        if (Get-Command az -ErrorAction SilentlyContinue) { $raw = az account get-access-token --resource https://api.fabric.microsoft.com --query accessToken -o tsv 2>$null }
+        if (-not $raw) { throw }
+    }
     $params = @{ Method = $Method; Uri = "https://api.fabric.microsoft.com/v1$Path"; Headers = @{ Authorization = "Bearer $raw" }
                  ContentType = 'application/json'; SkipHttpErrorCheck = $true }
     if ($null -ne $Body) { $params.Body = ($Body | ConvertTo-Json -Depth 6) }

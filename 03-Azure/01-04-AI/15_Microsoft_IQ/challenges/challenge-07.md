@@ -20,7 +20,7 @@ Rules for this morning:
 
 - Alex's approval is a **person** posting in the thread. No agent approves, and no agent posts "approved".
 - Compare runs on the **same** dataset and evaluators, or the comparison means nothing.
-- Evaluations call the real tools. Expect test posts in the Kolvo thread (the coach can reset it).
+- Evaluations call the real tools. Expect test posts in the Kolvo thread. You can clear them yourself: Work IQ viewer > **Story** > **Reset the Kolvo thread**.
 
 > [!TIP]
 > Do Part A and Part B first. The evaluation runs in the background (about 11 minutes in testing) while you do Parts C and D.
@@ -47,19 +47,26 @@ Create the evaluator first, so the evaluation wizard can pick it.
 
 ### Part B: Start one evaluation with two pinned versions (7 min)
 
-Agents keep their versions. The baseline is `alex-agent` **version 3**: the challenge 5 agent (Work IQ only, short instructions). The improved agent is the latest version (challenge 6: full instructions and the three A2A tools). Check your own version numbers in the playground's **Version** list.
+Agents keep their versions: every **Save** creates a new one. By default an evaluation targets only the **latest** version. When you **pin two versions**, one evaluation runs both of them on the same dataset, with the same evaluators and the same judge model. **Compare runs** then measures your instruction and tool changes, and nothing else.
+
+Which two versions?
+
+- **The baseline**: `alex-agent` at the end of challenge 5 (Work IQ only, the short people rules). In testing that was **v3**.
+- **The improved agent**: the latest version, at the end of challenge 6 (the full instructions plus the three A2A specialists). In testing that was **v6**.
+
+Your numbers can differ: every team saves a different number of times. Open the playground's **Version** list, find the version you saved at the end of challenge 5 and note the latest one. The steps below use v3 and v6; use your own numbers.
 
 > [!IMPORTANT]
 > Version 1 is the empty agent from the "Build an agent" dialog. It is not a useful baseline.
 
 1. Open `alex-agent` > **Evaluation** > **Create**.
-2. **1 Target**: **Agent**. In the `alex-agent` row, open the **Version** list and tick **Pin v3** next to the latest version. The banner shows `alex-agent: v6, v3`. One evaluation now produces one run per version, on the same data and criteria.
+2. **1 Target**: **Agent**. In the `alex-agent` row, open the **Version** list and tick **Pin** next to your challenge 5 version (v3 in testing) and next to the latest version (v6 in testing). The banner shows both, for example `alex-agent: v6, v3`. One evaluation now produces one run per version, on the same data and criteria.
 
    <!-- SHOT: c07-eval-pin-versions | Foundry portal, Create new evaluation > Target | alex-agent row with the Version list open, Pin v3 and Pin v6 ticked, banner "alex-agent: v6, v3" | Highlight the two pinned versions and the banner -->
    ![Pin two versions](../images/c07-eval-pin-versions.png)
 
 3. **2 Scope**: **Individual turns**.
-4. **3 Data**: **Existing dataset** > **Upload new dataset** > choose [`data/eval/strandvik-eval-15.jsonl`](../data/eval/strandvik-eval-15.jsonl) (15 rows; the full [`strandvik-eval.jsonl`](../data/eval/strandvik-eval.jsonl) has 27), name it `strandvik-eval-15` > **Upload**. The preview shows `query`, `ground_truth`, `context`. The field mapping is automatic.
+4. **3 Data**: download [strandvik-eval-15.jsonl](https://github.com/microsoft/MicroHack/raw/main/03-Azure/01-04-AI/15_Microsoft_IQ/data/eval/strandvik-eval-15.jsonl) first (the click saves the file; read it in the repo at [`data/eval/strandvik-eval-15.jsonl`](../data/eval/strandvik-eval-15.jsonl)). Then **Existing dataset** > **Upload new dataset** > choose the downloaded file (15 rows; the full [`strandvik-eval.jsonl`](../data/eval/strandvik-eval.jsonl) has 27), name it `strandvik-eval-15` > **Upload**. The preview shows `query`, `ground_truth`, `context`. The field mapping is automatic.
 5. **4 Configure agents**: keep the defaults.
 6. **5 Criteria**: the **Judge model** is preselected (`gpt-5.6-luna`). Keep the six recommended evaluators: **Output quality** (fluency, coherence, intent resolution, task adherence, groundedness, task completion), **Tool use quality**, **Violence**, **Sexual**, **Self-harm**, **Hate and unfairness**. Then **Custom (1)** > **Rubric** > tick **Alex night rubric**. Select **Review selected (7)**.
 
@@ -77,7 +84,7 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
 ### Part C: Play Alex at 07:30 (5 min)
 
 1. Take the vote in your team: fly in the Pune unit, take Poliden's unit, or both?
-2. Open the Work IQ viewer with **`WorkIQKey`** (Alex). Go to **Chats** > **Kolvo press line 2, SD-900**.
+2. Open the Work IQ viewer with **`WorkIQKey`** (Alex). First set the clock yourself, so Alex's post shows 07:30: select **Story** in the top navigation > **Set the story clock** > enter `07:30` > set it. Then go to **Chats** > **Kolvo press line 2, SD-900**.
 3. Under **Post as: Alex**, post Alex's decision (adjust it if your team voted differently):
 
    ```text
@@ -92,7 +99,7 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
 
 ### Part D: Traces and cost (8 min)
 
-1. In the `alex-agent` playground, run the night again (challenge 6, Part F, turn 1) and select **Traces** under the answer. Or open the agent's **Traces** tab.
+1. In the `alex-agent` playground, run the night again (challenge 6, Part F, turn 1) and select **Traces** under the answer. Or open the agent's **Traces** tab. The lab connects Application Insights (backed by a Log Analytics workspace) to both projects and gives your lab user **Log Analytics Reader**, so the traces show in Foundry. A trace appears a minute or two after the run: if the list is empty, wait and refresh.
 2. Look at the views **Trajectories**, **User view** and **Graph view**. Find Alex's agent, each A2A call to a specialist, the Work IQ calls and the token count. The nesting looks like this:
 
    ```text
@@ -124,7 +131,7 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
    <!-- SHOT: c07-eval-baseline-results | Foundry portal, alex-agent-night > Evaluation runs grid, scrolled right | Two runs (alex-agent: 6 and alex-agent: 3) with Sexual, SelfHarm, HateAndUnfairness at 100% and alex-night-rubric 58% (7/12) against 27% (4/15) | Highlight the rubric column and the 100% safety -->
    ![The two runs](../images/c07-eval-baseline-results.png)
 
-2. Select both runs > **Compare runs**. Set **Baseline** to the v3 run (both runs are called `alex-agent`; the first one in the list is the latest version). The page runs a t-test per evaluator.
+2. Select both runs > **Compare runs**. Set **Baseline** to the run of your challenge 5 version (v3 in testing; both runs are called `alex-agent`, and the first one in the list is the latest version). The page runs a t-test per evaluator.
 
    <!-- SHOT: c07-compare-runs | Foundry portal, alex-agent-night > Compare runs, scrolled down | Statistically compare results, TTest, the safety rows and alex-night-rubric 0.27 (Baseline) against 0.47 (Inconclusive) | Highlight the rubric row and the word Inconclusive -->
    ![Baseline and improved evaluation runs compared](../images/c07-compare-runs.png)
@@ -162,6 +169,8 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
 | Custom rubric scores everything 3 | The rubric was pasted without the criteria list. Paste the whole text box. |
 | **Compare runs** greyed out | Select two runs of the same evaluation. |
 | Trace shows only Alex's agent, no nested spans | Application Insights is not connected to one of the projects. Ask your coach. |
+| Traces tab empty or "no access" | Traces arrive a minute or two after a run: wait and refresh. If it still says "no access", ask your coach to check that your lab user has Log Analytics Reader on Application Insights. |
+| Alex's post does not show 07:30 | Set the clock before you post: viewer > **Story** > **Set the story clock** > `07:30`. |
 | Board run fails as a whole | Maria's run fails if any supplier is unreachable. Check that `strandvik-customer-service` still has incoming A2A on (a new agent version can need it again). Run the Cloud Shell script for it again (challenge 2, Part E). |
 | Board times out with the stretch | The call chain is long and the board waits up to 180 seconds. See the stretch tips. |
 
@@ -169,12 +178,21 @@ Agents keep their versions. The baseline is `alex-agent` **version 3**: the chal
 
 **Make the handover real.** Give `strandvik-customer-service` an A2A tool to `alex-agent` so Maria's agent receives the proposal itself.
 
-1. In Cloud Shell (Bash), open `alex-agent` to A2A and let customer service in. The script's default card for `alex-agent` reads "Strandvik Drives internal: Alex's agent, prepares proposals for Kolvo cases. Never commits." Wait 3 to 6 minutes.
+1. In Cloud Shell (Bash), open `alex-agent` to A2A and let customer service in. Pass your lab's resource group from the lab dashboard, as in challenge 2. The script's default card for `alex-agent` reads "Strandvik Drives internal: Alex's agent, prepares proposals for Kolvo cases. Never commits." Replace `<your card description>` with your own text, or leave `--description` out to keep the default. Wait 3 to 6 minutes.
 
    ```bash
    curl -sO https://raw.githubusercontent.com/microsoft/MicroHack/main/03-Azure/01-04-AI/15_Microsoft_IQ/scripts/enable-a2a.py
-   python3 enable-a2a.py --agent alex-agent --caller strandvik/strandvik-customer-service
+   python3 enable-a2a.py --agent alex-agent --caller strandvik/strandvik-customer-service --resource-group <your lab resource group> --scope agent --description "<your card description>"
    ```
+
+   | Option | What it means |
+   |---|---|
+   | `--agent` | The Strandvik agent you open to A2A: `alex-agent`. |
+   | `--caller project/agent` | The agent allowed to call it: `strandvik/strandvik-customer-service`. |
+   | `--resource-group` | Your lab's resource group, from the lab dashboard. Needed because several labs share one subscription. |
+   | `--description` | Your team's agent card text. Without it the script publishes the hack's default card. |
+   | `--scope agent` or `project` | `agent` (the default) grants the role on `alex-agent` only: least privilege. `project` grants it on every agent in the strandvik project. |
+
 2. `strandvik-customer-service` > **Add** > **Add tools** > **Custom** > **Agent2agent (A2A)** > **Create**: name `alex-agent-a2a`, endpoint `.../agents/alex-agent/endpoint/protocols/a2a`, **Microsoft Entra Agent Identity**.
 3. Add to its instructions, in Step 4:
 

@@ -236,8 +236,10 @@ function Deploy-WorkIQEmulator {
     } | Out-Null
     Wait-WorkIQProvisioned -Path "$($planPath)?api-version=2024-04-01" | Out-Null
 
-    $sessionBytes = [byte[]]::new(32)
-    [System.Security.Cryptography.RandomNumberGenerator]::Fill($sessionBytes)
+    # Derived from the admin key so a redeploy keeps viewer sessions valid.
+    $hmac = [System.Security.Cryptography.HMACSHA256]::new([Text.Encoding]::UTF8.GetBytes($AdminKey))
+    $sessionBytes = $hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes('workiq-viewer-session'))
+    $hmac.Dispose()
     $appSettings['WORKIQ_ADMIN_KEY'] = $AdminKey
     $appSettings['WORKIQ_SESSION_SECRET'] = [Convert]::ToBase64String($sessionBytes)
     $appSettings['AzureWebJobsStorage__accountName'] = $storageName
@@ -280,7 +282,9 @@ function Deploy-WorkIQEmulator {
                 runtime             = @{ name = 'python'; version = '3.12' }
                 # Python defaults to 1 concurrent request per instance. With a single instance that
                 # makes requests queue behind each other; the ASGI app handles concurrency itself.
+                # State is in memory: one always-ready instance stops scale to zero from wiping the story.
                 scaleAndConcurrency = @{
+                    alwaysReady          = @(@{ name = 'http'; instanceCount = 1 })
                     maximumInstanceCount = 1
                     instanceMemoryMB     = 2048
                     triggers             = @{ http = @{ perInstanceConcurrency = 16 } }

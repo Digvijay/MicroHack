@@ -375,6 +375,19 @@ def check_no_dashes():
             check("\u2014" not in text and "\u2013" not in text, f"{path.name}: em or en dash found")
 
 
+def check_downloads():
+    import zipfile
+    for name, folder, pattern in (("strandvik-documents.zip", "documents", "*.md"), ("strandvik-lakehouse-csv.zip", "lakehouse", "*.csv")):
+        z = Path(__file__).resolve().parent / "downloads" / name
+        check(z.exists(), f"downloads/{name} missing (run python data/make_downloads.py)")
+        if not z.exists():
+            continue
+        src = {f.name: f.read_bytes() for f in (Path(__file__).resolve().parent / folder).glob(pattern)}
+        with zipfile.ZipFile(z) as zf:
+            got = {n: zf.read(n) for n in zf.namelist()}
+        check(got == src, f"downloads/{name} is out of date (run python data/make_downloads.py)")
+
+
 def main():
     t = check_lakehouse()
     _, _, people, machines, units = check_integrity(t)
@@ -382,6 +395,7 @@ def main():
     check_documents()
     n_items = check_seed()
     n_eval = check_eval()
+    check_downloads()
     check_ontology()
     check_no_dashes()
     print("lakehouse rows: " + ", ".join(f"{k} {len(v)}" for k, v in t.items()))

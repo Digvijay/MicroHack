@@ -136,9 +136,19 @@ $hallbergCard = @{
 # Helpers
 # ---------------------------------------------------------------------------
 function Get-FoundryToken {
-    $tok = Get-AzAccessToken -ResourceUrl $audience -WarningAction SilentlyContinue
-    if ($tok.Token -is [System.Security.SecureString]) { return [System.Net.NetworkCredential]::new('', $tok.Token).Password }
-    return [string]$tok.Token
+    try {
+        $tok = Get-AzAccessToken -ResourceUrl $audience -WarningAction SilentlyContinue -ErrorAction Stop
+        if ($tok.Token -is [System.Security.SecureString]) { return [System.Net.NetworkCredential]::new('', $tok.Token).Password }
+        return [string]$tok.Token
+    } catch {
+        # An Az context made from an access token (Connect-AzAccount -AccessToken) cannot mint other audiences.
+        # Local runs then fall back to the Azure CLI sign-in.
+        if (Get-Command az -ErrorAction SilentlyContinue) {
+            $cli = az account get-access-token --resource $audience --query accessToken -o tsv 2>$null
+            if ($LASTEXITCODE -eq 0 -and $cli) { return [string]$cli }
+        }
+        throw
+    }
 }
 
 # Foundry data-plane call. Retries 401/403 for a few minutes (a new data role takes a

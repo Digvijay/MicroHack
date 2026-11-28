@@ -9,7 +9,7 @@ from urllib.parse import quote
 from ..store import Entry, Persona, Store, is_transcript, transcript_lines
 
 BANNER = "Work IQ emulator: simulated Microsoft 365 data for the Strandvik hack. Not Microsoft 365."
-NAV = [("mail", "Inbox"), ("chats", "Chats"), ("calendar", "Calendar"), ("files", "Files"), ("people", "People"), ("activity", "Agent activity"), ("board", "Kolvo board")]
+NAV = [("mail", "Inbox"), ("chats", "Chats"), ("calendar", "Calendar"), ("files", "Files"), ("people", "People"), ("activity", "Agent activity"), ("board", "Kolvo board"), ("story", "Story")]
 
 
 def h(value: object) -> str:
@@ -149,7 +149,7 @@ def chats_page(store: Store, persona: Persona, selected: Entry | None, extras: d
                 f'<span>Auto-Sam is <strong id="auto-sam-state">{"on" if on else "off"}</strong>.</span> '
                 f'<button type="submit" class="secondary">{"Turn auto-Sam off" if on else "Turn auto-Sam on"}</button></form>'
                 f'<p class="muted">Story time: <strong id="story-time">{h(extras.get("story_time", ""))}</strong>. '
-                'Coaches can set it on the <a href="/viewer/coach">coach page</a>.</p>'
+                'Set it or reset the thread under <a href="/viewer/story">Story</a>.</p>'
             )
         reply = (
             '<form method="post" action="/viewer/reply" class="reply">'
@@ -356,19 +356,23 @@ def board_page(persona: Persona, run: dict, configured: bool, agent_name: str, r
 
 
 def coach_page(persona: Persona | None, story_time: str, running: bool, notice: str = "", error: str = "") -> str:
+    """Story controls. A person signed in to this lab's viewer needs no key (one emulator per team);
+    without a session the form asks for the lab admin key (coaches)."""
     note = f'<p class="card" role="status">{h(notice)}</p>' if notice else ""
     err = f'<p class="error" role="alert">{h(error)}</p>' if error else ""
     state = "running from the first live post" if running else "stopped, it starts at the first live post in the Kolvo thread"
-    key_field = (
-        '<label for="{id}">Admin key</label>'
+    key_field = "" if persona else (
+        '<label for="{id}">Admin key (or sign in to the viewer first)</label>'
         '<input id="{id}" name="admin_key" type="password" autocomplete="off" required maxlength="512">'
     )
+    who = ("Anyone signed in to your lab's viewer can use these controls." if persona
+           else "Sign in to the viewer with your Work IQ key to use these controls, or enter the lab admin key.")
     body = (
-        '<section class="card narrow wide"><h1>Coach controls</h1>'
+        '<section class="card narrow wide"><h1>Story controls</h1>'
         f"{note}{err}"
         f'<p>Story time now: <strong>{h(story_time)}</strong> (clock {h(state)}).</p>'
-        "<p class=\"muted\">Live posts in the Kolvo thread are stamped with the story time. Set it to 03:52 before Sam's challenge "
-        "and to 07:30 before Alex makes the call. Both actions need the lab admin key (WORKIQ_ADMIN_KEY).</p>"
+        "<p class=\"muted\">Live posts in the Kolvo thread are stamped with the story time. It starts at 03:45 with the first live post "
+        f"and then runs in real time. Set it to 07:30 before Alex makes the call; reset the thread to start the night again. {h(who)}</p>"
         '<form method="post" action="/viewer/coach/clock"><h2>Set the story clock</h2>'
         '<label for="time">Story time, HH:MM on the night of the story (Tuesday)</label>'
         '<input id="time" name="time" type="text" inputmode="numeric" placeholder="07:30" required maxlength="40">'
@@ -379,4 +383,4 @@ def coach_page(persona: Persona | None, story_time: str, running: bool, notice: 
         + key_field.format(id="key-reset")
         + '<button type="submit">Reset the thread</button></form></section>'
     )
-    return page("Coach controls", body, persona, "")
+    return page("Story controls", body, persona, "story")

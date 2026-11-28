@@ -16,7 +16,14 @@ Push teams to create the rubric and submit the evaluation in the first 15 minute
 
 ### Why two pinned versions in one evaluation (Part B)
 
-Agents keep their versions. Pinning v3 (challenge 5: Work IQ only, short instructions) next to the latest version gives one run per version on the same data and criteria, which is what makes **Compare runs** fair. Version 1 is the empty agent from the "Build an agent" dialog. Synthetic generation needs 15 or more rows and works with one target only, so the team uploads `strandvik-eval-15.jsonl`.
+Agents keep their versions: every **Save** makes a new one. By default an evaluation targets only the **latest** version. Pinning two versions makes one evaluation run both of them on the same dataset, with the same evaluators and the same judge model. **Compare runs** then measures the instruction and tool changes, and nothing else.
+
+Why these two:
+
+- **v3** (in testing) is `alex-agent` at the end of challenge 5: Work IQ only, the short people rules. That is the baseline.
+- **The latest** (v6 in testing) is the end of challenge 6: the full instructions plus the three A2A specialists.
+
+Version numbers differ per team, because every team saves a different number of times. Teams look up their own numbers in the playground's **Version** list and pin the challenge 5 version and the latest. Version 1 is the empty agent from the "Build an agent" dialog: not a useful baseline. Synthetic generation needs 15 or more rows and works with one target only, so the team uploads `strandvik-eval-15.jsonl` (a direct download link is in the challenge).
 
 ### The rubric model and the judge model (Parts A and B)
 
@@ -24,19 +31,19 @@ Rubric generation lists only the project's deployed chat models (`gpt-5.4-mini`)
 
 ### Evaluations call the real tools
 
-Reading (`retrieve`, `fetch`) runs. A post (`create_entity`) needs **Approve**, which nobody gives during an evaluation, so the row ends with the approval request (the run completed in testing). If anything did land in the thread, clean it with `POST /manage/thread/reset` or the coach page `/viewer/coach`.
+Reading (`retrieve`, `fetch`) runs. A post (`create_entity`) needs **Approve**, which nobody gives during an evaluation, so the row ends with the approval request (the run completed in testing). If anything did land in the thread, the team cleans it in the Work IQ viewer: **Story** > **Reset the Kolvo thread**.
 
 ### Approval is a person (Part C)
 
-There is no approve button in Foundry. Alex writes in the thread where Alex already works. Point out the difference in the viewer between the agent post label and Alex's own post.
+There is no approve button in Foundry. Alex writes in the thread where Alex already works. Before posting, the team sets the clock itself: Work IQ viewer > **Story** > **Set the story clock** > `07:30`, so Alex's post shows 07:30. Point out the difference in the viewer between the agent post label and Alex's own post.
 
 ### Traces and cost (Part D)
 
-Application Insights is connected to both projects by the lab, so spans nest across projects. In testing the night run (turn 1) nested four levels deep (Alex's agent, the Parts agent, the Fabric data agent and its lakehouse query), took 60 seconds, and the Parts branch alone took 31. The trace's token badge counts the whole tree (about 30,000 tokens); Alex's agent's own share is under 0.01 USD on `gpt-5.4-mini`. The evaluation grid's **Target tokens** is about 100,000 for 15 rows. "About the price of Sam's second coffee." **Monitor** > **Cost** lags 8 to 24 hours.
+The lab connects Application Insights (backed by a Log Analytics workspace) to both projects and gives lab users **Log Analytics Reader**, so traces show in Foundry and spans nest across projects. A trace appears a minute or two after a run. In testing the night run (turn 1) nested four levels deep (Alex's agent, the Parts agent, the Fabric data agent and its lakehouse query), took 60 seconds, and the Parts branch alone took 31. The trace's token badge counts the whole tree (about 30,000 tokens); Alex's agent's own share is under 0.01 USD on `gpt-5.4-mini`. The evaluation grid's **Target tokens** is about 100,000 for 15 rows. "About the price of Sam's second coffee." **Monitor** > **Cost** lags 8 to 24 hours.
 
 ### The stretch handover
 
-The team opens `alex-agent` with `python3 enable-a2a.py --agent alex-agent --caller strandvik/strandvik-customer-service` in Cloud Shell (the first run prints `granted`). Not verified end to end in testing. In this chain nobody is signed in: Maria's agent starts it with its own identity, and the Parts tool on `alex-agent` uses OAuth Identity Passthrough, so expect the Parts call to fail. Let Alex's agent use the facts it already gathered in the night thread, or give Parts the files fallback from solution 6. Frame it as an exploration of where identity breaks.
+The team opens `alex-agent` with `python3 enable-a2a.py --agent alex-agent --caller strandvik/strandvik-customer-service --resource-group <your lab resource group> --scope agent` in Cloud Shell (the first run prints `granted`). Not verified end to end in testing. In this chain nobody is signed in: Maria's agent starts it with its own identity, and the Parts tool on `alex-agent` uses OAuth Identity Passthrough, so expect the Parts call to fail. Let Alex's agent use the facts it already gathered in the night thread, or give Parts the files fallback from solution 6. Frame it as an exploration of where identity breaks.
 
 ## Expected results
 
@@ -88,9 +95,11 @@ Ask the room "Which of the three is your company today?" Most are the repair sho
 | Custom rubric scores everything 3 | Rubric pasted without the criteria list | Paste the whole text box |
 | Compare runs greyed out | Runs from different evaluations selected | Select two runs of the same evaluation |
 | Trace shows only Alex's agent, no nested spans | Application Insights not connected to one project | Check connections `appinsights-strandvik` and `appinsights-kolvo` |
-| Board: `tool_user_error` again | A new version of `strandvik-customer-service` lost incoming A2A, or the role was removed | Re-run `enable-a2a.py --agent strandvik-customer-service --caller kolvo/maria-procurement` in Cloud Shell |
+| Traces tab empty or "no access" | Traces arrive a minute or two after a run, or the lab user lacks Log Analytics Reader | Wait a few minutes and refresh; check the lab user has **Log Analytics Reader** on the Application Insights resource (the deployment grants it) |
+| Board: `tool_user_error` again | A new version of `strandvik-customer-service` lost incoming A2A, or the role was removed | Re-run `enable-a2a.py --agent strandvik-customer-service --caller kolvo/maria-procurement --resource-group <your lab resource group>` in Cloud Shell |
 | Board times out with the stretch | Chain Maria > customer service > Alex > three specialists exceeds 180 seconds | Prepare the proposal earlier and only fetch it, or call fewer specialists |
-| Test posts in the Kolvo thread | Evaluation rows called Work IQ | `POST /manage/thread/reset` or `/viewer/coach` |
+| Test posts in the Kolvo thread | Evaluation rows called Work IQ | Work IQ viewer > **Story** > **Reset the Kolvo thread** |
+| Alex's post shows the wrong time | The story clock runs in real time | Work IQ viewer > **Story** > **Set the story clock** > `07:30`, then post again |
 
 ## Checks for the coach
 
