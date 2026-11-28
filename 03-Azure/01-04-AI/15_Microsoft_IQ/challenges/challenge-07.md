@@ -23,7 +23,7 @@ Rules for this morning:
 - Evaluations call the real tools. Expect test posts in the Kolvo thread. You can clear them yourself: Work IQ viewer > **Story** > **Reset the Kolvo thread**.
 
 > [!TIP]
-> Do Part A and Part B first. The evaluation runs in the background (about 11 minutes in testing) while you do Parts C and D.
+> Do Part A and Part B first. The evaluation runs in the background (4 to 11 minutes in testing) while you do Parts C and D.
 
 ## Tasks
 
@@ -31,16 +31,25 @@ Rules for this morning:
 
 Create the evaluator first, so the evaluation wizard can pick it.
 
-1. Open `alex-agent` > **Evaluation** tab > **Create evaluator** (the "Custom rubric evaluators are here" banner), or **Evaluations** > **Evaluator catalog** > **Create evaluator**.
-2. **Evaluator name** `alex-night-rubric`, **Display name** `Alex night rubric`. **Evaluator type**: **Rubric**. **Category**: **Quality**. **Scoring method**: **Numeric**. Keep **Auto-generate rubric** on.
+1. Open **Evaluations** > **Evaluator catalog** > **Create evaluator**. (The **Create evaluator** link in the banner on the agent's **Evaluation** tab opens the same catalog: select **Create evaluator** there once more.)
+2. **Evaluator name** `alex-night-rubric`. The portal copies the name into **Display name** as you type: replace it with `Alex night rubric`. **Evaluator type**: **Rubric**. **Category**: **Quality**. **Scoring method**: **Numeric**. Keep **Auto-generate rubric** on.
 3. **Model**: `gpt-5.4-mini` (rubric generation lists only the project's deployed chat models; the judge model comes later). **Target agent**: `alex-agent`. This fills **Agent instructions** with the agent's current instructions.
 4. **Prompt**: paste the text box from [`data/eval/custom-rubric.md`](../data/eval/custom-rubric.md).
-5. Select **Generate rubric**. The portal turns the six criteria into scored dimensions (in testing: 7, including a `general_quality` catch-all), each with what a 1, a 3 and a 5 look like. Read them as a team and edit any dimension with the pencil.
-6. Switch on **Use weights** and set the weights from the rubric: Grounded 25, Never commits 25, the others 15, untrusted content 5. Change them if your team disagrees, and be ready to say why. Leave **Pass score threshold** at its default unless the team agrees on another.
+5. Select **Generate rubric** (one to three minutes; if it says "taking longer than expected", keep waiting). The portal turns the six criteria into scored dimensions (in testing: 7, including a `general_quality` catch-all), each with what a 1, a 3 and a 5 look like. Read them as a team and edit any dimension with the pencil.
+6. Switch on **Use weights**. Each dimension gets a **Weight** list from 1 to 10. Follow the rubric's priorities: **5** for the grounded-facts dimension and for the never-commits (proposal, not commitment) dimension, **3** for the others, **1** for `general_quality`. Change them if your team disagrees, and be ready to say why. Leave **Pass score threshold** at its default unless the team agrees on another.
 7. Select **Save evaluator**.
 
 <!-- SHOT: c07-rubric-generated | Foundry portal, Create evaluator (Rubric) after Generate rubric | Left: model gpt-5.4-mini, target agent alex-agent, the pasted prompt. Right: "Generated rubric (7 dimensions)", Pass score threshold, Use weights, the first dimensions | Highlight Generated rubric, Use weights and one dimension -->
 ![The generated rubric](../images/c07-rubric-generated.png)
+
+After **Save evaluator**, open **Evaluator catalog** > **Alex night rubric** to check the weights your team chose.
+
+
+
+After **Save evaluator**, open **Evaluator catalog** > **Alex night rubric** to check the weights your team chose.
+
+<!-- SHOT: c07-rubric-weights | Foundry portal, Evaluations > Evaluator catalog > Alex night rubric (after Save) | Dimensions (7) with the Weight column: 5 for grounded_case_facts_retrieval and proposal_not_commitment_language, 3 for the others | Highlight the two weight-5 dimensions -->
+![Rubric weights](../images/c07-rubric-weights.png)
 
 > [!NOTE]
 > A yellow "Setup incomplete: assign the Foundry project's managed identity the Monitoring Reader role on Application Insights" box can appear under **Context**. It is only needed for **Use production traces from target agent**. Ignore it.
@@ -76,7 +85,7 @@ Your numbers can differ: every team saves a different number of times. Open the 
 7. **6 Frequency**: **One time**. **7 Review**: name `alex-agent-night` > **Submit**.
 
 > [!NOTE]
-> Synthetic data generation needs at least 15 rows and works with one target only, so upload the dataset instead. In testing the agents answered all 15 rows of both versions in about 2 minutes; the judges finished after about 11 minutes.
+> Synthetic data generation needs at least 15 rows and works with one target only, so upload the dataset instead. In testing both runs finished in 4 to 11 minutes, agents and judges included.
 
 > [!NOTE]
 > Evaluation rows call the real tools. Reading (`retrieve`, `fetch`) runs. A post (`create_entity`) needs **Approve**, which nobody gives during an evaluation, so the row ends with the approval request instead of a post. The run does not hang.
@@ -85,6 +94,10 @@ Your numbers can differ: every team saves a different number of times. Open the 
 
 1. Take the vote in your team: fly in the Pune unit, take Poliden's unit, or both?
 2. Open the Work IQ viewer with **`WorkIQKey`** (Alex). First set the clock yourself, so Alex's post shows 07:30: select **Story** in the top navigation > **Set the story clock** > enter `07:30` > set it. Then go to **Chats** > **Kolvo press line 2, SD-900**.
+
+   <!-- SHOT: c07-story-controls | Work IQ viewer (/viewer/story, signed in as Alex) | Story controls with 07:30 typed in Set the story clock, and Reset the thread | Highlight the Story nav item, the clock field and button, and Reset the thread -->
+   ![Story controls](../images/c07-story-controls.png)
+
 3. Under **Post as: Alex**, post Alex's decision (adjust it if your team voted differently):
 
    ```text
@@ -119,6 +132,10 @@ Your numbers can differ: every team saves a different number of times. Open the 
 ![Nested A2A trace](../images/c07-nested-a2a-trace.png)
 
 3. **Cost**: the agent's **Traces** list has **Tokens (In)**, **Tokens (Out)** and **Estimated cost ($)** per run. The token badge at the top of a trace counts the whole tree, specialists included. Estimate the cost of the night: tokens times the model's price per token.
+
+   <!-- SHOT: c07-traces-cost | Foundry portal, alex-agent > Traces | Trace list with Tokens (In), Tokens (Out) and Estimated cost per run, evaluation scores attached | Highlight the Traces tab and the token and cost columns -->
+   ![Tokens and cost per run](../images/c07-traces-cost.png)
+
 4. Discuss the AI FinOps question: "Maria's agent triggers your agents. Who pays, and what happens if your agent hits its cap at 02:13?"
 
 > [!TIP]
@@ -131,7 +148,7 @@ Your numbers can differ: every team saves a different number of times. Open the 
    <!-- SHOT: c07-eval-baseline-results | Foundry portal, alex-agent-night > Evaluation runs grid, scrolled right | Two runs (alex-agent: 6 and alex-agent: 3) with Sexual, SelfHarm, HateAndUnfairness at 100% and alex-night-rubric 58% (7/12) against 27% (4/15) | Highlight the rubric column and the 100% safety -->
    ![The two runs](../images/c07-eval-baseline-results.png)
 
-2. Select both runs > **Compare runs**. Set **Baseline** to the run of your challenge 5 version (v3 in testing; both runs are called `alex-agent`, and the first one in the list is the latest version). The page runs a t-test per evaluator.
+2. Select both runs > **Compare runs**. Set **Baseline** to the run of your challenge 5 version (v3 in testing). Both runs are called `alex-agent`: the **Target** column of the runs grid (for example `alex-agent: 3`) tells them apart, and the list order can vary. The page runs a t-test per evaluator.
 
    <!-- SHOT: c07-compare-runs | Foundry portal, alex-agent-night > Compare runs, scrolled down | Statistically compare results, TTest, the safety rows and alex-night-rubric 0.27 (Baseline) against 0.47 (Inconclusive) | Highlight the rubric row and the word Inconclusive -->
    ![Baseline and improved evaluation runs compared](../images/c07-compare-runs.png)
@@ -167,6 +184,7 @@ Your numbers can differ: every team saves a different number of times. Open the 
 | Dataset upload rejected | JSON Lines, UTF-8, one object per line, no trailing commas. The provided file is valid. |
 | Evaluation run stuck or very slow | Each row makes A2A calls. Use the 15-row file and check the agent still works in the playground. |
 | Custom rubric scores everything 3 | The rubric was pasted without the criteria list. Paste the whole text box. |
+| "Rubric generation failed ... rate limited by model deployment 'gpt-5.4-mini'" | Another long request (an evaluation, a teammate's chat) used the model's tokens per minute. Wait a minute and select **Generate rubric** again. The lab deploys `gpt-5.4-mini` with 200K tokens per minute; if it keeps failing, ask your coach. |
 | **Compare runs** greyed out | Select two runs of the same evaluation. |
 | Trace shows only Alex's agent, no nested spans | Application Insights is not connected to one of the projects. Ask your coach. |
 | Traces tab empty or "no access" | Traces arrive a minute or two after a run: wait and refresh. If it still says "no access", ask your coach to check that your lab user has Log Analytics Reader on Application Insights. |

@@ -155,6 +155,18 @@ def test_auto_sam_replies_after_delay(pack):
     assert msgs[0]["body"]["content"] == chat.SAM_BUSY_REPLY and msgs[1]["body"]["content"] == "Sam, hello again?"
 
 
+def test_auto_sam_does_not_repeat_his_answer_to_a_proposal(pack):
+    clock = Clock()
+    st = make_state(pack, clock=clock, auto_sam=True, auto_sam_delay=5.0)
+    c = TestClient(create_app(st))
+    gid = st.store.by_item_id["W3"].gid
+    st.post_chat_message("W3", "alex", ASK_SAM)
+    clock.advance(6)
+    assert _thread(c, KEYS["alex"], gid)[0]["body"]["content"] == chat.SAM_YES_REPLY
+    st.post_chat_message("W3", "alex", "Proposal: SD9-R-0733 from Rotterdam. Sam said the reservation can move. Final confirmation from Alex by 07:30.")
+    assert not st.sam_pending("W3")
+
+
 def test_auto_sam_off_by_default_and_toggle(client, state):
     gid = state.store.by_item_id["W3"].gid
     assert state.auto_sam is False

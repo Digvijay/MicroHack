@@ -26,7 +26,7 @@ no local install, and they never run these scripts. Several labs share one subsc
 
 - Parameters: `DeploymentType`, `SubscriptionId`, `ResourceGroupName`, `PreferredLocation`,
   `AllowedEntraUserIds` (from the platform) plus `FabricSkuName` (default `F2`),
-  `ChatModelCapacity` (100), `GraphModelCapacity` (50), `EmbeddingModelCapacity` (50).
+  `ChatModelCapacity` (200), `GraphModelCapacity` (100), `EmbeddingModelCapacity` (50).
 - The platform pre-sets the Az context and pre-creates the resource group. The scripts never
   call `Connect-AzAccount`, `Set-AzContext`, `az login` or `az account set`.
 - Helper files are found through `$PSScriptRoot`.
@@ -46,8 +46,8 @@ Everything except Fabric lives in one region (the "lab region", normally `sweden
 | Foundry account (`AIServices`, S0) | `iq-<account-hash>` | Own hash: user ids plus the resource group name and creation time, so a re-provisioned lab gets a fresh subdomain (a purged and re-created subdomain keeps answering A2A "Project not found" for a long time). A re-run in the same group finds and reuses its tagged account. Custom subdomain, system identity, `allowProjectManagement = true`, public network access on, local auth disabled (Entra only) |
 | Foundry project | `strandvik` | System identity. **Empty**: participants build all Strandvik agents here |
 | Foundry project | `kolvo` | System identity. **Pre-built** by `setup-kolvo.ps1`, see [Kolvo pre-build](#kolvo-pre-build) |
-| Model `gpt-5.4-mini` | GlobalStandard, 100K TPM | Agents |
-| Model `gpt-5.6-luna` | GlobalStandard, 50K TPM | Evaluation judge, knowledge graph extraction |
+| Model `gpt-5.4-mini` | GlobalStandard, 200K TPM | Agents, rubric generation |
+| Model `gpt-5.6-luna` | GlobalStandard, 100K TPM | Evaluation judge, knowledge graph extraction |
 | Model `text-embedding-3-large` | GlobalStandard, 50K TPM | Foundry IQ knowledge sources |
 | Azure AI Search (Foundry IQ) | `iq-srch-<hash>` | **Basic**, system identity, `aadOrApiKey` with `http401WithBearerChallenge`, semantic ranker `free`, public network access on |
 | Storage account | `iqst<hash>` | StorageV2, Standard_LRS, TLS 1.2, no anonymous access, shared key off, blob soft delete on (7 days), versioning off (the knowledge graph stretch needs both) |
@@ -219,13 +219,13 @@ Codespaces hours every month), or uses a local clone.
 
 | Limit (per subscription and region, typical) | Per lab | Labs that fit |
 |----------------------------------------------|---------|---------------|
-| gpt-5.4-mini GlobalStandard, 2,000K TPM | 100K | 20 |
-| gpt-5.6-luna GlobalStandard, 1,000K TPM | 50K | 20 |
+| gpt-5.4-mini GlobalStandard, 2,000K TPM | 200K | 10 |
+| gpt-5.6-luna GlobalStandard, 1,000K TPM | 100K | 10 |
 | text-embedding-3-large GlobalStandard, 2,000K TPM | 50K | 40 |
 | Fabric capacity quota, 64 to 512 CU | F2 = 2 CU | 32 to 256 |
 | **Azure AI Search Basic services, 12 (some subscriptions 16)** | 1 | **12** |
 
-Search Basic is the binding limit; 10 leaves headroom for a coach lab.
+Search Basic and the two chat models bind at 10 to 12 labs. The chat models were raised to 200K and 100K because 100K was rate limited during rubric generation and evaluations; if a region has less quota, the deploy moves on to the next preferred region.
 
 ## Cost estimate (per lab per day, pay as you go)
 

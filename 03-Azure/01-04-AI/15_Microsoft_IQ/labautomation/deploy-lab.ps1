@@ -45,9 +45,9 @@
     Per-lab Fabric capacity SKU. Default F2. If you change it, also change
     estimatedDailyCostsUsd and labsPerSubscription in lab-defaults.json.
 .PARAMETER ChatModelCapacity
-    gpt-5.4-mini GlobalStandard capacity in thousands of tokens per minute. Default 100.
+    gpt-5.4-mini GlobalStandard capacity in thousands of tokens per minute. Default 200 (rubric generation and evaluations send long prompts in bursts; 100 was rate limited in testing).
 .PARAMETER GraphModelCapacity
-    gpt-5.6-luna GlobalStandard capacity in thousands of tokens per minute. Default 50.
+    gpt-5.6-luna GlobalStandard capacity in thousands of tokens per minute. Default 100 (the evaluation judge).
 .PARAMETER EmbeddingModelCapacity
     text-embedding-3-large GlobalStandard capacity in thousands of tokens per minute. Default 50.
 #>
@@ -69,10 +69,10 @@ param(
     [string]$FabricSkuName = "F2",
 
     [ValidateRange(10, 1000)]
-    [int]$ChatModelCapacity = 100,
+    [int]$ChatModelCapacity = 200,
 
     [ValidateRange(10, 1000)]
-    [int]$GraphModelCapacity = 50,
+    [int]$GraphModelCapacity = 100,
 
     [ValidateRange(10, 1000)]
     [int]$EmbeddingModelCapacity = 50

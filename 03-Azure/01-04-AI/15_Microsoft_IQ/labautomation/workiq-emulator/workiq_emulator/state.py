@@ -164,6 +164,10 @@ class AppState:
         reply = chat.auto_sam_reply(text)
         if reply is None or any(p["item"] == entry.id for p in self._pending_sam):
             return
+        # A proposal that quotes Sam names him too; never repeat Sam's last answer in the thread.
+        last_sam = next((m.get("text") for m in reversed(entry.item["messages"]) if m.get("from") == sam), None)
+        if last_sam == reply:
+            return
         self._pending_sam.append({"item": entry.id, "due": self.clock() + self.settings.auto_sam_delay, "text": reply})
 
     def set_auto_sam(self, on: bool) -> None:
